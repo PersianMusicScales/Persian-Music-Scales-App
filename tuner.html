@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="stylesheet" href="style.css" />
+    <title>Tuner</title>
+    <style>
+        :root {
+            --controls-font-size: 1.6rem;
+            --nav-icon-size: 1.5rem;
+            --link-hover-color: #4CAF50;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: var(--primary-bg-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .language-selector {
+            position: absolute;
+            top: 50px; /* Moved down from the top */
+            right: 20px;
+            font-size: var(--controls-font-size);
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background-color: rgba(240, 240, 240, 0.9);
+            padding: 10px 0;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .bottom-nav a {
+            text-decoration: none;
+            color: #333;
+            font-size: 0.9rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: color 0.3s;
+        }
+
+        .bottom-nav a:hover,
+        .bottom-nav a.active {
+            color: var(--link-hover-color);
+        }
+
+        .nav-icon {
+            font-size: var(--nav-icon-size);
+            margin-bottom: 2px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Language Selector -->
+    <select id="languageSelector" class="language-selector" aria-label="Select Language">
+        <option value="en">English</option>
+        <option value="fa">فارسی</option>
+    </select>
+
+    <main>
+        <!-- Embed Online Tuner into a section -->
+        <section id="tunerSection" class="tuner-container active">
+            <canvas class="frequency-bars"></canvas>
+            <div class="meter">
+                <div class="meter-dot"></div>
+                <div class="meter-pointer"></div>
+            </div>
+            <div class="notes">
+                <div class="notes-list"></div>
+                <div class="frequency">
+                    <span>Hz</span>
+                </div>
+            </div>
+            <div class="a4">A<sub>4</sub> = <span>440</span> Hz</div>
+            <label class="auto">
+                Auto
+                <input type="checkbox" checked />
+            </label>
+        </section>
+    </main>
+
+    <!-- Bottom Menu (fixed) -->
+    <nav class="bottom-nav">
+        <a href="index.html" data-translate="bottomNav.scales">
+            <div class="nav-icon">🎼</div>
+            <span>Scales</span>
+        </a>
+        <a href="tuner.html" class="active" data-translate="bottomNav.tuner">
+            <div class="nav-icon">🎹</div>
+            <span>Tuner</span>
+        </a>
+        <a href="readmore.html" data-translate="bottomNav.guide">
+            <div class="nav-icon">📖</div>
+            <span>Guide</span>
+        </a>
+        <a href="about.html" data-translate="bottomNav.about">
+            <div class="nav-icon">ℹ️</div>
+            <span>About</span>
+        </a>
+    </nav>
+
+    <!-- JavaScript for Language Switching -->
+    <script>
+        const translations = {
+            en: {
+                bottomNav: {
+                    scales: "Scales",
+                    tuner: "Tuner",
+                    guide: "Guide",
+                    about: "About"
+                }
+            },
+            fa: {
+                bottomNav: {
+                    scales: "گام‌ها",
+                    tuner: "تیونر",
+                    guide: "راهنما",
+                    about: "درباره"
+                }
+            }
+        };
+
+        const languageSelector = document.getElementById("languageSelector");
+        const navLinks = document.querySelectorAll('.bottom-nav a[data-translate]');
+
+        function updateUI(currentLang) {
+            navLinks.forEach(link => {
+                const keyPath = link.getAttribute('data-translate').split('.');
+                let translation = translations[currentLang];
+                keyPath.forEach(key => {
+                    translation = translation[key];
+                });
+                link.querySelector('span').textContent = translation;
+            });
+        }
+
+        // Language Detection and Initialization
+        const userLang = (navigator.language || navigator.languages[0]).substr(0, 2);
+        const defaultLang = ["en", "fa"].includes(userLang) ? userLang : "en";
+        languageSelector.value = defaultLang;
+        updateUI(defaultLang);
+
+        // Language Selector Event Listener
+        languageSelector.addEventListener("change", () => {
+            const selectedLang = languageSelector.value;
+            updateUI(selectedLang);
+        });
+    </script>
+
+    <!-- Scripts Section -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aubiojs@0.1.1/build/aubio.min.js"></script>
+
+    <script src="tuner.js"></script>
+    <script src="meter.js"></script>
+    <script src="frequency-bars.js"></script>
+    <script src="notes.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

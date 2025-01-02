@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#4B4E6D" />
+  
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <!-- Page Title -->
+  <title>Persian Music Scales</title>
+
+
+  <!-- Description for SEO -->
+  <meta name="description" content="Explore Persian Music Scales with interactive features. Learn about microtones and traditional music scales." />
+
+  <!-- Open Graph Metadata for Link Sharing -->
+  <meta property="og:title" content="Persian Music Scale App" />
+  <meta property="og:description" content="Persian Music Education – Scales, Microtones, and Innovation at Your Fingertips" />
+  <meta property="og:url" content="https://persianmusicscales.github.io/Persian-Music-Scales-App/" />
+  <meta property="og:type" content="website" />
+
+  <style>
+    :root {
+      --chart-size: 20vw;         /* Size of the inner circle (diatonic) */
+      --line-width: 2px;          /* Thickness of the lines */
+      --outer-scale-size: calc(var(--chart-size) * 1.5);
+
+      --controls-font-size: 0.8rem;  /* For the top controls */
+      --nav-icon-size: 1.5rem;       /* For bottom nav icons */
+      --button-margin-top: 20px;     /* Added for spacing */
+      --label-margin-left: 10px;     /* Added for spacing between selectors */
+    }
+
+    /* Existing styles here */
+    #add-to-home {
+      display: none; /* Hidden by default */
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      z-index: 1000;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    }
+    #add-to-home:hover {
+      background-color: #45a049;
+    }
+    
+    /* Reset/base styling */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /*
+     * Body in column mode:
+     * Header at the top,
+     * <main> in the middle with flex: 1 (centers the circle),
+     * Bottom nav is fixed at the bottom of the viewport.
+     */
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+
+      font-family: Arial, sans-serif;
+      /* Background Image */
+      background: url("images/myBackground.jpg") no-repeat center center fixed;
+      background-size: cover;
+      position: relative;
+    }
+
+    /* ===== Header ===== */
+    header {
+      display: flex;
+      justify-content: space-between; /* Space between title and language selector */
+      align-items: center;
+      background-color: rgba(242,242,242,0.8);
+      padding: 8px 20px;
+      position: relative; /* For positioning language selector */
+    }
+
+    header h1 {
+      font-size: 1.8rem; /* Increased from 1.2rem to 1.8rem (1.5x) */
+      margin: 0;
+    }
+
+    /* Language selector positioned at top right */
+    .language-selector {
+      font-size: var(--controls-font-size);
+      padding: 3px 5px;
+      /* Optional: Add more styling as needed */
+    }
+
+    /* ===== Scale Controls ===== */
+    .scale-controls {
+      display: flex;
+      justify-content: space-between; /* Space between scale selector, Avazha icon, and dynamic text */
+      align-items: center;            /* Vertically center the items */
+      width: 80%;                     /* Adjust as needed for layout */
+      max-width: 800px;               /* Optional: Limit maximum width */
+      margin: 10px auto;              /* Center horizontally with some top margin */
+      position: relative;             /* To position the Avazha columns absolutely within */
+      /* Removed background-color to eliminate white area */
+      /* background-color: rgba(255,255,255,0.6); */
+    }
+
+    .scale-controls select {
+      font-size: 1.6rem; /* Increased from var(--controls-font-size) to 1.6rem (2x) */
+      padding: 10px 16px; /* Adjusted padding for larger size */
+      /* Optional: Add border or other styles */
+    }
+
+    .scale-controls span#labelAtZeroAngle {
+      font-weight: bold; /* Make dynamic text bold */
+      font-size: 2.5rem;;
+      margin-left: var(--label-margin-left); /* Space between selectors */
+    }
+
+    /* ===== Main: Center the Circle ===== */
+    main {
+      flex: 1; /* Occupy leftover vertical space */
+      display: flex;
+      flex-direction: column; /* Vertical alignment */
+      justify-content: center; /* Center horizontally */
+      align-items: center;     /* Center vertically */
+      position: relative;      /* For absolute positioning of legend/footer */
+      padding-bottom: 150px;    /* Extra space so legend/footer doesn't overlap bottom nav */
+    }
+
+    /* Circle container in the middle of main */
+    .container {
+      position: relative;
+      width: var(--outer-scale-size);
+      height: var(--outer-scale-size);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    /* Outer scale circle */
+    .outer-scale {
+      position: absolute;
+      width: var(--outer-scale-size);
+      height: var(--outer-scale-size);
+      border-radius: 50%;
+      z-index: 1;
+    }
+
+    /* Inner diatonic circle */
+    .diatonic-scale {
+      position: absolute;
+      width: var(--chart-size);
+      height: var(--chart-size);
+      border-radius: 50%;
+      background: conic-gradient(
+        gray 0deg 120deg,
+        black 120deg 150deg,
+        gray 150deg 330deg,
+        black 330deg 360deg
+      );
+      z-index: 2;
+    }
+
+    /* Lines */
+    .line {
+      position: absolute;
+      width: var(--line-width);
+      height: calc(var(--outer-scale-size) / 2);
+      background-color: white;
+      transform-origin: bottom center;
+      top: 0;
+      left: 50%;
+      z-index: 3;
+    }
+    .line-diatonic {
+      position: absolute;
+      width: var(--line-width);
+      height: calc(var(--chart-size) / 2);
+      background-color: white;
+      transform-origin: bottom center;
+      top: 0;
+      left: 50%;
+      z-index: 4;
+    }
+
+    /* Inner circle labels (C, D, E...) */
+    .label {
+      position: absolute;
+      font-size: calc(var(--chart-size) / 15);
+      font-weight: bold;
+      transform: translate(-50%, -50%);
+      z-index: 5;
+      background-color: lightgreen;
+      padding: 2px 5px;
+      border-radius: 5px;
+    }
+
+    /* Outer dynamic labels */
+    .dynamic-label {
+      position: absolute;
+      font-size: calc(var(--chart-size) / 18);
+      font-weight: bold; /* Ensure dynamic text is bold */
+      transform: translate(-50%, -50%);
+      z-index: 6;
+      background-color: lightblue;
+      padding: 2px 5px;
+      border-radius: 5px;
+      text-align: center;
+      white-space: nowrap; /* Prevent text wrapping */
+    }
+    .dynamic-label sup {
+      font-size: 0.6em;
+      vertical-align: super;
+      line-height: 1;
+      margin: 0 1px;
+    }
+
+    /* TEETER ANIMATION */
+    @keyframes teeter {
+      0%   { transform: translate(-50%, -50%) rotate(0deg); }
+      20%  { transform: translate(-50%, -50%) rotate(10deg); }
+      40%  { transform: translate(-50%, -50%) rotate(-10deg); }
+      60%  { transform: translate(-50%, -50%) rotate(10deg); }
+      80%  { transform: translate(-50%, -50%) rotate(-10deg); }
+      100% { transform: translate(-50%, -50%) rotate(0deg); }
+    }
+    .teeter-animate {
+      animation: teeter 1s ease-in-out infinite;
+    }
+
+    /* ===== Avazha Floating Icon ===== */
+    .avazha-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      /* Remove margin-left to eliminate space consideration */
+      /* margin-left: 20px; */ 
+      position: fixed; /* Changed from relative to fixed */
+      top: 63px;        /* Adjust as needed */
+      right: 100px;      /* Adjust as needed */
+      z-index: 1001;    /* Higher than other elements to overlay */
+    }
+
+    .avazha-button {
+      background: rgba(230, 230, 250, 0.5); /* Pale violet with transparency */
+      border: none;
+      border-radius: 50%;
+      padding: 10px 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      animation: bounce 2s infinite;
+    }
+
+    .avazha-button:hover {
+      background: rgba(230, 230, 250, 0.7); /* Slightly less transparent on hover */
+    }
+
+    #avazhaLabel {
+      font-size: 0.9rem;
+      color: #333;
+    }
+
+    /* Bouncing Animation */
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    /* Avazha Columns */
+    .avazha-columns {
+      position: absolute; /* Position absolutely within the fixed container */
+      top: 100%;           /* Position below the Avazha button */
+      left: 0;
+      /* width: 200px; */        /* Removed fixed width to allow flexibility */
+      /* background: rgba(230, 230, 250, 0.5); */ /* Removed background from container */
+      border-radius: 8px;
+      padding: 10px;
+      display: flex;
+      flex-direction: row; /* Ensure row direction */
+      gap: 20px;
+      animation: fadeIn 0.3s ease-in-out;
+      z-index: 1000;       /* Ensure it overlays other elements */
+    }
+    .avazha-columns.hidden {
+      display: none;
+    }
+
+    .avazha-column {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center; /* Center items horizontally within the column */
+      background: rgba(230, 230, 250, 0.5); /* Pale violet transparent */
+      border-radius: 5px; /* Optional: for better appearance */
+      padding: 5px;       /* Optional: for spacing */
+      /* width: auto; */       /* Removed fixed width */
+      /* To allow the column to adjust its width based on content */
+      white-space: nowrap; /* Ensure text within items doesn't wrap */
+    }
+
+    .avazha-item {
+      text-align: center;
+      font-size: 0.7rem; /* Reduced font size for smaller text */
+      color: #333;
+      width: auto; /* Allow width to adjust based on content */
+      white-space: nowrap; /* Prevent text from wrapping */
+    }
+
+    /* Fade-in Animation for Columns */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Legend at bottom-left inside main, above bottom nav => bottom: 70px */
+    .legend {
+      position: absolute;
+      bottom: 70px;
+      left: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      background-color: transparent; /* Fully transparent */
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 0.9rem;
+    }
+    .legend-row {
+      display: flex;
+      gap: 10px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .color-box {
+      width: 14px;
+      height: 14px;
+      border: 1px solid #000;
+    }
+
+    /* Footer at bottom-right inside main, above bottom nav => bottom: 80px */
+    footer {
+      position: absolute;
+      bottom: 80px;
+      right: 10px;
+      font-size: 12px;
+      color: gray;
+      text-align: right;
+    }
+
+    /* Bottom Nav (fixed) pinned to bottom of viewport */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      background-color: rgba(240, 240, 240, 0.9);
+      padding: 10px 0;
+      box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
+      z-index: 999;
+    }
+    .bottom-nav a {
+      text-decoration: none;
+      color: #333;
+      font-size: 0.9rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0 10px;
+    }
+    .nav-icon {
+      font-size: var(--nav-icon-size);
+      margin-bottom: 2px;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+      .scale-controls {
+        flex-wrap: wrap; /* Allow items to wrap on smaller screens */
+        justify-content: center;
+      }
+      .avazha-container {
+        margin-left: 0;
+        margin-top: 10px; /* Space above Avazha icon when wrapped */
+      }
+      .avazha-columns {
+        flex-direction: row; /* Ensure row direction */
+        gap: 10px;
+        width: 150px; /* Adjust width as needed */
+      }
+      .avazha-columns.hidden {
+        display: none;
+      }
+    }
+
+    /* Responsive for medium screens (<=768px) */
+    @media (max-width: 768px) {
+      :root {
+        --chart-size: 40vw;
+        --outer-scale-size: calc(var(--chart-size) * 1.5);
+      }
+      .label {
+        font-size: calc(var(--chart-size) / 12);
+      }
+      .scale-controls {
+        width: 90%; /* Adjust width for smaller screens */
+      }
+    }
+
+    /* Responsive for small screens (<=480px) */
+    @media (max-width: 480px) {
+      :root {
+        --chart-size: 60vw;
+        --outer-scale-size: calc(var(--chart-size) * 1.5);
+      }
+      .scale-controls {
+        flex-direction: column; /* Stack selectors vertically on very small screens */
+        align-items: stretch;    /* Stretch to fill width */
+      }
+      .scale-controls span#labelAtZeroAngle {
+        margin-left: 0;
+        margin-top: var(--label-margin-left); /* Add top margin when stacked */
+      }
+      .avazha-columns {
+        flex-direction: row; /* Ensure row direction */
+        gap: 5px;
+        width: 100%; /* Flexible width */
+      }
+    }
+
+    /* New CSS for Play Scale Button */
+    .play-button-container {
+      margin-top: var(--button-margin-top);
+    }
+    .play-button-container button {
+      font-size: var(--controls-font-size);
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      background-color: #4CAF50; /* Green background */
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .play-button-container button:hover {
+      background-color: #45a049;
+    }
+     
+  </style>
+</head>
+<body>
+  <!-- HEADER -->
+  <header>
+    <h1 id="pageTitle">Persian Music Scales</h1>
+    <!-- Language Selector positioned at top right -->
+    <select id="languageSelector" class="language-selector" aria-label="Select Language">
+      <option value="en">en</option>
+      <option value="fr">fr</option>
+      <option value="fa">فا</option>
+    </select>
+  </header>
+
+  <!-- SCALE CONTROLS BELOW HEADER -->
+  <div class="scale-controls">
+    <select id="scaleSelector" aria-label="Select Scale">
+      <option value="Shur">Shur</option>
+      <option value="nava">Nava</option>
+      <option value="segah">Segah</option>
+      <option value="homayoun">Homayoun</option>
+      <option value="esfahan">Esfahan</option>
+      <option value="chahargah">Chahargah</option>
+      <option value="mahur">Mahur / Rast Panjgah</option>
+    </select>
+    
+    <!-- Avazha Floating Icon -->
+    <div id="avazhaContainer" class="avazha-container">
+      <button id="avazhaButton" class="avazha-button">
+        <span id="avazhaLabel">Avazha</span>
+      </button>
+      <!-- Expandable Columns -->
+      <div id="avazhaColumns" class="avazha-columns hidden">
+        <div class="avazha-column">
+          <div class="avazha-item" data-translate="avazha.abuAta">Abu Ata</div>
+          <div class="avazha-item" data-translate="avazha.bayatTork">Bayat Tork</div>
+          <div class="avazha-item" data-translate="avazha.afshari">Afshari</div>
+          <div class="avazha-item" data-translate="avazha.dashti">Dashti</div>
+        </div>
+        <div class="avazha-column" id="avazhaDynamicColumn">
+          <!-- Dynamic labels will be inserted here via JavaScript -->
+        </div>
+      </div>
+    </div>
+    
+    <!-- Dynamic Label -->
+    <span id="labelAtZeroAngle"></span>
+  </div>
+
+  <!-- MAIN: Center the circle, place legend/footer inside -->
+  <main>
+    <!-- Circle container -->
+    <div class="container" id="circleContainer">
+      <div class="diatonic-scale" id="diatonicScale"></div>
+      <div class="outer-scale" id="outerScale"></div>
+    </div>
+
+    <!-- Play Scale Button Container -->
+    <div class="play-button-container">
+      <button id="playScale">► Play Scale</button>
+    </div>
+     
+    <!-- Add to Home Screen Button -->
+    <button id="add-to-home">Install App</button>
+    
+    <!-- Legend at bottom-left, above bottom nav -->
+    <div class="legend">
+      <div class="legend-row">
+        <div class="legend-item">
+          <span class="color-box" style="background: gray;"></span>
+          200 cents
+        </div>
+        <div class="legend-item">
+          <span class="color-box" style="background: black;"></span>
+          100 cents
+        </div>
+      </div>
+      <div class="legend-row">
+        <div class="legend-item">
+          <span class="color-box" style="background: pink;"></span>
+          150 cents
+        </div>
+        <div class="legend-item">
+          <span class="color-box" style="background: green;"></span>
+          250 cents
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer at bottom-right, above bottom nav -->
+    <footer>
+      Copyright © 2024
+      <br/>
+      Pouya Hosseini
+    </footer>
+  </main>
+
+  <!-- Bottom Menu (fixed) -->
+  <nav class="bottom-nav">
+    <a href="index.html">
+      <div class="nav-icon">🎼</div>
+      <span data-translate="bottomNav.scales">Scales</span>
+    </a>
+    <a href="tuner.html">
+      <div class="nav-icon">🎹</div>
+      <span data-translate="bottomNav.tuner">Tuner</span>
+    </a>
+    <a href="readmore.html">
+      <div class="nav-icon">📖</div>
+      <span data-translate="bottomNav.guide">Guide</span>
+    </a>
+    <a href="about.html">
+      <div class="nav-icon">ℹ️</div>
+      <span data-translate="bottomNav.about">About</span>
+    </a>
+  </nav>
+
+  <!-- Service Worker Registration -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("service-worker.js")
+          .then(() => console.log("Service Worker registered!"))
+          .catch(err => console.log("Service Worker registration failed:", err));
+      });
+    }
+
+  </script>
+
+  <script>
+  let deferredPrompt;
+
+  // Listen for the `beforeinstallprompt` event
+  window.addEventListener('beforeinstallprompt', (event) => {
+    console.log('beforeinstallprompt event fired');
+    // Prevent the mini-infobar from appearing
+    event.preventDefault();
+    // Save the event to use later
+    deferredPrompt = event;
+
+    // Show the A2HS button after an interaction
+    playScaleBtn.addEventListener('click', () => {
+      // Display the A2HS button after the "Play Scale" interaction
+      const a2hsButton = document.getElementById('add-to-home');
+      a2hsButton.style.display = 'block';
+
+      // Add event listener to the A2HS button
+      a2hsButton.addEventListener('click', () => {
+        a2hsButton.style.display = 'none'; // Hide the button
+        deferredPrompt.prompt(); // Show the A2HS prompt
+
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('User accepted the A2HS prompt');
+          } else {
+            console.log('User dismissed the A2HS prompt');
+          }
+          deferredPrompt = null; // Clear the deferredPrompt
+        });
+      });
+    });
+  });
+</script>
+
+
+  <!-- Main Script (Scale + Avazha + Rotation logic) -->
+  <script>
+    /*
+      The code below integrates rotation, dynamic labels, and the Avazha feature.
+      It ensures that all functionalities coexist without conflicts.
+    */
+
+    const scaleSelector   = document.getElementById("scaleSelector");
+    const languageSelector= document.getElementById("languageSelector");
+    const circleContainer = document.getElementById("circleContainer");
+    const outerScale      = document.getElementById("outerScale");
+    const diatonicScale   = document.getElementById("diatonicScale");
+    const labelAtZeroAngle= document.getElementById("labelAtZeroAngle");
+    const playScaleBtn    = document.getElementById("playScale");
+    const pageTitle       = document.getElementById("pageTitle");
+    const bottomNavLabels = document.querySelectorAll('.bottom-nav span[data-translate]');
+
+    let rotation        = 0;
+    let currentLanguage = "en";
+
+    // Example translations
+    const translations = {
+      fr: {
+        displayLabels: ["Do", "Re", "Mi", "Fa", "Sol", "La", "Si"],
+        koron: "Koron",
+        sori: "Sori",
+        scales: {
+          Shur: "Shur",
+          nava: "Nava",
+          segah: "Segah",
+          homayoun: "Homayoun",
+          esfahan: "Esfahan",
+          chahargah: "Chahargah",
+          mahur: "Mahur / Rast Panjgah",
+        },
+        playButton: "► Jouer la Gamme",
+        title: "Persian Music Scales",
+        bottomNav: {
+          scales: "Échelles",
+          tuner: "Accordeur",
+          guide: "Guide",
+          about: "À propos"
+        },
+        avazha: "Avazha",
+        avazhaItems: {
+          abuAta: "Abu Ata",
+          bayatTork: "Bayat Tork",
+          afshari: "Afshari",
+          dashti: "Dashti"
+        }
+      },
+      en: {
+        displayLabels: ["C", "D", "E", "F", "G", "A", "B"],
+        koron: "Koron",
+        sori: "Sori",
+        scales: {
+          Shur: "Shur",
+          nava: "Nava",
+          segah: "Segah",
+          homayoun: "Homayoun",
+          esfahan: "Esfahan",
+          chahargah: "Chahargah",
+          mahur: "Mahur / Rast Panjgah",
+        },
+        playButton: "► Play Scale",
+        title: "Persian Music Scales",
+        bottomNav: {
+          scales: "Scales",
+          tuner: "Tuner",
+          guide: "Guide",
+          about: "About"
+        },
+        avazha: "Avazha",
+        avazhaItems: {
+          abuAta: "Abu Ata",
+          bayatTork: "Bayat Tork",
+          afshari: "Afshari",
+          dashti: "Dashti"
+        }
+      },
+      fa: {
+        displayLabels: ["دو", "رِ", "می", "فا", "سُل ", "لا", "سی "],
+        koron: "کُرُن",
+        sori: "سُری",
+        scales: {
+          Shur: "شور",
+          nava: "نوا",
+          segah: "سه‌گاه",
+          homayoun: "همایون",
+          esfahan: "اصفهان",
+          chahargah: "چهارگاه",
+          mahur: "ماهور / راست پنجگاه",
+        },
+        playButton: "► پخش گام",
+        title: "گام‌های موسیقی ایرانی",
+        bottomNav: {
+          scales: "گام‌ها",
+          tuner: "تیونر",
+          guide: "راهنما",
+          about: "درباره"
+        },
+        avazha: "آوازها",
+        avazhaItems: {
+          abuAta: "ابوعطا",
+          bayatTork: "بیات ترک",
+          afshari: "افشاری",
+          dashti: "دشتی"
+        }
+      }
+    };
+
+    const parseableNotes = ["C", "D", "E", "F", "G", "A", "B"];
+
+    const scaleData = {
+      Shur: {
+        angles: [0, 45, 90, 150, 210, 240, 300],
+        colors:
+          "conic-gradient(pink 0deg 45deg, pink 45deg 90deg, gray 90deg 150deg, gray 150deg 210deg, black 210deg 240deg, gray 240deg 300deg, gray 300deg 360deg)"
+      },
+      nava: {
+        angles: [0, 60, 90, 150, 210, 255, 300],
+        colors:
+          "conic-gradient(gray 0deg 60deg, black 60deg 90deg, gray 90deg 150deg, gray 150deg 210deg, pink 210deg 255deg, pink 255deg 300deg, gray 300deg 360deg)"
+      },
+      segah: {
+        angles: [0, 60, 105, 150, 210, 255, 300],
+        colors:
+          "conic-gradient(gray 0deg 60deg, pink 60deg 105deg, pink 105deg 150deg, gray 150deg 210deg, pink 210deg 255deg, pink 255deg 300deg, gray 300deg 360deg)"
+      },
+      homayoun: {
+        angles: [0, 45, 120, 150, 210, 240, 300],
+        colors:
+          "conic-gradient(pink 0deg 45deg, green 45deg 120deg, black 120deg 150deg, gray 150deg 210deg, black 210deg 240deg, gray 240deg 300deg, gray 300deg 360deg)"
+      },
+      esfahan: {
+        angles: [0, 60, 90, 150, 210, 255, 330],
+        colors:
+          "conic-gradient(gray 0deg 60deg, black 60deg 90deg, gray 90deg 150deg, gray 150deg 210deg, pink 210deg 255deg, green 255deg 330deg, black 330deg 360deg)"
+      },
+      chahargah: {
+        angles: [0, 45, 120, 150, 210, 255, 330],
+        colors:
+          "conic-gradient(pink 0deg 45deg, green 45deg 120deg, black 120deg 150deg, gray 150deg 210deg, pink 210deg 255deg, green 255deg 330deg, black 330deg 360deg)"
+      },
+      mahur: {
+        angles: [0, 60, 120, 150, 210, 270, 330],
+        colors:
+          "conic-gradient(gray 0deg 60deg, gray 60deg 120deg, black 120deg 150deg, gray 150deg 210deg, gray 210deg 270deg, gray 270deg 330deg, black 330deg 360deg)"
+      }
+    };
+
+    const diatonicAngles = [0, 60, 120, 150, 210, 270, 330];
+
+    function updateOuterScale(scale) {
+      const { angles, colors } = scaleData[scale];
+      outerScale.style.background = colors;
+      outerScale.innerHTML = "";
+
+      angles.forEach((angle) => {
+        const line = document.createElement("div");
+        line.classList.add("line");
+        line.style.transform = `rotate(${angle}deg)`;
+        outerScale.appendChild(line);
+      });
+    }
+
+    function updateStaticLabels() {
+      diatonicScale.innerHTML = "";
+      const { displayLabels } = translations[currentLanguage];
+
+      diatonicAngles.forEach((angle, index) => {
+        const line = document.createElement("div");
+        line.classList.add("line-diatonic");
+        line.style.transform = `rotate(${angle}deg)`;
+        diatonicScale.appendChild(line);
+
+        const label = document.createElement("div");
+        label.classList.add("label");
+        label.innerHTML = displayLabels[index]; // Changed to innerHTML to support superscripts
+
+        const radians = (angle - 90) * (Math.PI / 180);
+        label.style.top = `${50 + 40 * Math.sin(radians)}%`;
+        label.style.left= `${50 + 40 * Math.cos(radians)}%`;
+        diatonicScale.appendChild(label);
+      });
+    }
+
+    function normalizeAngle(a) {
+      return (a + 360) % 360;
+    }
+
+    function findClosestLabel(angle, displayLabels, koron, sori) {
+      const normalizedAngle = normalizeAngle(angle);
+      const rotatedAngles = diatonicAngles.map(a => normalizeAngle(a + rotation));
+
+      let bestDiff = 360;
+      let bestList = [];
+
+      rotatedAngles.forEach((diaAng, idx) => {
+        let diff = normalizedAngle - diaAng;
+        diff = normalizeAngle(diff);
+        if (diff > 180) diff -= 360;
+        const absDiff = Math.abs(diff);
+
+        if (absDiff < bestDiff) {
+          bestDiff = absDiff;
+          bestList = [{ index: idx, diff }];
+        } else if (absDiff === bestDiff) {
+          bestList.push({ index: idx, diff });
+        }
+      });
+
+      const dispArr  = [];
+      const parseArr = [];
+
+      bestList.forEach(({ index, diff }) => {
+        let disp = displayLabels[index];
+        let prse = parseableNotes[index];
+
+        if (diff === 30) {
+          // Sharp
+          if (currentLanguage === "fa") disp += " دیز";
+          else disp += "♯";
+          prse += "#";
+        } else if (diff === -30) {
+          // Flat
+          if (currentLanguage === "fa") disp += " بمل";
+          else disp += "♭";
+          prse += "b";
+        } else if (diff === 15) {
+          // Sori
+          disp += `<sup>${sori}</sup>`;
+          prse += " sori";
+        } else if (diff === -15) {
+          // Koron
+          disp += `<sup>${koron}</sup>`;
+          prse += " koron";
+        }
+        dispArr.push(disp);
+        parseArr.push(prse);
+      });
+
+      return {
+        displayText: dispArr.join("/"),
+        parseableText: parseArr.join("/")
+      };
+    }
+
+    function updateDynamicLabels() {
+      const scaleName = scaleSelector.value;
+      const { angles } = scaleData[scaleName];
+      const { displayLabels, koron, sori } = translations[currentLanguage];
+
+      outerScale.querySelectorAll(".dynamic-label").forEach(d => d.remove());
+
+      angles.forEach(angle => {
+        const { displayText, parseableText } = findClosestLabel(angle, displayLabels, koron, sori);
+
+        const labelDiv = document.createElement("div");
+        labelDiv.classList.add("dynamic-label");
+        labelDiv.dataset.allNotes = parseableText;
+        labelDiv.dataset.singleNote = parseableText.split("/")[0].trim();
+
+        labelDiv.innerHTML = displayText;
+
+        const radians = (angle - 90) * (Math.PI / 180);
+        labelDiv.style.top  = `${50 + 45 * Math.sin(radians)}%`;
+        labelDiv.style.left = `${50 + 45 * Math.cos(radians)}%`;
+
+        outerScale.appendChild(labelDiv);
+      });
+
+      // 12 o'clock label
+      const zeroResult = findClosestLabel(0, displayLabels, koron, sori);
+      labelAtZeroAngle.innerHTML = zeroResult.displayText;
+      labelAtZeroAngle.dataset.allNotes   = zeroResult.parseableText;
+      labelAtZeroAngle.dataset.singleNote = zeroResult.parseableText.split("/")[0].trim();
+    }
+
+    function rotateScale(evt) {
+      const rect = circleContainer.getBoundingClientRect();
+      const clickX = evt.clientX - rect.left - rect.width / 2;
+      rotation += clickX >= 0 ? 15 : -15;
+
+      diatonicScale.style.transform = `rotate(${rotation}deg)`;
+      updateDynamicLabels();
+      populateAvazhaDynamicColumn(); // Update Avazha dynamic labels after rotation
+
+      if (navigator.vibrate) navigator.vibrate(50);
+    }
+
+    // ===== Avazha Functionality =====
+
+    // Get Avazha Elements
+    const avazhaContainer = document.getElementById('avazhaContainer');
+    const avazhaButton = document.getElementById('avazhaButton');
+    const avazhaColumns = document.getElementById('avazhaColumns');
+    const avazhaDynamicColumn = document.getElementById('avazhaDynamicColumn');
+
+    // Function to toggle Avazha columns
+    function toggleAvazhaColumns() {
+      avazhaColumns.classList.toggle('hidden');
+    }
+
+    // Event Listener for Avazha Button
+    avazhaButton.addEventListener('click', toggleAvazhaColumns);
+
+    // Function to update Avazha visibility based on selected scale
+    function updateAvazhaVisibility() {
+      const selectedScale = scaleSelector.value;
+      if (selectedScale === 'Shur') {
+        avazhaContainer.style.display = 'flex';
+        populateAvazhaDynamicColumn();
+      } else {
+        avazhaContainer.style.display = 'none';
+        avazhaColumns.classList.add('hidden'); // Ensure columns are hidden when not Shur
+      }
+    }
+
+    // Function to populate the dynamic second column
+    function populateAvazhaDynamicColumn() {
+      avazhaDynamicColumn.innerHTML = ''; // Clear existing content
+      const dynamicLabels = outerScale.querySelectorAll('.dynamic-label');
+
+      // Extract the second, third, fourth, and fifth labels
+      // Adjust indices based on your actual labels
+      const labelsArray = Array.from(dynamicLabels).slice(1, 5);
+
+      labelsArray.forEach(label => {
+        const displayText = label.innerHTML;
+        const itemDiv = document.createElement("div");
+        itemDiv.classList.add("avazha-item");
+        itemDiv.innerHTML = displayText; // Use innerHTML to preserve any HTML formatting
+        avazhaDynamicColumn.appendChild(itemDiv);
+      });
+    }
+
+    function updateUIControls() {
+      const { scales, playButton, title, bottomNav, avazha, avazhaItems } = translations[currentLanguage];
+      Array.from(scaleSelector.options).forEach(opt => {
+        opt.textContent = scales[opt.value];
+      });
+      playScaleBtn.textContent = playButton;
+
+      // Update the page title
+      document.title = title;
+      pageTitle.textContent = title;
+
+      // Update bottom navigation labels
+      bottomNavLabels.forEach(label => {
+        const keyPath = label.getAttribute('data-translate').split('.');
+        let text = translations[currentLanguage];
+        keyPath.forEach(key => {
+          text = text[key];
+        });
+        label.textContent = text;
+      });
+
+      // Update Avazha label
+      updateAvazhaLabel();
+
+      // Update Avazha fixed items translations
+      const avazhaFixedItems = document.querySelectorAll('.avazha-column:first-child .avazha-item[data-translate]');
+      avazhaFixedItems.forEach(item => {
+        const key = item.getAttribute('data-translate').split('.')[1]; // e.g., "abuAta"
+        if (translations[currentLanguage].avazhaItems && translations[currentLanguage].avazhaItems[key]) {
+          item.textContent = `${translations[currentLanguage].avazhaItems[key]}`;
+        } else {
+          // Default to existing text if no translation is available
+          item.textContent = item.textContent; // No change
+        }
+      });
+    }
+
+    // Helper function to capitalize first letter (if needed)
+    function capitalizeFirstLetter(string) {
+      return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+
+    // Update Avazha label based on language
+    function updateAvazhaLabel() {
+      const avazhaLabel = document.getElementById('avazhaLabel');
+      const translation = translations[currentLanguage].avazha;
+      avazhaLabel.textContent = translation;
+    }
+
+    // Language & scale events
+    languageSelector.addEventListener("change", () => {
+      currentLanguage = languageSelector.value;
+      updateStaticLabels();
+      updateDynamicLabels();
+      updateUIControls();
+      populateAvazhaDynamicColumn(); // Update dynamic column labels
+    });
+
+    scaleSelector.addEventListener("change", () => {
+      updateOuterScale(scaleSelector.value);
+      updateDynamicLabels();
+      updateUIControls();
+      updateAvazhaVisibility(); // Ensure Avazha visibility is updated
+      if (navigator.vibrate) navigator.vibrate(100);
+    });
+
+    circleContainer.addEventListener("click", rotateScale);
+
+    // Initial Setup
+    updateOuterScale("Shur");
+    updateStaticLabels();
+    updateDynamicLabels();
+    updateUIControls();
+    updateAvazhaVisibility();
+
+    /* AUDIO + Teeter code (Play Scale) */
+    const baseFrequencies = {
+      "Do": 261.63, "Re": 293.66, "Mi": 329.63, "Fa": 349.23,
+      "Sol": 392.00, "La": 440.00, "Si": 493.88,
+      "C": 261.63,    "D": 293.66,  "E": 329.63,  "F": 349.23,
+      "G": 392.00,    "A": 440.00,  "B": 493.88
+    };
+
+    function adjustFrequencyByCents(freq, cents) {
+      return freq * Math.pow(2, cents / 1200);
+    }
+
+    function parseNote(note) {
+      const match = note.match(/^([A-G]|Do|Re|Mi|Fa|Sol|La|Si)([#b]?)(?:\s+(koron|sori))?$/i);
+      if (!match) return null;
+
+      const base = match[1];
+      let frequency = baseFrequencies[base];
+      if (!frequency) return null;
+
+      if (match[2] === "#") {
+        frequency = adjustFrequencyByCents(frequency, 100);
+      } else if (match[2] === "b") {
+        frequency = adjustFrequencyByCents(frequency, -100);
+      }
+      if (match[3] && match[3].toLowerCase() === "koron") {
+        frequency = adjustFrequencyByCents(frequency, -50);
+      } else if (match[3] && match[3].toLowerCase() === "sori") {
+        frequency = adjustFrequencyByCents(frequency, 50);
+      }
+
+      return frequency;
+    }
+
+    function playNote(audioCtx, frequency, duration, startTime) {
+      if (!frequency) return;
+
+      const oscillator = audioCtx.createOscillator();
+      oscillator.type = "sine";
+
+      const gainNode = audioCtx.createGain();
+      gainNode.gain.setValueAtTime(0, startTime);
+
+      gainNode.gain.linearRampToValueAtTime(0.8, startTime + 0.02);
+      gainNode.gain.setValueAtTime(0.8, startTime + duration - 0.1);
+      gainNode.gain.linearRampToValueAtTime(0, startTime + duration);
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      oscillator.frequency.value = frequency;
+
+      oscillator.start(startTime);
+      oscillator.stop(startTime + duration);
+    }
+
+    function animateLabelDuringNote(singleNote, audioCtx, startTime, duration) {
+      const now = audioCtx.currentTime;
+      const startDelayMs = Math.max(0, (startTime - now) * 1000);
+      const endDelayMs   = startDelayMs + duration * 1000;
+
+      setTimeout(() => {
+        const labels = outerScale.querySelectorAll(".dynamic-label");
+        labels.forEach(label => {
+          if (label.dataset.singleNote === singleNote) {
+            label.classList.add("teeter-animate");
+          }
+        });
+      }, startDelayMs);
+
+      setTimeout(() => {
+        const labels = outerScale.querySelectorAll(".dynamic-label");
+        labels.forEach(label => {
+          if (label.dataset.singleNote === singleNote) {
+            label.classList.remove("teeter-animate");
+          }
+        });
+      }, endDelayMs);
+    }
+
+    function playOuterScale() {
+      const scaleName = scaleSelector.value;
+      const { angles } = scaleData[scaleName];
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      let currentTime = audioCtx.currentTime;
+
+      const noteDuration = 1.0;
+      let lastFreq = 0;
+      let firstNoteFrequency = null; // To store the first note's frequency
+
+      for (let i = 0; i < 7; i++) {
+        const angle = angles[i % angles.length];
+        const { parseableText } = findClosestLabel(
+          angle,
+          translations[currentLanguage].displayLabels,
+          translations[currentLanguage].koron,
+          translations[currentLanguage].sori
+        );
+        const singleNote = parseableText.split("/")[0].trim();
+        let freq = parseNote(singleNote);
+
+        if (freq) {
+          if (i === 0) {
+            firstNoteFrequency = freq; // Store the first note's frequency
+          }
+          while (freq <= lastFreq) {
+            freq *= 2;
+          }
+          playNote(audioCtx, freq, noteDuration, currentTime);
+          animateLabelDuringNote(singleNote, audioCtx, currentTime, 1.0);
+
+          lastFreq = freq;
+          currentTime += 1.0;
+        }
+      }
+
+      // **Play the first note again in the next octave**
+      if (firstNoteFrequency) {
+        const freqNextOctave = firstNoteFrequency * 2; // Next octave
+        playNote(audioCtx, freqNextOctave, noteDuration, currentTime);
+        animateLabelDuringNote(parseableNotes[0], audioCtx, currentTime, 1.0);
+      }
+    }
+
+    playScaleBtn.addEventListener("click", playOuterScale);
+  </script>
+
+  <!-- Add language detection script before the closing body tag -->
+  <script>
+    const userLang = navigator.language || navigator.languages[0];
+    const langSelector = document.getElementById("languageSelector");
+
+    if (userLang.includes("fa")) {
+      langSelector.value = "fa"; // Set to Persian
+    } else {
+      langSelector.value = "en"; // Default to English
+    }
+
+    // Trigger language switch based on selection
+    langSelector.dispatchEvent(new Event("change"));
+  </script>
+   
+</body>
+</html>

@@ -1,3 +1,7 @@
+© 2024 Pouya Hosseini. All rights reserved.
+
+This project and its contents are the intellectual property of Seyed Pouya Hosseini Yazdeli. Unauthorized reproduction, distribution, or use is prohibited.
+
 Proprietary License
 
 Copyright © 2024 Pouya Hosseini. All rights reserved.
@@ -5,9 +9,9 @@ Copyright © 2024 Pouya Hosseini. All rights reserved.
 This software and its associated materials are the exclusive intellectual property of Pouya Hosseini.
 
 You are not permitted to:
-- Use, copy, modify, merge, publish, distribute, sublicense, or sell copies of the software or its components, in whole or in part, without prior written consent from Pouya Hosseini.
-- Reverse engineer, decompile, or disassemble the software for any purpose.
 
+Use, copy, modify, merge, publish, distribute, sublicense, or sell copies of the software or its components, in whole or in part, without prior written consent from Pouya Hosseini.
+Reverse engineer, decompile, or disassemble the software for any purpose.
 Permissions may be granted for limited use at the sole discretion of Pouya Hosseini upon written request.
 
 For inquiries regarding permissions, please contact: [hoseini.ph@gmail.com]

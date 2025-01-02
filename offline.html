@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Offline - Persian Music Scales</title>
+  
+  <!-- Meta tags for responsiveness and theming -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4CAF50">
+  
+  <!-- Inline CSS for styling -->
+  <style>
+    :root {
+      --primary-color: #4CAF50;           /* Primary theme color */
+      --secondary-color: #ffffff;         /* Text color */
+      --background-color: #f0f0f0;        /* Background color */
+      --footer-color: gray;               /* Footer text color */
+      
+      /* Font sizes */
+      --heading-font-size: 2rem;
+      --text-font-size: 1.2rem;
+    }
+    
+    /* Reset and base styling */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      
+      height: 100vh;
+      font-family: Arial, sans-serif;
+      
+      background-color: var(--background-color);
+      color: var(--secondary-color);
+    }
+    
+    /* Container for the message */
+    .message-container {
+      text-align: center;
+      padding: 20px;
+      background-color: rgba(0, 0, 0, 0.6);
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    
+    .message-container h1 {
+      font-size: var(--heading-font-size);
+      margin-bottom: 15px;
+    }
+    
+    .message-container p {
+      font-size: var(--text-font-size);
+      margin-bottom: 25px;
+    }
+    
+    .message-container img {
+      width: 60px;
+      height: 60px;
+      margin-bottom: 20px;
+    }
+    
+    /* Button to retry connection */
+    .retry-button {
+      display: inline-block;
+      padding: 10px 20px;
+      font-size: 1rem;
+      color: var(--primary-color);
+      background-color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s, color 0.3s;
+      text-decoration: none;
+    }
+    
+    .retry-button:hover {
+      background-color: var(--primary-color);
+      color: #fff;
+    }
+    
+    /* Footer styling */
+    footer {
+      position: absolute;
+      bottom: 10px;
+      font-size: 0.8rem;
+      color: var(--footer-color);
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 480px) {
+      .message-container h1 {
+        font-size: 1.5rem;
+      }
+      
+      .message-container p {
+        font-size: 1rem;
+      }
+      
+      .retry-button {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+      }
+    }
+
+    
+  </style>
+</head>
+<body>
+  
+  <!-- Message Container -->
+  <div class="message-container">
+    <img src="offline-icon.png" alt="Offline Icon" onerror="this.style.display='none';">
+    <h1>You're Offline</h1>
+    <p>It seems you're not connected to the internet. Please check your connection and try again.</p>
+    <a href="index.html" class="retry-button">Retry</a>
+  </div>
+  
+  <!-- Footer -->
+  <footer>
+    © <span id="current-year"></span> Persian Music Scales
+  </footer>
+  
+  <!-- Inline JavaScript -->
+  <script>
+    // Dynamically set the current year
+    document.getElementById("current-year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

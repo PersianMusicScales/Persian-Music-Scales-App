@@ -593,41 +593,53 @@
 
   </script>
 
+  <!-- Add to Home Screen (A2HS) Prompt -->
   <script>
-  let deferredPrompt;
+    let deferredPrompt; // Store the event to trigger it later
+    const addToHomeButton = document.getElementById('add-to-home');
 
-  // Listen for the `beforeinstallprompt` event
-  window.addEventListener('beforeinstallprompt', (event) => {
-    console.log('beforeinstallprompt event fired');
-    // Prevent the mini-infobar from appearing
-    event.preventDefault();
-    // Save the event to use later
-    deferredPrompt = event;
+    // Listen for the beforeinstallprompt event
+    window.addEventListener('beforeinstallprompt', (e) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      // Stash the event so it can be triggered later.
+      deferredPrompt = e;
+      // Update UI to notify the user they can install the PWA
+      addToHomeButton.style.display = 'block';
 
-    // Show the A2HS button after an interaction
-    playScaleBtn.addEventListener('click', () => {
-      // Display the A2HS button after the "Play Scale" interaction
-      const a2hsButton = document.getElementById('add-to-home');
-      a2hsButton.style.display = 'block';
-
-      // Add event listener to the A2HS button
-      a2hsButton.addEventListener('click', () => {
-        a2hsButton.style.display = 'none'; // Hide the button
-        deferredPrompt.prompt(); // Show the A2HS prompt
-
+      // Optionally, you can add a click event listener to the button
+      addToHomeButton.addEventListener('click', () => {
+        // Hide the button
+        addToHomeButton.style.display = 'none';
+        // Show the install prompt
+        deferredPrompt.prompt();
+        // Wait for the user to respond to the prompt
         deferredPrompt.userChoice.then((choiceResult) => {
           if (choiceResult.outcome === 'accepted') {
-            console.log('User accepted the A2HS prompt');
+            console.log('User accepted the install prompt');
           } else {
-            console.log('User dismissed the A2HS prompt');
+            console.log('User dismissed the install prompt');
           }
-          deferredPrompt = null; // Clear the deferredPrompt
+          deferredPrompt = null;
         });
       });
     });
-  });
-</script>
 
+    // Listen for the appinstalled event
+    window.addEventListener('appinstalled', () => {
+      console.log('PWA was installed');
+      // Hide the install button
+      addToHomeButton.style.display = 'none';
+    });
+
+    // Optional: Check if the app is already installed
+    window.addEventListener('load', () => {
+      if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+        // App is installed, hide the install button
+        addToHomeButton.style.display = 'none';
+      }
+    });
+  </script>
 
   <!-- Main Script (Scale + Avazha + Rotation logic) -->
   <script>

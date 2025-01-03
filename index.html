@@ -1,27 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-   <!-- PWA Manifest -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Persian Music Scales</title>
+  
+  <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#4B4E6D" />
-  
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
-  <!-- Page Title -->
-  <title>Persian Music Scales</title>
-
 
   <!-- Description for SEO -->
   <meta name="description" content="Explore Persian Music Scales with interactive features. Learn about microtones and traditional music scales." />
 
   <!-- Open Graph Metadata for Link Sharing -->
-  <meta property="og:title" content="Persian Music Scale App" />
+  <meta property="og:title" content="Persian Music Scales App" />
   <meta property="og:description" content="Persian Music Education – Scales, Microtones, and Innovation at Your Fingertips" />
   <meta property="og:url" content="https://persianmusicscales.github.io/Persian-Music-Scales-App/" />
   <meta property="og:type" content="website" />
 
   <style>
+    /* ======= CSS Variables ======= */
     :root {
       --chart-size: 20vw;         /* Size of the inner circle (diatonic) */
       --line-width: 2px;          /* Thickness of the lines */
@@ -33,38 +31,13 @@
       --label-margin-left: 10px;     /* Added for spacing between selectors */
     }
 
-    /* Existing styles here */
-    #add-to-home {
-      display: none; /* Hidden by default */
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
-      cursor: pointer;
-      z-index: 1000;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    }
-    #add-to-home:hover {
-      background-color: #45a049;
-    }
-    
-    /* Reset/base styling */
+    /* ======= Reset/Base Styling ======= */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
 
-    /*
-     * Body in column mode:
-     * Header at the top,
-     * <main> in the middle with flex: 1 (centers the circle),
-     * Bottom nav is fixed at the bottom of the viewport.
-     */
     body {
       display: flex;
       flex-direction: column;
@@ -96,7 +69,7 @@
     .language-selector {
       font-size: var(--controls-font-size);
       padding: 3px 5px;
-      /* Optional: Add more styling as needed */
+      cursor: pointer;
     }
 
     /* ===== Scale Controls ===== */
@@ -108,19 +81,20 @@
       max-width: 800px;               /* Optional: Limit maximum width */
       margin: 10px auto;              /* Center horizontally with some top margin */
       position: relative;             /* To position the Avazha columns absolutely within */
-      /* Removed background-color to eliminate white area */
-      /* background-color: rgba(255,255,255,0.6); */
     }
 
     .scale-controls select {
       font-size: 1.6rem; /* Increased from var(--controls-font-size) to 1.6rem (2x) */
       padding: 10px 16px; /* Adjusted padding for larger size */
-      /* Optional: Add border or other styles */
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background-color: white;
+      cursor: pointer;
     }
 
     .scale-controls span#labelAtZeroAngle {
       font-weight: bold; /* Make dynamic text bold */
-      font-size: 2.5rem;;
+      font-size: 2.5rem;
       margin-left: var(--label-margin-left); /* Space between selectors */
     }
 
@@ -153,6 +127,7 @@
       height: var(--outer-scale-size);
       border-radius: 50%;
       z-index: 1;
+      background: conic-gradient(gray 0deg 120deg, black 120deg 150deg, gray 150deg 330deg, black 330deg 360deg);
     }
 
     /* Inner diatonic circle */
@@ -242,9 +217,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      /* Remove margin-left to eliminate space consideration */
-      /* margin-left: 20px; */ 
-      position: fixed; /* Changed from relative to fixed */
+      position: fixed; /* Fixed positioning */
       top: 63px;        /* Adjust as needed */
       right: 80px;      /* Adjust as needed */
       z-index: 1001;    /* Higher than other elements to overlay */
@@ -284,8 +257,6 @@
       position: absolute; /* Position absolutely within the fixed container */
       top: 100%;           /* Position below the Avazha button */
       left: 0;
-      /* width: 200px; */        /* Removed fixed width to allow flexibility */
-      /* background: rgba(230, 230, 250, 0.5); */ /* Removed background from container */
       border-radius: 8px;
       padding: 10px;
       display: flex;
@@ -293,6 +264,7 @@
       gap: 20px;
       animation: fadeIn 0.3s ease-in-out;
       z-index: 1000;       /* Ensure it overlays other elements */
+      background-color: rgba(230, 230, 250, 0.9); /* Added background for visibility */
     }
     .avazha-columns.hidden {
       display: none;
@@ -306,8 +278,6 @@
       background: rgba(230, 230, 250, 0.5); /* Pale violet transparent */
       border-radius: 5px; /* Optional: for better appearance */
       padding: 5px;       /* Optional: for spacing */
-      /* width: auto; */       /* Removed fixed width */
-      /* To allow the column to adjust its width based on content */
       white-space: nowrap; /* Ensure text within items doesn't wrap */
     }
 
@@ -317,6 +287,7 @@
       color: #333;
       width: auto; /* Allow width to adjust based on content */
       white-space: nowrap; /* Prevent text from wrapping */
+      cursor: pointer;
     }
 
     /* Fade-in Animation for Columns */
@@ -385,6 +356,7 @@
       flex-direction: column;
       align-items: center;
       margin: 0 10px;
+      cursor: pointer;
     }
     .nav-icon {
       font-size: var(--nav-icon-size);
@@ -559,7 +531,7 @@
       <button id="playScale">► Play Scale</button>
     </div>
      
-    <!-- Add to Home Screen Button -->
+    <!-- Add to Home Screen Button (optional, can be hidden) -->
     <button id="add-to-home">Install App</button>
     
     <!-- Install Prompt Banner for Android (Chrome) -->
@@ -637,143 +609,266 @@
           .catch(err => console.log("Service Worker registration failed:", err));
       });
     }
-
   </script>
 
   <!-- Install Prompt Handling -->
   <script>
-  let deferredPrompt;
+    let deferredPrompt;
 
-  // Improved Device Detection Functions
-  function isIOS() {
-    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-    return /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
-  }
+    // Device Detection Functions
+    function isIOS() {
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      return /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+    }
 
-  function isAndroid() {
-    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-    return /android/i.test(userAgent);
-  }
+    function isAndroid() {
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      return /Android/.test(userAgent);
+    }
 
-  function isInStandaloneMode() {
-    return ('standalone' in window.navigator) && (window.navigator.standalone);
-  }
+    function isInStandaloneMode() {
+      return ('standalone' in window.navigator) && (window.navigator.standalone);
+    }
 
-  // Listen for the `beforeinstallprompt` event (Android)
-  window.addEventListener('beforeinstallprompt', (event) => {
-    // Only handle if the device is Android and not iOS
-    if (isAndroid() && !isIOS()) {
-      console.log('beforeinstallprompt event fired on Android');
-      // Prevent the mini-infobar from appearing on mobile
-      event.preventDefault();
-      // Stash the event so it can be triggered later.
-      deferredPrompt = event;
-
-      // Show the install banner
-      const installBanner = document.getElementById('install-banner');
-      installBanner.style.display = 'flex';
-
-      // Set the install banner text based on current language
-      setInstallBannerText();
-
-      const installButton = document.getElementById('install-button');
-      const dismissButton = document.getElementById('dismiss-button');
-
-      // Remove existing event listeners to prevent multiple bindings
-      installButton.removeEventListener('click', handleInstall);
-      dismissButton.removeEventListener('click', handleDismiss);
-
-      // Define handler functions
-      function handleInstall() {
-        if (deferredPrompt) {
-          // Show the install prompt
-          deferredPrompt.prompt();
-          // Wait for the user to respond to the prompt
-          deferredPrompt.userChoice.then((choiceResult) => {
-            if (choiceResult.outcome === 'accepted') {
-              console.log('User accepted the install prompt');
-            } else {
-              console.log('User dismissed the install prompt');
-            }
-            deferredPrompt = null;
-            // Hide the install banner after user decision
-            installBanner.style.display = 'none';
-          });
+    // Example Translations Object
+    const translations = {
+      fr: {
+        displayLabels: ["Do", "Re", "Mi", "Fa", "Sol", "La", "Si"],
+        koron: "Koron",
+        sori: "Sori",
+        scales: {
+          Shur: "Shur",
+          nava: "Nava",
+          segah: "Segah",
+          homayoun: "Homayoun",
+          esfahan: "Esfahan",
+          chahargah: "Chahargah",
+          mahur: "Mahur / Rast Panjgah",
+        },
+        playButton: "► Jouer la Gamme",
+        title: "Persian Music Scales",
+        bottomNav: {
+          scales: "Échelles",
+          tuner: "Accordeur",
+          guide: "Guide",
+          about: "À propos"
+        },
+        avazha: "Avazha",
+        avazhaItems: {
+          abuAta: "Abu Ata",
+          bayatTork: "Bayat Tork",
+          afshari: "Afshari",
+          dashti: "Dashti"
+        },
+        installBanner: {
+          prompt: "Installez l'application Persian Music Scales pour une meilleure expérience.",
+          install: "Installer",
+          dismiss: "Ignorer"
+        },
+        iosInstallBanner: {
+          prompt: "Pour installer l'application, appuyez sur le bouton de partage et sélectionnez « Ajouter à l'écran d'accueil ».",
+          dismiss: "Ignorer"
+        }
+      },
+      en: {
+        displayLabels: ["C", "D", "E", "F", "G", "A", "B"],
+        koron: "Koron",
+        sori: "Sori",
+        scales: {
+          Shur: "Shur",
+          nava: "Nava",
+          segah: "Segah",
+          homayoun: "Homayoun",
+          esfahan: "Esfahan",
+          chahargah: "Chahargah",
+          mahur: "Mahur / Rast Panjgah",
+        },
+        playButton: "► Play Scale",
+        title: "Persian Music Scales",
+        bottomNav: {
+          scales: "Scales",
+          tuner: "Tuner",
+          guide: "Guide",
+          about: "About"
+        },
+        avazha: "Avazha",
+        avazhaItems: {
+          abuAta: "Abu Ata",
+          bayatTork: "Bayat Tork",
+          afshari: "Afshari",
+          dashti: "Dashti"
+        },
+        installBanner: {
+          prompt: "Install Persian Music Scales App for a better experience.",
+          install: "Install",
+          dismiss: "Dismiss"
+        },
+        iosInstallBanner: {
+          prompt: "To install the app, tap the share button and select 'Add to Home Screen'.",
+          dismiss: "Dismiss"
+        }
+      },
+      fa: {
+        displayLabels: ["دو", "رِ", "می", "فا", "سُل", "لا", "سی"],
+        koron: "کُرُن",
+        sori: "سُری",
+        scales: {
+          Shur: "شور",
+          nava: "نوا",
+          segah: "سه‌گاه",
+          homayoun: "همایون",
+          esfahan: "اصفهان",
+          chahargah: "چهارگاه",
+          mahur: "ماهور / راست پنجگاه",
+        },
+        playButton: "► پخش گام",
+        title: "گام‌های موسیقی ایرانی",
+        bottomNav: {
+          scales: "گام‌ها",
+          tuner: "تیونر",
+          guide: "راهنما",
+          about: "درباره"
+        },
+        avazha: "آوازها",
+        avazhaItems: {
+          abuAta: "ابوعطا",
+          bayatTork: "بیات ترک",
+          afshari: "افشاری",
+          dashti: "دشتی"
+        },
+        installBanner: {
+          prompt: "برای تجربه بهتر، برنامه Persian Music Scales را نصب کنید.",
+          install: "نصب",
+          dismiss: "رد کردن"
+        },
+        iosInstallBanner: {
+          prompt: "برای نصب برنامه، روی دکمه اشتراک کلیک کرده و «افزودن به صفحه اصلی» را انتخاب کنید.",
+          dismiss: "رد کردن"
         }
       }
+    };
 
-      function handleDismiss() {
-        // Hide the install banner
+    // Function to Get Current Language Translations
+    function getTranslations() {
+      const lang = document.getElementById('languageSelector').value;
+      return translations[lang] || translations['en'];
+    }
+
+    // Function to Set Install Banner Text
+    function setInstallBannerText() {
+      const currentTranslations = getTranslations();
+      document.getElementById('install-prompt-text').textContent = currentTranslations.installBanner.prompt;
+      document.getElementById('install-button').textContent = currentTranslations.installBanner.install;
+      document.getElementById('dismiss-button').textContent = currentTranslations.installBanner.dismiss;
+    }
+
+    // Function to Set iOS Install Banner Text
+    function setIOSInstallBannerText() {
+      const currentTranslations = getTranslations();
+      document.getElementById('ios-install-prompt-text').textContent = currentTranslations.iosInstallBanner.prompt;
+      document.getElementById('ios-dismiss-button').textContent = currentTranslations.iosInstallBanner.dismiss;
+    }
+
+    // Listen for the `beforeinstallprompt` event (Android)
+    window.addEventListener('beforeinstallprompt', (event) => {
+      if (isAndroid() && !isIOS()) {
+        console.log('beforeinstallprompt event fired on Android');
+        event.preventDefault();
+        deferredPrompt = event;
+
+        // Show the Android install banner
+        const installBanner = document.getElementById('install-banner');
+        installBanner.style.display = 'flex';
+        setInstallBannerText();
+
+        const installButton = document.getElementById('install-button');
+        const dismissButton = document.getElementById('dismiss-button');
+
+        // Remove existing listeners to prevent multiple bindings
+        installButton.removeEventListener('click', handleInstall);
+        dismissButton.removeEventListener('click', handleDismiss);
+
+        // Define handlers
+        function handleInstall() {
+          if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+              if (choiceResult.outcome === 'accepted') {
+                console.log('User accepted the install prompt');
+              } else {
+                console.log('User dismissed the install prompt');
+              }
+              deferredPrompt = null;
+              installBanner.style.display = 'none';
+            });
+          }
+        }
+
+        function handleDismiss() {
+          installBanner.style.display = 'none';
+          deferredPrompt = null;
+        }
+
+        // Attach event listeners
+        installButton.addEventListener('click', handleInstall);
+        dismissButton.addEventListener('click', handleDismiss);
+      } else {
+        console.log('beforeinstallprompt event fired on non-Android device; ignoring.');
+      }
+    });
+
+    // Listen for the `appinstalled` event
+    window.addEventListener('appinstalled', () => {
+      console.log('PWA was installed');
+      const installBanner = document.getElementById('install-banner');
+      if (installBanner) {
         installBanner.style.display = 'none';
-        deferredPrompt = null;
+      }
+    });
+
+    // Handle iOS install banner on load
+    window.addEventListener('load', () => {
+      if (isIOS() && !isInStandaloneMode()) {
+        console.log('iOS device detected and app not installed.');
+        const iosInstallBanner = document.getElementById('ios-install-banner');
+        iosInstallBanner.style.display = 'flex';
+        setIOSInstallBannerText();
+
+        const iosDismissButton = document.getElementById('ios-dismiss-button');
+        iosDismissButton.addEventListener('click', () => {
+          iosInstallBanner.style.display = 'none';
+        });
+      } else {
+        console.log('Not an iOS device or app is already installed.');
+      }
+    });
+
+    // Language Selector Change Handler
+    document.getElementById('languageSelector').addEventListener("change", () => {
+      currentLanguage = document.getElementById('languageSelector').value;
+      updateStaticLabels();
+      updateDynamicLabels();
+      updateUIControls();
+      populateAvazhaDynamicColumn(); // Update dynamic column labels
+    });
+
+    // Initial Language Setup Based on Browser Language
+    window.addEventListener('DOMContentLoaded', () => {
+      const userLang = navigator.language || navigator.userLanguage;
+      const langSelector = document.getElementById('languageSelector');
+
+      if (userLang.includes("fa")) {
+        langSelector.value = "fa";
+      } else if (userLang.includes("fr")) {
+        langSelector.value = "fr";
+      } else {
+        langSelector.value = "en";
       }
 
-      // Add event listeners
-      installButton.addEventListener('click', handleInstall);
-      dismissButton.addEventListener('click', handleDismiss);
-    } else {
-      console.log('beforeinstallprompt event fired on non-Android device; ignoring.');
-    }
-  });
-
-  // Listen for the `appinstalled` event
-  window.addEventListener('appinstalled', () => {
-    console.log('PWA was installed');
-    // Hide the install banner if it's visible
-    const installBanner = document.getElementById('install-banner');
-    if (installBanner) {
-      installBanner.style.display = 'none';
-    }
-  });
-
-  // Function to set install banner text based on current language
-  function setInstallBannerText() {
-    const currentLanguage = document.getElementById('languageSelector').value;
-    const translations = getTranslations();
-    const installPromptText = document.getElementById('install-prompt-text');
-    const installButton = document.getElementById('install-button');
-    const dismissButton = document.getElementById('dismiss-button');
-
-    installPromptText.textContent = translations[currentLanguage].installBanner.prompt;
-    installButton.textContent = translations[currentLanguage].installBanner.install;
-    dismissButton.textContent = translations[currentLanguage].installBanner.dismiss;
-  }
-
-  // Function to set iOS install banner text based on current language
-  function setIOSInstallBannerText() {
-    const currentLanguage = document.getElementById('languageSelector').value;
-    const translations = getTranslations();
-    const iosInstallPromptText = document.getElementById('ios-install-prompt-text');
-    const iosDismissButton = document.getElementById('ios-dismiss-button');
-
-    iosInstallPromptText.textContent = translations[currentLanguage].iosInstallBanner.prompt;
-    iosDismissButton.textContent = translations[currentLanguage].iosInstallBanner.dismiss;
-  }
-
-  // Function to get current translations
-  function getTranslations() {
-    return translations; // Assuming translations is a global variable
-  }
-
-  // Detect if the app is not installed and not in standalone mode (for iOS)
-  window.addEventListener('load', () => {
-    if (isIOS() && !isInStandaloneMode()) {
-      console.log('iOS device detected and app not installed.');
-      const iosInstallBanner = document.getElementById('ios-install-banner');
-      iosInstallBanner.style.display = 'flex';
-      setIOSInstallBannerText();
-
-      const iosDismissButton = document.getElementById('ios-dismiss-button');
-      iosDismissButton.addEventListener('click', () => {
-        iosInstallBanner.style.display = 'none';
-      });
-    } else {
-      console.log('Not an iOS device or app is already installed.');
-    }
-  });
-
+      // Trigger language change to set texts
+      langSelector.dispatchEvent(new Event('change'));
+    });
   </script>
-
 
   <!-- Main Script (Scale + Avazha + Rotation logic) -->
   <script>
@@ -874,7 +969,7 @@
         }
       },
       fa: {
-        displayLabels: ["دو", "رِ", "می", "فا", "سُل ", "لا", "سی "],
+        displayLabels: ["دو", "رِ", "می", "فا", "سُل", "لا", "سی"],
         koron: "کُرُن",
         sori: "سُری",
         scales: {
@@ -980,7 +1075,7 @@
 
         const label = document.createElement("div");
         label.classList.add("label");
-        label.innerHTML = displayLabels[index]; // Changed to innerHTML to support superscripts
+        label.innerHTML = displayLabels[index]; // Supports superscripts
 
         const radians = (angle - 90) * (Math.PI / 180);
         label.style.top = `${50 + 40 * Math.sin(radians)}%`;
@@ -1344,21 +1439,26 @@
     playScaleBtn.addEventListener("click", playOuterScale);
   </script>
 
-  <!-- Add language detection script before the closing body tag -->
+  <!-- Language Detection Script -->
   <script>
-    const userLang = navigator.language || navigator.languages[0];
     const langSelector = document.getElementById("languageSelector");
 
-    if (userLang.includes("fa")) {
-      langSelector.value = "fa"; // Set to Persian
-    } else if (userLang.includes("fr")) {
-      langSelector.value = "fr"; // Set to French
-    } else {
-      langSelector.value = "en"; // Default to English
+    // Trigger language switch based on selection
+    function setLanguageBasedOnBrowser() {
+      const userLang = navigator.language || navigator.userLanguage;
+      if (userLang.includes("fa")) {
+        langSelector.value = "fa"; // Set to Persian
+      } else if (userLang.includes("fr")) {
+        langSelector.value = "fr"; // Set to French
+      } else {
+        langSelector.value = "en"; // Default to English
+      }
+
+      // Trigger language change to set texts
+      langSelector.dispatchEvent(new Event("change"));
     }
 
-    // Trigger language switch based on selection
-    langSelector.dispatchEvent(new Event("change"));
+    window.addEventListener('DOMContentLoaded', setLanguageBasedOnBrowser);
   </script>
    
 </body>

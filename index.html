@@ -640,27 +640,28 @@
 
   </script>
 
+  <!-- Install Prompt Handling -->
   <script>
   let deferredPrompt;
 
-  // Function to detect if the device is iOS
+  // Improved Device Detection Functions
   function isIOS() {
-    return /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    return /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
   }
 
-  // Function to detect if the device is Android
   function isAndroid() {
-    return /android/i.test(navigator.userAgent);
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    return /android/i.test(userAgent);
   }
 
-  // Function to detect if the device is in standalone mode
   function isInStandaloneMode() {
     return ('standalone' in window.navigator) && (window.navigator.standalone);
   }
 
   // Listen for the `beforeinstallprompt` event (Android)
   window.addEventListener('beforeinstallprompt', (event) => {
-    // Only proceed if the device is Android and not iOS
+    // Only handle if the device is Android and not iOS
     if (isAndroid() && !isIOS()) {
       console.log('beforeinstallprompt event fired on Android');
       // Prevent the mini-infobar from appearing on mobile
@@ -684,29 +685,34 @@
 
       // Define handler functions
       function handleInstall() {
-        // Show the install prompt
-        deferredPrompt.prompt();
-        // Wait for the user to respond to the prompt
-        deferredPrompt.userChoice.then((choiceResult) => {
-          if (choiceResult.outcome === 'accepted') {
-            console.log('User accepted the install prompt');
-          } else {
-            console.log('User dismissed the install prompt');
-          }
-          deferredPrompt = null;
-          // Hide the install banner after user decision
-          installBanner.style.display = 'none';
-        });
+        if (deferredPrompt) {
+          // Show the install prompt
+          deferredPrompt.prompt();
+          // Wait for the user to respond to the prompt
+          deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+              console.log('User accepted the install prompt');
+            } else {
+              console.log('User dismissed the install prompt');
+            }
+            deferredPrompt = null;
+            // Hide the install banner after user decision
+            installBanner.style.display = 'none';
+          });
+        }
       }
 
       function handleDismiss() {
         // Hide the install banner
         installBanner.style.display = 'none';
+        deferredPrompt = null;
       }
 
       // Add event listeners
       installButton.addEventListener('click', handleInstall);
       dismissButton.addEventListener('click', handleDismiss);
+    } else {
+      console.log('beforeinstallprompt event fired on non-Android device; ignoring.');
     }
   });
 
@@ -733,25 +739,6 @@
     dismissButton.textContent = translations[currentLanguage].installBanner.dismiss;
   }
 
-  // Function to get current translations
-  function getTranslations() {
-    return translations; // Assuming translations is a global variable
-  }
-
-  // Detect if the app is not installed and not in standalone mode (for iOS)
-  window.addEventListener('load', () => {
-    if (isIOS() && !isInStandaloneMode()) {
-      const iosInstallBanner = document.getElementById('ios-install-banner');
-      iosInstallBanner.style.display = 'flex';
-      setIOSInstallBannerText();
-
-      const iosDismissButton = document.getElementById('ios-dismiss-button');
-      iosDismissButton.addEventListener('click', () => {
-        iosInstallBanner.style.display = 'none';
-      });
-    }
-  });
-
   // Function to set iOS install banner text based on current language
   function setIOSInstallBannerText() {
     const currentLanguage = document.getElementById('languageSelector').value;
@@ -762,6 +749,28 @@
     iosInstallPromptText.textContent = translations[currentLanguage].iosInstallBanner.prompt;
     iosDismissButton.textContent = translations[currentLanguage].iosInstallBanner.dismiss;
   }
+
+  // Function to get current translations
+  function getTranslations() {
+    return translations; // Assuming translations is a global variable
+  }
+
+  // Detect if the app is not installed and not in standalone mode (for iOS)
+  window.addEventListener('load', () => {
+    if (isIOS() && !isInStandaloneMode()) {
+      console.log('iOS device detected and app not installed.');
+      const iosInstallBanner = document.getElementById('ios-install-banner');
+      iosInstallBanner.style.display = 'flex';
+      setIOSInstallBannerText();
+
+      const iosDismissButton = document.getElementById('ios-dismiss-button');
+      iosDismissButton.addEventListener('click', () => {
+        iosInstallBanner.style.display = 'none';
+      });
+    } else {
+      console.log('Not an iOS device or app is already installed.');
+    }
+  });
 
   </script>
 

@@ -463,6 +463,37 @@
     .play-button-container button:hover {
       background-color: #45a049;
     }
+
+    /* ======== New Styles for Install Prompt Banner ======== */
+    #install-banner {
+      display: none; /* Hidden by default */
+      position: fixed;
+      bottom: 80px; /* Positioned above the bottom nav */
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 15px 25px;
+      border-radius: 8px;
+      z-index: 1002; /* Above other elements */
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    #install-banner button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    #install-banner button:hover {
+      background-color: #45a049;
+    }
+    /* ======================================================== */
      
   </style>
 </head>
@@ -529,6 +560,14 @@
     <!-- Add to Home Screen Button -->
     <button id="add-to-home">Install App</button>
     
+    <!-- Install Prompt Banner -->
+    <div id="install-banner">
+      <span>Install Persian Music Scales App for a better experience.</span>
+      <button id="install-button">Install</button>
+      <button id="dismiss-button">Dismiss</button>
+    </div>
+    <!-- ======================================================== -->
+
     <!-- Legend at bottom-left, above bottom nav -->
     <div class="legend">
       <div class="legend-row">
@@ -593,53 +632,57 @@
 
   </script>
 
-  <!-- Add to Home Screen (A2HS) Prompt -->
   <script>
-    let deferredPrompt; // Store the event to trigger it later
-    const addToHomeButton = document.getElementById('add-to-home');
+  let deferredPrompt;
 
-    // Listen for the beforeinstallprompt event
-    window.addEventListener('beforeinstallprompt', (e) => {
-      // Prevent the mini-infobar from appearing on mobile
-      e.preventDefault();
-      // Stash the event so it can be triggered later.
-      deferredPrompt = e;
-      // Update UI to notify the user they can install the PWA
-      addToHomeButton.style.display = 'block';
+  // Listen for the `beforeinstallprompt` event
+  window.addEventListener('beforeinstallprompt', (event) => {
+    console.log('beforeinstallprompt event fired');
+    // Prevent the mini-infobar from appearing on mobile
+    event.preventDefault();
+    // Stash the event so it can be triggered later.
+    deferredPrompt = event;
 
-      // Optionally, you can add a click event listener to the button
-      addToHomeButton.addEventListener('click', () => {
-        // Hide the button
-        addToHomeButton.style.display = 'none';
-        // Show the install prompt
-        deferredPrompt.prompt();
-        // Wait for the user to respond to the prompt
-        deferredPrompt.userChoice.then((choiceResult) => {
-          if (choiceResult.outcome === 'accepted') {
-            console.log('User accepted the install prompt');
-          } else {
-            console.log('User dismissed the install prompt');
-          }
-          deferredPrompt = null;
-        });
+    // Show the install banner
+    const installBanner = document.getElementById('install-banner');
+    installBanner.style.display = 'flex';
+
+    const installButton = document.getElementById('install-button');
+    const dismissButton = document.getElementById('dismiss-button');
+
+    installButton.addEventListener('click', () => {
+      // Show the install prompt
+      deferredPrompt.prompt();
+      // Wait for the user to respond to the prompt
+      deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User accepted the install prompt');
+        } else {
+          console.log('User dismissed the install prompt');
+        }
+        deferredPrompt = null;
+        // Hide the install banner after user decision
+        installBanner.style.display = 'none';
       });
     });
 
-    // Listen for the appinstalled event
-    window.addEventListener('appinstalled', () => {
-      console.log('PWA was installed');
-      // Hide the install button
-      addToHomeButton.style.display = 'none';
+    dismissButton.addEventListener('click', () => {
+      // Hide the install banner
+      installBanner.style.display = 'none';
     });
+  });
 
-    // Optional: Check if the app is already installed
-    window.addEventListener('load', () => {
-      if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
-        // App is installed, hide the install button
-        addToHomeButton.style.display = 'none';
-      }
-    });
-  </script>
+  // Listen for the `appinstalled` event
+  window.addEventListener('appinstalled', () => {
+    console.log('PWA was installed');
+    // Hide the install banner if it's visible
+    const installBanner = document.getElementById('install-banner');
+    if (installBanner) {
+      installBanner.style.display = 'none';
+    }
+  });
+</script>
+
 
   <!-- Main Script (Scale + Avazha + Rotation logic) -->
   <script>

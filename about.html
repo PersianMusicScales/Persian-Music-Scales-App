@@ -32,14 +32,25 @@
             min-height: 100vh;
         }
 
-        header {
+         header {
+            /* Add the background image */
+            background-image: url('images/header-bg.png');
+            background-size: cover; /* Make sure the image covers the entire header */
+            background-position: center; /* Center the image */
+            background-repeat: no-repeat; /* Prevent the image from repeating */
+            /* Optional: Add a fallback background color */
             background-color: var(--header-bg-color);
+
             color: var(--header-text-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 20px;
+
+            /* Optional: Set a minimum height for the header */
+            min-height: 100px;
         }
+
 
         header h1 {
             font-size: 2.7rem;

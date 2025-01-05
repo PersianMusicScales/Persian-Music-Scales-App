@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
-       <!-- PWA Manifest -->
+	   <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+	
+	       <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#4B4E6D" />
   
@@ -10,7 +12,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
   <!-- Page Title -->
-       <title>Tuner</title>
+       <title>Persian Music Scales</title>
 
 
   <!-- Description for SEO -->
@@ -22,7 +24,14 @@
   <meta property="og:url" content="https://persianmusicscales.github.io/Persian-Music-Scales-App/" />
   <meta property="og:type" content="website" />
 
-    
+	
+	
+	
+	
+	
+	
+    <link rel="stylesheet" href="style.css" />
+    <title>Tuner</title>
     <style>
         :root {
             --controls-font-size: 1.6rem;
@@ -43,13 +52,9 @@
             position: absolute;
             top: 50px; /* Moved down from the top */
             right: 20px;
-            padding: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            background-color: #fff;
             font-size: var(--controls-font-size);
         }
-        
+
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -87,8 +92,8 @@
 <body>
     <!-- Language Selector -->
     <select id="languageSelector" class="language-selector" aria-label="Select Language">
-        <option value="en">En</option>
-        <option value="fa">فا</option>
+        <option value="en">English</option>
+        <option value="fa">فارسی</option>
     </select>
 
     <main>

@@ -32,17 +32,25 @@
             min-height: 100vh;
         }
 
-        header {
-            background-color: var(--header-bg-color);
-            color: var(--header-text-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px;
-        }
+       header {
+    position: relative; /* Establish positioning context */
+    background-image: url('images/header-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent overlay color */
+    color: var(--header-text-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    z-index: 1;
+}
+
 
         header h1 {
             font-size: 2.7rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Text shadow for visibility */
         }
 
         .language-selector {

@@ -38,7 +38,7 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay color */
+    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent overlay color */
     color: var(--header-text-color);
     display: flex;
     justify-content: space-between;
@@ -46,17 +46,6 @@
     padding: 20px;
     min-height: 100px;
     z-index: 1;
-}
-
-header::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.3); /* 30% opacity overlay */
-    z-index: -1; /* Behind the header content */
 }
 
 

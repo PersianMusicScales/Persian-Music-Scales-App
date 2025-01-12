@@ -112,17 +112,21 @@
       /* background-color: rgba(255,255,255,0.6); */
     }
 
-    .scale-controls select {
-      font-size: 1.6rem; /* Increased from var(--controls-font-size) to 1.6rem (2x) */
-      padding: 10px 16px; /* Adjusted padding for larger size */
-      /* Optional: Add border or other styles */
-    }
+.scale-controls {
+  position: relative; /* Allows absolutely positioned children */
+  /* Keep other existing properties */
+}
 
-    .scale-controls span#labelAtZeroAngle {
-      font-weight: bold; /* Make dynamic text bold */
-      font-size: 2.5rem;;
-      margin-left: var(--label-margin-left); /* Space between selectors */
-    }
+.scale-controls span#labelAtZeroAngle {
+  position: absolute;
+  top: 8px;       /* Adjust as needed */
+  right: 20px;    /* Adjust as needed */
+  z-index: 9999;  /* Ensure it’s on top of overlapping elements */
+  font-size: 2.5rem;
+  font-weight: bold;
+  /* margin-left can typically be removed if you’re placing it absolutely */
+  /* margin-left: var(--label-margin-left); */
+}
 
     /* ===== Main: Center the Circle ===== */
     main {

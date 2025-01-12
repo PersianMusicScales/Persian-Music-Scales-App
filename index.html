@@ -33,6 +33,11 @@
       --label-margin-left: 10px;     /* Added for spacing between selectors */
     }
 
+    /* Hidden Class */
+    .hidden {
+      display: none;
+    }
+
     /* Existing styles here */
     #add-to-home {
       display: none; /* Hidden by default */
@@ -474,7 +479,7 @@
       bottom: 70px; /* Above bottom nav */
       right: 80px;
       z-index: 1001;
-      display: none; /* Hidden by default */
+      /* Initially hidden; use the 'hidden' class to toggle visibility */
     }
 
     .myapp-button {
@@ -577,7 +582,13 @@
     .rtl {
       direction: rtl;
     }
-
+    .rtl .modal-content .instruction img {
+      margin-right: 0;
+      margin-left: 10px;
+    }
+    .rtl .modal-content .instruction span {
+      text-align: right;
+    }
   </style>
 </head>
 <body>
@@ -606,7 +617,7 @@
     
     <!-- Avazha Floating Icon -->
     <div id="avazhaContainer" class="avazha-container">
-      <button id="avazhaButton" class="avazha-button">
+      <button id="avazhaButton" class="avazha-button" aria-label="Avazha">
         <span id="avazhaLabel">Avazha</span>
       </button>
       <!-- Expandable Columns -->
@@ -697,7 +708,7 @@
 
   <!-- ===== My App Button ===== -->
   <div id="myAppContainer" class="myapp-container hidden">
-    <button id="myAppButton" class="myapp-button">
+    <button id="myAppButton" class="myapp-button" aria-label="Install My App">
       <!-- Assuming you have an SVG icon named myapp_icon.svg in the icons folder -->
       <img src="icons/myapp_icon.svg" alt="My App" width="24" height="24">
     </button>
@@ -705,7 +716,7 @@
   </div>
 
   <!-- ===== Pop-up Modal ===== -->
-  <div id="installModal" class="modal">
+  <div id="installModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal-content">
       <h2 id="modalTitle">Install App</h2>
       <p id="modalInstructions">
@@ -732,117 +743,12 @@
           .catch(err => console.log("Service Worker registration failed:", err));
       });
     }
-
   </script>
 
-  <script>
-  let deferredPrompt;
-
-  // Listen for the `beforeinstallprompt` event
-  window.addEventListener('beforeinstallprompt', (event) => {
-    console.log('beforeinstallprompt event fired');
-    // Prevent the mini-infobar from appearing
-    event.preventDefault();
-    // Save the event to use later
-    deferredPrompt = event;
-
-    // Show the A2HS button after an interaction
-    playScaleBtn.addEventListener('click', () => {
-      // Display the A2HS button after the "Play Scale" interaction
-      const a2hsButton = document.getElementById('add-to-home');
-      a2hsButton.style.display = 'block';
-
-      // Add event listener to the A2HS button
-      a2hsButton.addEventListener('click', () => {
-        a2hsButton.style.display = 'none'; // Hide the button
-        deferredPrompt.prompt(); // Show the A2HS prompt
-
-        deferredPrompt.userChoice.then((choiceResult) => {
-          if (choiceResult.outcome === 'accepted') {
-            console.log('User accepted the A2HS prompt');
-          } else {
-            console.log('User dismissed the A2HS prompt');
-          }
-          deferredPrompt = null; // Clear the deferredPrompt
-        });
-      });
-    });
-  });
-
-  // Detect if PWA is installed
-  function isPWAInstalled() {
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      return true;
-    }
-    if (window.navigator.standalone === true) { // iOS
-      return true;
-    }
-    return false;
-  }
-
-  // Show or hide "My App" button based on installation status
-  function toggleMyAppButton() {
-    const myAppContainer = document.getElementById('myAppContainer');
-    if (!isPWAInstalled()) {
-      myAppContainer.classList.remove('hidden');
-    } else {
-      myAppContainer.classList.add('hidden');
-    }
-  }
-
-  // Listen for appinstalled event
-  window.addEventListener('appinstalled', () => {
-    console.log('PWA was installed');
-    toggleMyAppButton(); // Hide the button after installation
-  });
-
-  // Initial check
-  window.addEventListener('load', () => {
-    toggleMyAppButton();
-  });
-  </script>
-
-
-  <script>
-  let deferredPrompt;
-
-  // Listen for the `beforeinstallprompt` event
-  window.addEventListener('beforeinstallprompt', (event) => {
-    console.log('beforeinstallprompt event fired');
-    // Prevent the mini-infobar from appearing
-    event.preventDefault();
-    // Save the event to use later
-    deferredPrompt = event;
-
-    // Show the A2HS button after an interaction
-    playScaleBtn.addEventListener('click', () => {
-      // Display the A2HS button after the "Play Scale" interaction
-      const a2hsButton = document.getElementById('add-to-home');
-      a2hsButton.style.display = 'block';
-
-      // Add event listener to the A2HS button
-      a2hsButton.addEventListener('click', () => {
-        a2hsButton.style.display = 'none'; // Hide the button
-        deferredPrompt.prompt(); // Show the A2HS prompt
-
-        deferredPrompt.userChoice.then((choiceResult) => {
-          if (choiceResult.outcome === 'accepted') {
-            console.log('User accepted the A2HS prompt');
-          } else {
-            console.log('User dismissed the A2HS prompt');
-          }
-          deferredPrompt = null; // Clear the deferredPrompt
-        });
-      });
-    });
-  });
-  </script>
-
-
-  <!-- Main Script (Scale + Avazha + Rotation logic) -->
+  <!-- Main Script (Scale + Avazha + Rotation logic + My App functionality) -->
   <script>
     /*
-      The code below integrates rotation, dynamic labels, and the Avazha feature.
+      The code below integrates rotation, dynamic labels, the Avazha feature, and the My App functionality.
       It ensures that all functionalities coexist without conflicts.
     */
 
@@ -865,6 +771,7 @@
 
     let rotation        = 0;
     let currentLanguage = "en";
+    let deferredPrompt; // Moved outside event listeners to make it accessible globally
 
     // Example translations
     const translations = {
@@ -1178,10 +1085,10 @@
     function updateAvazhaVisibility() {
       const selectedScale = scaleSelector.value;
       if (selectedScale === 'Shur') {
-        avazhaContainer.style.display = 'flex';
+        avazhaContainer.classList.remove('hidden');
         populateAvazhaDynamicColumn();
       } else {
-        avazhaContainer.style.display = 'none';
+        avazhaContainer.classList.add('hidden');
         avazhaColumns.classList.add('hidden'); // Ensure columns are hidden when not Shur
       }
     }
@@ -1268,6 +1175,109 @@
       dismissModalBtn.textContent = installModal.dismiss;
     }
 
+    // ===== My App Functionality =====
+
+    // Get My App Elements
+    const myAppContainer = document.getElementById('myAppContainer');
+    const myAppButtonEl = document.getElementById('myAppButton');
+    const myAppLabel = document.getElementById('myAppLabel');
+
+    // Get Pop-up Modal Elements
+    const modal = installModal;
+    const dismissBtn = dismissModalBtn;
+
+    // Function to show the modal
+    function showInstallModal() {
+      modal.style.display = 'flex';
+      // Optional: Set focus to the modal for accessibility
+      dismissBtn.focus();
+    }
+
+    // Function to hide the modal
+    function hideInstallModal() {
+      modal.style.display = 'none';
+    }
+
+    // Event Listener for My App Button
+    myAppButtonEl.addEventListener('click', showInstallModal);
+
+    // Event Listener for Dismiss Button
+    dismissBtn.addEventListener('click', hideInstallModal);
+
+    // Function to handle install prompt from My App button
+    function handleInstallButton() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('User accepted the install prompt');
+            hideInstallModal();
+          } else {
+            console.log('User dismissed the install prompt');
+          }
+          deferredPrompt = null;
+          toggleMyAppButton(); // Hide the button after attempt
+        });
+      }
+    }
+
+    // Modify the pop-up to include the install functionality
+    // Adding event listener to the instructions to trigger the install prompt
+    // Alternatively, you can add a specific button for installation within the modal
+
+    // ===== PWA Installation Handling =====
+
+    // Listen for the `beforeinstallprompt` event
+    window.addEventListener('beforeinstallprompt', (event) => {
+      console.log('beforeinstallprompt event fired');
+      // Prevent the mini-infobar from appearing
+      event.preventDefault();
+      // Save the event to use it later
+      deferredPrompt = event;
+
+      // Optionally, you can show the "My App" button here if not already visible
+      // However, since we have a separate "My App" button, we can handle it there
+    });
+
+    // Detect if PWA is installed
+    function isPWAInstalled() {
+      if (window.matchMedia('(display-mode: standalone)').matches) {
+        return true;
+      }
+      if (window.navigator.standalone === true) { // iOS
+        return true;
+      }
+      return false;
+    }
+
+    // Show or hide "My App" button based on installation status
+    function toggleMyAppButton() {
+      if (!isPWAInstalled() && deferredPrompt) {
+        myAppContainer.classList.remove('hidden');
+      } else {
+        myAppContainer.classList.add('hidden');
+      }
+    }
+
+    // Listen for appinstalled event
+    window.addEventListener('appinstalled', () => {
+      console.log('PWA was installed');
+      toggleMyAppButton(); // Hide the button after installation
+    });
+
+    // Initial check on window load
+    window.addEventListener('load', () => {
+      toggleMyAppButton();
+    });
+
+    // Event Listener for Install within Modal
+    // To add an install button inside the modal, you can modify the modal-content accordingly
+    // For simplicity, we'll use the existing "My App" button to trigger the install prompt
+    // Alternatively, add a new button inside the modal to handle installation
+
+    // Event Listener for the "My App" label (optional)
+    myAppLabel.addEventListener('click', handleInstallButton);
+
     // Language & scale events
     languageSelector.addEventListener("change", () => {
       currentLanguage = languageSelector.value;
@@ -1293,52 +1303,6 @@
     });
 
     circleContainer.addEventListener("click", rotateScale);
-
-    // ===== My App Functionality =====
-
-    // Get My App Elements
-    const myAppContainer = document.getElementById('myAppContainer');
-    const myAppButtonEl = document.getElementById('myAppButton');
-    const myAppLabel = document.getElementById('myAppLabel');
-
-    // Get Pop-up Modal Elements
-    const modal = installModal;
-    const dismissBtn = dismissModalBtn;
-
-    // Function to show the modal
-    function showInstallModal() {
-      modal.style.display = 'flex';
-    }
-
-    // Function to hide the modal
-    function hideInstallModal() {
-      modal.style.display = 'none';
-    }
-
-    // Event Listener for My App Button
-    myAppButtonEl.addEventListener('click', showInstallModal);
-
-    // Event Listener for Dismiss Button
-    dismissBtn.addEventListener('click', hideInstallModal);
-
-    // Function to handle install prompt from My App button
-    function handleInstallButton() {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choiceResult) => {
-          if (choiceResult.outcome === 'accepted') {
-            console.log('User accepted the install prompt');
-          } else {
-            console.log('User dismissed the install prompt');
-          }
-          deferredPrompt = null;
-        });
-      }
-    }
-
-    // Modify the pop-up to include the install functionality
-    // Here, assuming the pop-up has instructions and a dismiss button
-    // For simplicity, when "I understand" is clicked, it only dismisses the modal
 
     // Initial Setup
     updateOuterScale("Shur");

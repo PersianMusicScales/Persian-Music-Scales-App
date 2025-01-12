@@ -104,6 +104,7 @@
       display: flex;
       justify-content: space-between; /* Space between scale selector, Avazha icon, and dynamic text */
       align-items: center;            /* Vertically center the items */
+      min-height: 60px; /* Enough to accommodate largest possible text */
       width: 80%;                     /* Adjust as needed for layout */
       max-width: 800px;               /* Optional: Limit maximum width */
       margin: 10px auto;              /* Center horizontally with some top margin */
@@ -112,20 +113,12 @@
       /* background-color: rgba(255,255,255,0.6); */
     }
 
-.scale-controls {
-  position: relative; /* Allows absolutely positioned children */
-  /* Keep other existing properties */
-}
 
 .scale-controls span#labelAtZeroAngle {
-  position: absolute;
-  top: 8px;       /* Adjust as needed */
-  right: 20px;    /* Adjust as needed */
-  z-index: 9999;  /* Ensure it’s on top of overlapping elements */
-  font-size: 2.5rem;
   font-weight: bold;
-  /* margin-left can typically be removed if you’re placing it absolutely */
-  /* margin-left: var(--label-margin-left); */
+  font-size: 2.5rem;
+  margin-left: var(--label-margin-left); 
+  /* Possibly add a fixed width or max-width as well */
 }
 
     /* ===== Main: Center the Circle ===== */

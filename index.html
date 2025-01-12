@@ -104,7 +104,6 @@
       display: flex;
       justify-content: space-between; /* Space between scale selector, Avazha icon, and dynamic text */
       align-items: center;            /* Vertically center the items */
-      min-height: 60px; /* Enough to accommodate largest possible text */
       width: 80%;                     /* Adjust as needed for layout */
       max-width: 800px;               /* Optional: Limit maximum width */
       margin: 10px auto;              /* Center horizontally with some top margin */
@@ -113,13 +112,17 @@
       /* background-color: rgba(255,255,255,0.6); */
     }
 
+    .scale-controls select {
+      font-size: 1.6rem; /* Increased from var(--controls-font-size) to 1.6rem (2x) */
+      padding: 10px 16px; /* Adjusted padding for larger size */
+      /* Optional: Add border or other styles */
+    }
 
-.scale-controls span#labelAtZeroAngle {
-  font-weight: bold;
-  font-size: 2.5rem;
-  margin-left: var(--label-margin-left); 
-  /* Possibly add a fixed width or max-width as well */
-}
+    .scale-controls span#labelAtZeroAngle {
+      font-weight: bold; /* Make dynamic text bold */
+      font-size: 2.5rem;;
+      margin-left: var(--label-margin-left); /* Space between selectors */
+    }
 
     /* ===== Main: Center the Circle ===== */
     main {
@@ -1182,3 +1185,4 @@
    
 </body>
 </html>
+

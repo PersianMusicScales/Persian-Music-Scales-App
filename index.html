@@ -465,6 +465,119 @@
       background-color: #45a049;
     }
      
+    /* ===== My App Button ===== */
+    .myapp-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: fixed;
+      bottom: 70px; /* Above bottom nav */
+      right: 80px;
+      z-index: 1001;
+      display: none; /* Hidden by default */
+    }
+
+    .myapp-button {
+      background: rgba(255, 215, 0, 0.5); /* Gold with transparency */
+      border: none;
+      border-radius: 50%;
+      padding: 10px 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .myapp-button:hover {
+      background: rgba(255, 215, 0, 0.7); /* Slightly less transparent on hover */
+    }
+
+    /* Floating Animation */
+    @keyframes float {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0); }
+    }
+
+    #myAppLabel {
+      font-size: 0.9rem;
+      color: #333;
+      margin-top: 5px;
+    }
+
+    /* ===== Pop-up Modal ===== */
+    .modal {
+      display: none; /* Hidden by default */
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 2000; /* Above all other elements */
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      width: 80%;
+      max-width: 400px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      position: relative;
+    }
+
+    .modal-content h2 {
+      margin-bottom: 15px;
+      font-size: 1.5rem;
+      text-align: center;
+    }
+
+    .modal-content p {
+      margin-bottom: 15px;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+
+    .modal-content .instruction {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .modal-content .instruction img {
+      width: 24px;
+      height: 24px;
+      margin-right: 10px;
+    }
+
+    .modal-content .dismiss-button {
+      display: block;
+      margin: 0 auto;
+      padding: 8px 16px;
+      font-size: 1rem;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .modal-content .dismiss-button:hover {
+      background-color: #45a049;
+    }
+
+    /* RTL Support */
+    .rtl {
+      direction: rtl;
+    }
+
   </style>
 </head>
 <body>
@@ -582,6 +695,34 @@
     </a>
   </nav>
 
+  <!-- ===== My App Button ===== -->
+  <div id="myAppContainer" class="myapp-container hidden">
+    <button id="myAppButton" class="myapp-button">
+      <!-- Assuming you have an SVG icon named myapp_icon.svg in the icons folder -->
+      <img src="icons/myapp_icon.svg" alt="My App" width="24" height="24">
+    </button>
+    <span id="myAppLabel">My App</span>
+  </div>
+
+  <!-- ===== Pop-up Modal ===== -->
+  <div id="installModal" class="modal">
+    <div class="modal-content">
+      <h2 id="modalTitle">Install App</h2>
+      <p id="modalInstructions">
+        Follow these steps to install the app:
+      </p>
+      <div class="instruction">
+        <img src="icons/share.svg" alt="Share Icon">
+        <span id="instructionShare">Share the app</span>
+      </div>
+      <div class="instruction">
+        <img src="icons/add_home.svg" alt="Add to Home Screen Icon">
+        <span id="instructionAddHome">Add to home screen</span>
+      </div>
+      <button id="dismissModal" class="dismiss-button">I understand</button>
+    </div>
+  </div>
+
   <!-- Service Worker Registration -->
   <script>
     if ("serviceWorker" in navigator) {
@@ -627,7 +768,75 @@
       });
     });
   });
-</script>
+
+  // Detect if PWA is installed
+  function isPWAInstalled() {
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      return true;
+    }
+    if (window.navigator.standalone === true) { // iOS
+      return true;
+    }
+    return false;
+  }
+
+  // Show or hide "My App" button based on installation status
+  function toggleMyAppButton() {
+    const myAppContainer = document.getElementById('myAppContainer');
+    if (!isPWAInstalled()) {
+      myAppContainer.classList.remove('hidden');
+    } else {
+      myAppContainer.classList.add('hidden');
+    }
+  }
+
+  // Listen for appinstalled event
+  window.addEventListener('appinstalled', () => {
+    console.log('PWA was installed');
+    toggleMyAppButton(); // Hide the button after installation
+  });
+
+  // Initial check
+  window.addEventListener('load', () => {
+    toggleMyAppButton();
+  });
+  </script>
+
+
+  <script>
+  let deferredPrompt;
+
+  // Listen for the `beforeinstallprompt` event
+  window.addEventListener('beforeinstallprompt', (event) => {
+    console.log('beforeinstallprompt event fired');
+    // Prevent the mini-infobar from appearing
+    event.preventDefault();
+    // Save the event to use later
+    deferredPrompt = event;
+
+    // Show the A2HS button after an interaction
+    playScaleBtn.addEventListener('click', () => {
+      // Display the A2HS button after the "Play Scale" interaction
+      const a2hsButton = document.getElementById('add-to-home');
+      a2hsButton.style.display = 'block';
+
+      // Add event listener to the A2HS button
+      a2hsButton.addEventListener('click', () => {
+        a2hsButton.style.display = 'none'; // Hide the button
+        deferredPrompt.prompt(); // Show the A2HS prompt
+
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('User accepted the A2HS prompt');
+          } else {
+            console.log('User dismissed the A2HS prompt');
+          }
+          deferredPrompt = null; // Clear the deferredPrompt
+        });
+      });
+    });
+  });
+  </script>
 
 
   <!-- Main Script (Scale + Avazha + Rotation logic) -->
@@ -646,6 +855,13 @@
     const playScaleBtn    = document.getElementById("playScale");
     const pageTitle       = document.getElementById("pageTitle");
     const bottomNavLabels = document.querySelectorAll('.bottom-nav span[data-translate]');
+    const myAppButton     = document.getElementById('myAppButton');
+    const installModal    = document.getElementById('installModal');
+    const dismissModalBtn = document.getElementById('dismissModal');
+    const modalTitle      = document.getElementById('modalTitle');
+    const modalInstructions = document.getElementById('modalInstructions');
+    const instructionShare = document.getElementById('instructionShare');
+    const instructionAddHome = document.getElementById('instructionAddHome');
 
     let rotation        = 0;
     let currentLanguage = "en";
@@ -679,6 +895,13 @@
           bayatTork: "Bayat Tork",
           afshari: "Afshari",
           dashti: "Dashti"
+        },
+        installModal: {
+          title: "Installer l'application",
+          instructions: "Suivez ces étapes pour installer l'application :",
+          share: "Partager l'application",
+          addHome: "Ajouter à l'écran d'accueil",
+          dismiss: "J'ai compris"
         }
       },
       en: {
@@ -708,6 +931,13 @@
           bayatTork: "Bayat Tork",
           afshari: "Afshari",
           dashti: "Dashti"
+        },
+        installModal: {
+          title: "Install App",
+          instructions: "Follow these steps to install the app:",
+          share: "Share the app",
+          addHome: "Add to home screen",
+          dismiss: "I understand"
         }
       },
       fa: {
@@ -737,6 +967,13 @@
           bayatTork: "بیات ترک",
           afshari: "افشاری",
           dashti: "دشتی"
+        },
+        installModal: {
+          title: "نصب برنامه",
+          instructions: "برای نصب برنامه مراحل زیر را دنبال کنید:",
+          share: "اشتراک‌گذاری برنامه",
+          addHome: "افزودن به صفحه اصلی",
+          dismiss: "متوجه شدم"
         }
       }
     };
@@ -954,7 +1191,7 @@
       avazhaDynamicColumn.innerHTML = ''; // Clear existing content
       const dynamicLabels = outerScale.querySelectorAll('.dynamic-label');
 
-      // Extract the second, third, fourth, and fifth labels
+      // Extract the second, third, fourth and fifth labels
       // Adjust indices based on your actual labels
       const labelsArray = Array.from(dynamicLabels).slice(1, 5);
 
@@ -968,7 +1205,7 @@
     }
 
     function updateUIControls() {
-      const { scales, playButton, title, bottomNav, avazha, avazhaItems } = translations[currentLanguage];
+      const { scales, playButton, title, bottomNav, avazha, avazhaItems, installModal } = translations[currentLanguage];
       Array.from(scaleSelector.options).forEach(opt => {
         opt.textContent = scales[opt.value];
       });
@@ -1002,6 +1239,9 @@
           item.textContent = item.textContent; // No change
         }
       });
+
+      // Update Pop-up Modal content
+      updateInstallModal();
     }
 
     // Helper function to capitalize first letter (if needed)
@@ -1016,6 +1256,18 @@
       avazhaLabel.textContent = translation;
     }
 
+    // Update Install Modal content based on language
+    function updateInstallModal() {
+      const modal = installModal;
+      const { installModal } = translations[currentLanguage];
+
+      modalTitle.textContent = installModal.title;
+      modalInstructions.textContent = installModal.instructions;
+      instructionShare.textContent = installModal.share;
+      instructionAddHome.textContent = installModal.addHome;
+      dismissModalBtn.textContent = installModal.dismiss;
+    }
+
     // Language & scale events
     languageSelector.addEventListener("change", () => {
       currentLanguage = languageSelector.value;
@@ -1023,6 +1275,13 @@
       updateDynamicLabels();
       updateUIControls();
       populateAvazhaDynamicColumn(); // Update dynamic column labels
+
+      // Adjust layout direction for RTL languages
+      if (currentLanguage === "fa") {
+        document.body.classList.add('rtl');
+      } else {
+        document.body.classList.remove('rtl');
+      }
     });
 
     scaleSelector.addEventListener("change", () => {
@@ -1034,6 +1293,52 @@
     });
 
     circleContainer.addEventListener("click", rotateScale);
+
+    // ===== My App Functionality =====
+
+    // Get My App Elements
+    const myAppContainer = document.getElementById('myAppContainer');
+    const myAppButtonEl = document.getElementById('myAppButton');
+    const myAppLabel = document.getElementById('myAppLabel');
+
+    // Get Pop-up Modal Elements
+    const modal = installModal;
+    const dismissBtn = dismissModalBtn;
+
+    // Function to show the modal
+    function showInstallModal() {
+      modal.style.display = 'flex';
+    }
+
+    // Function to hide the modal
+    function hideInstallModal() {
+      modal.style.display = 'none';
+    }
+
+    // Event Listener for My App Button
+    myAppButtonEl.addEventListener('click', showInstallModal);
+
+    // Event Listener for Dismiss Button
+    dismissBtn.addEventListener('click', hideInstallModal);
+
+    // Function to handle install prompt from My App button
+    function handleInstallButton() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('User accepted the install prompt');
+          } else {
+            console.log('User dismissed the install prompt');
+          }
+          deferredPrompt = null;
+        });
+      }
+    }
+
+    // Modify the pop-up to include the install functionality
+    // Here, assuming the pop-up has instructions and a dismiss button
+    // For simplicity, when "I understand" is clicked, it only dismisses the modal
 
     // Initial Setup
     updateOuterScale("Shur");
@@ -1175,6 +1480,8 @@
 
     if (userLang.includes("fa")) {
       langSelector.value = "fa"; // Set to Persian
+    } else if (userLang.includes("fr")) {
+      langSelector.value = "fr"; // Set to French
     } else {
       langSelector.value = "en"; // Default to English
     }
@@ -1185,4 +1492,3 @@
    
 </body>
 </html>
-

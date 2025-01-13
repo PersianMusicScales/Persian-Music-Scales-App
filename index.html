@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-   <!-- PWA Manifest -->
+  <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#4B4E6D" />
   
@@ -10,7 +10,6 @@
   
   <!-- Page Title -->
   <title>Persian Music Scales</title>
-
 
   <!-- Description for SEO -->
   <meta name="description" content="Explore Persian Music Scales with interactive features. Learn about microtones and traditional music scales." />
@@ -31,6 +30,15 @@
       --nav-icon-size: 1.5rem;       /* For bottom nav icons */
       --button-margin-top: 20px;     /* Added for spacing */
       --label-margin-left: 10px;     /* Added for spacing between selectors */
+      --popup-width: 300px;          /* Width of the pop-up */
+      --popup-background: rgba(255, 255, 255, 0.95);
+      --popup-border-radius: 10px;
+      --overlay-background: rgba(0, 0, 0, 0.5);
+      --button-color: #4CAF50;
+      --button-hover-color: #45a049;
+      --dismiss-button-color: #f44336;
+      --dismiss-button-hover-color: #d32f2f;
+      --icon-size: 24px;
     }
 
     /* Existing styles here */
@@ -386,12 +394,15 @@
       align-items: center;
       transition: color 0.3s;
     }
+    .bottom-nav a:hover {
+      color: #000;
+    }
     .nav-icon {
       font-size: var(--nav-icon-size);
       margin-bottom: 2px;
     }
 
-     
+    
     /* Responsive Adjustments */
     @media (max-width: 768px) {
       .scale-controls {
@@ -445,6 +456,28 @@
         gap: 5px;
         width: 100%; /* Flexible width */
       }
+      .popup-modal {
+        width: 90%; /* Further reduce width on very small screens */
+        padding: 15px; /* Adjust padding */
+      }
+      
+      .popup-title {
+        font-size: 1rem; /* Adjust title font size */
+      }
+      
+      .popup-instruction span {
+        font-size: 0.9rem; /* Adjust instruction text font size */
+      }
+      
+      .popup-button {
+        padding: 6px 12px; /* Adjust button padding */
+        font-size: 0.8rem; /* Adjust button font size */
+      }
+
+      /* Adjust My App Label Font Size on Small Screens */
+      .my-app-label {
+        font-size: 0.7rem;
+      }
     }
 
     /* New CSS for Play Scale Button */
@@ -464,7 +497,140 @@
     .play-button-container button:hover {
       background-color: #45a049;
     }
-     
+
+    /* ===== My App Button Styles ===== */
+    .my-app-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: fixed;
+      top: 450px;        /* Moved down from 120px */
+      right: 80px;       /* Adjust as needed */
+      z-index: 1001;     /* Higher than other elements to overlay */
+      animation: bounce 2s infinite; /* Apply bounce animation to container */
+    }
+
+    .my-app-button {
+      background: rgba(255, 215, 0, 0.5); /* Gold with transparency */
+      border: none;
+      border-radius: 50%;
+      padding: 10px 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      /* Removed animation from button */
+    }
+
+    .my-app-button:hover {
+      background: rgba(255, 215, 0, 0.7); /* Less transparent on hover */
+    }
+
+    .my-app-icon {
+      width: var(--icon-size);
+      height: var(--icon-size);
+    }
+
+    .my-app-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain; /* Ensure SVG scales correctly */
+    }
+
+    /* ===== My App Label Styles ===== */
+    .my-app-label {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      color: #333;
+      text-align: center;
+    }
+
+    /* ===== Pop-up Modal Styles ===== */
+    .popup-overlay {
+      display: none; /* Hidden by default */
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--overlay-background);
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+
+    .popup-modal {
+      background: var(--popup-background);
+      width: var(--popup-width);
+      padding: 20px;
+      border-radius: var(--popup-border-radius);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .popup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .popup-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+
+    .popup-close {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    .popup-content {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .popup-instruction {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .popup-instruction img {
+      width: 24px;  /* Adjust the size as needed */
+      height: 24px; /* Adjust the size as needed */
+      object-fit: contain; /* Maintain aspect ratio */
+    }
+
+    .popup-button {
+      align-self: flex-end;
+      padding: 8px 16px;
+      background-color: var(--button-color);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      font-size: var(--controls-font-size);
+    }
+
+    .popup-button:hover {
+      background-color: var(--button-hover-color);
+    }
+
+    /* RTL Support */
+    .rtl {
+      direction: rtl;
+    }
+
   </style>
 </head>
 <body>
@@ -530,6 +696,18 @@
     <!-- Add to Home Screen Button -->
     <button id="add-to-home">Install App</button>
     
+    <!-- My App Button -->
+    <div class="my-app-container" id="myAppContainer">
+      <button id="myAppButton" class="my-app-button">
+        <div class="my-app-icon">
+          <!-- Insert Your SVG Icon Here -->
+          <img src="icons/myapp_icon.svg" alt="My App Icon">
+        </div>
+      </button>
+      <!-- Bounded Text Label for My App Button -->
+      <span class="my-app-label" data-translate="myAppLabel">App</span>
+    </div>
+
     <!-- Legend at bottom-left, above bottom nav -->
     <div class="legend">
       <div class="legend-row">
@@ -582,6 +760,29 @@
     </a>
   </nav>
 
+  <!-- Pop-up Modal for My App Installation Instructions -->
+  <div class="popup-overlay" id="installPopup">
+    <div class="popup-modal">
+      <div class="popup-header">
+        <div class="popup-title" id="popupTitle">Install My App</div>
+        <button class="popup-close" id="closePopup">&times;</button>
+      </div>
+      <div class="popup-content" id="popupContent">
+        <div class="popup-instruction">
+          <!-- Share Icon SVG -->
+          <img src="icons/share.svg" alt="Share Icon">
+          <span id="instructionShare">Share this app</span>
+        </div>
+        <div class="popup-instruction">
+          <!-- Add to Home Screen Icon SVG -->
+          <img src="icons/add_home.svg" alt="Add to Home Screen Icon">
+          <span id="instructionAdd">Add to home screen</span>
+        </div>
+      </div>
+      <button class="popup-button" id="dismissPopup">I understand</button>
+    </div>
+  </div>
+
   <!-- Service Worker Registration -->
   <script>
     if ("serviceWorker" in navigator) {
@@ -591,49 +792,48 @@
           .catch(err => console.log("Service Worker registration failed:", err));
       });
     }
-
   </script>
 
   <script>
-  let deferredPrompt;
+    let deferredPrompt;
 
-  // Listen for the `beforeinstallprompt` event
-  window.addEventListener('beforeinstallprompt', (event) => {
-    console.log('beforeinstallprompt event fired');
-    // Prevent the mini-infobar from appearing
-    event.preventDefault();
-    // Save the event to use later
-    deferredPrompt = event;
+    // Listen for the `beforeinstallprompt` event
+    window.addEventListener('beforeinstallprompt', (event) => {
+      console.log('beforeinstallprompt event fired');
+      // Prevent the mini-infobar from appearing
+      event.preventDefault();
+      // Save the event to use later
+      deferredPrompt = event;
 
-    // Show the A2HS button after an interaction
-    playScaleBtn.addEventListener('click', () => {
-      // Display the A2HS button after the "Play Scale" interaction
-      const a2hsButton = document.getElementById('add-to-home');
-      a2hsButton.style.display = 'block';
+      // Show the A2HS button after an interaction
+      playScaleBtn.addEventListener('click', () => {
+        // Display the A2HS button after the "Play Scale" interaction
+        const a2hsButton = document.getElementById('add-to-home');
+        a2hsButton.style.display = 'block';
 
-      // Add event listener to the A2HS button
-      a2hsButton.addEventListener('click', () => {
-        a2hsButton.style.display = 'none'; // Hide the button
-        deferredPrompt.prompt(); // Show the A2HS prompt
+        // Add event listener to the A2HS button
+        a2hsButton.addEventListener('click', () => {
+          a2hsButton.style.display = 'none'; // Hide the button
+          deferredPrompt.prompt(); // Show the A2HS prompt
 
-        deferredPrompt.userChoice.then((choiceResult) => {
-          if (choiceResult.outcome === 'accepted') {
-            console.log('User accepted the A2HS prompt');
-          } else {
-            console.log('User dismissed the A2HS prompt');
-          }
-          deferredPrompt = null; // Clear the deferredPrompt
+          deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+              console.log('User accepted the A2HS prompt');
+            } else {
+              console.log('User dismissed the A2HS prompt');
+            }
+            deferredPrompt = null; // Clear the deferredPrompt
+          });
         });
       });
     });
-  });
-</script>
+  </script>
 
 
   <!-- Main Script (Scale + Avazha + Rotation logic) -->
   <script>
     /*
-      The code below integrates rotation, dynamic labels, and the Avazha feature.
+      The code below integrates rotation, dynamic labels, Avazha, and My App features.
       It ensures that all functionalities coexist without conflicts.
     */
 
@@ -646,6 +846,12 @@
     const playScaleBtn    = document.getElementById("playScale");
     const pageTitle       = document.getElementById("pageTitle");
     const bottomNavLabels = document.querySelectorAll('.bottom-nav span[data-translate]');
+
+    const myAppButton     = document.getElementById("myAppButton");
+    const installPopup    = document.getElementById("installPopup");
+    const closePopupBtn   = document.getElementById("closePopup");
+    const dismissPopupBtn = document.getElementById("dismissPopup");
+    const myAppContainer  = document.getElementById("myAppContainer");
 
     let rotation        = 0;
     let currentLanguage = "en";
@@ -679,7 +885,15 @@
           bayatTork: "Bayat Tork",
           afshari: "Afshari",
           dashti: "Dashti"
-        }
+        },
+        installPopup: {
+          title: "Installer Mon Application",
+          instructions: "Pour installer cette application, suivez les étapes ci-dessous.",
+          share: "Partager cette application",
+          addHome: "Ajouter à l'écran d'accueil",
+          dismiss: "J'ai compris"
+        },
+        myAppLabel: "App" /* Changed from "Mon Application" to "App" as per user preference */
       },
       en: {
         displayLabels: ["C", "D", "E", "F", "G", "A", "B"],
@@ -708,7 +922,15 @@
           bayatTork: "Bayat Tork",
           afshari: "Afshari",
           dashti: "Dashti"
-        }
+        },
+        installPopup: {
+          title: "Install My App",
+          instructions: "To install this application, follow the steps below.",
+          share: "Share this app",
+          addHome: "Add to home screen",
+          dismiss: "I understand"
+        },
+        myAppLabel: "App" /* Changed from "My App" to "App" as per user preference */
       },
       fa: {
         displayLabels: ["دو", "رِ", "می", "فا", "سُل ", "لا", "سی "],
@@ -737,7 +959,15 @@
           bayatTork: "بیات ترک",
           afshari: "افشاری",
           dashti: "دشتی"
-        }
+        },
+        installPopup: {
+          title: "نصب برنامه من",
+          instructions: "برای نصب این برنامه، مراحل زیر را دنبال کنید.",
+          share: "اشتراک‌گذاری برنامه",
+          addHome: "افزودن به صفحه اصلی",
+          dismiss: "متوجه شدم"
+        },
+        myAppLabel: "اپلیکیشن" /* Changed to "اپلیکیشن" as per user preference */
       }
     };
 
@@ -968,7 +1198,7 @@
     }
 
     function updateUIControls() {
-      const { scales, playButton, title, bottomNav, avazha, avazhaItems } = translations[currentLanguage];
+      const { scales, playButton, title, bottomNav, avazha, avazhaItems, installPopup, myAppLabel } = translations[currentLanguage];
       Array.from(scaleSelector.options).forEach(opt => {
         opt.textContent = scales[opt.value];
       });
@@ -1002,6 +1232,15 @@
           item.textContent = item.textContent; // No change
         }
       });
+
+      // Update Pop-up Content
+      updatePopupContent();
+
+      // Update My App Label
+      const myAppLabelElement = document.querySelector('.my-app-label');
+      if (myAppLabelElement) {
+        myAppLabelElement.textContent = myAppLabel;
+      }
     }
 
     // Helper function to capitalize first letter (if needed)
@@ -1023,6 +1262,13 @@
       updateDynamicLabels();
       updateUIControls();
       populateAvazhaDynamicColumn(); // Update dynamic column labels
+
+      // Adjust RTL for Farsi
+      if (currentLanguage === 'fa') {
+        document.body.classList.add('rtl');
+      } else {
+        document.body.classList.remove('rtl');
+      }
     });
 
     scaleSelector.addEventListener("change", () => {
@@ -1035,12 +1281,59 @@
 
     circleContainer.addEventListener("click", rotateScale);
 
+    // ===== My App Functionality =====
+
+    // Function to check if PWA is installed
+    function isPWAInstalled() {
+      return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    }
+
+    // Function to show or hide the My App button
+    function toggleMyAppButton() {
+      if (!isPWAInstalled()) {
+        myAppContainer.style.display = 'flex';
+      } else {
+        myAppContainer.style.display = 'none';
+      }
+    }
+
+    // Event Listener for My App Button
+    myAppButton.addEventListener("click", () => {
+      installPopup.style.display = 'flex';
+    });
+
+    // Event Listener for Close Popup Button
+    closePopupBtn.addEventListener("click", () => {
+      installPopup.style.display = 'none';
+    });
+
+    // Event Listener for Dismiss Popup Button
+    dismissPopupBtn.addEventListener("click", () => {
+      installPopup.style.display = 'none';
+    });
+
+    // Function to update Pop-up content based on language
+    function updatePopupContent() {
+      const { installPopup } = translations[currentLanguage];
+      document.getElementById('popupTitle').textContent = installPopup.title;
+      document.getElementById('instructionShare').textContent = installPopup.share;
+      document.getElementById('instructionAdd').textContent = installPopup.addHome;
+      dismissPopupBtn.textContent = installPopup.dismiss;
+    }
+
+    // Listen for the appinstalled event to hide the My App button
+    window.addEventListener('appinstalled', () => {
+      myAppContainer.style.display = 'none';
+      console.log('PWA was installed');
+    });
+
     // Initial Setup
     updateOuterScale("Shur");
     updateStaticLabels();
     updateDynamicLabels();
     updateUIControls();
     updateAvazhaVisibility();
+    toggleMyAppButton();
 
     /* AUDIO + Teeter code (Play Scale) */
     const baseFrequencies = {
@@ -1175,6 +1468,8 @@
 
     if (userLang.includes("fa")) {
       langSelector.value = "fa"; // Set to Persian
+    } else if (userLang.includes("fr")) {
+      langSelector.value = "fr"; // Set to French
     } else {
       langSelector.value = "en"; // Default to English
     }
@@ -1182,7 +1477,29 @@
     // Trigger language switch based on selection
     langSelector.dispatchEvent(new Event("change"));
   </script>
+
+  <!-- Add to Home Screen and My App Modal Scripts -->
+  <script>
+    // Initially check if the app is installed
+    window.addEventListener('load', () => {
+      toggleMyAppButton();
+    });
+
+    // Function to show the installation pop-up if PWA is not installed
+    function showInstallPopup() {
+      if (!isPWAInstalled()) {
+        installPopup.style.display = 'flex';
+      }
+    }
+
+    // Optionally, you can trigger the pop-up based on certain conditions or user interactions
+    // For example, show the pop-up after 5 seconds if the app is not installed
+    /*
+    setTimeout(() => {
+      showInstallPopup();
+    }, 5000);
+    */
+  </script>
    
 </body>
 </html>
-

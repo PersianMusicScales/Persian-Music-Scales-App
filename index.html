@@ -4,10 +4,10 @@
   <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#4B4E6D" />
-  
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
+
   <!-- Page Title -->
   <title>Persian Music Scales</title>
 
@@ -20,627 +20,8 @@
   <meta property="og:url" content="https://persianmusicscales.github.io/Persian-Music-Scales-App/" />
   <meta property="og:type" content="website" />
 
-  <style>
-    :root {
-      --chart-size: 20vw;         /* Size of the inner circle (diatonic) */
-      --line-width: 2px;          /* Thickness of the lines */
-      --outer-scale-size: calc(var(--chart-size) * 1.5);
-
-      --controls-font-size: 0.8rem;  /* For the top controls */
-      --nav-icon-size: 1.5rem;       /* For bottom nav icons */
-      --button-margin-top: 20px;     /* Added for spacing */
-      --label-margin-left: 10px;     /* Added for spacing between selectors */
-      --popup-width: 300px;          /* Width of the pop-up */
-      --popup-background: rgba(255, 255, 255, 0.95);
-      --popup-border-radius: 10px;
-      --overlay-background: rgba(0, 0, 0, 0.5);
-      --button-color: #4CAF50;
-      --button-hover-color: #45a049;
-      --dismiss-button-color: #f44336;
-      --dismiss-button-hover-color: #d32f2f;
-      --icon-size: 24px;
-    }
-
-    /* Existing styles here */
-    #add-to-home {
-      display: none; /* Hidden by default */
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
-      cursor: pointer;
-      z-index: 1000;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    }
-    #add-to-home:hover {
-      background-color: #45a049;
-    }
-    
-    /* Reset/base styling */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    /*
-     * Body in column mode:
-     * Header at the top,
-     * <main> in the middle with flex: 1 (centers the circle),
-     * Bottom nav is fixed at the bottom of the viewport.
-     */
-    body {
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-
-      font-family: Arial, sans-serif;
-      /* Background Image */
-      background: url("assets/images/myBackground.jpg") no-repeat center center fixed;
-      background-size: cover;
-      position: relative;
-    }
-
-    /* ===== Header ===== */
-    header {
-      display: flex;
-      justify-content: space-between; /* Space between title and language selector */
-      align-items: center;
-  /*   background-image: url('headerindex.png');
-    background-size: cover; */
-    background-position: center;
-      background-color: rgba(242,242,242,0.8);
-      padding: 8px 20px;
-      position: relative; /* For positioning language selector */
-    }
-
-    header h1 {
-      font-size: 1.8rem; /* Increased from 1.2rem to 1.8rem (1.5x) */
-      margin: 0;
-    }
-
-    /* Language selector positioned at top right */
-    .language-selector {
-      font-size: var(--controls-font-size);
-      padding: 3px 5px;
-      /* Optional: Add more styling as needed */
-    }
-
-    /* ===== Scale Controls ===== */
-    .scale-controls {
-      display: flex;
-      justify-content: space-between; /* Space between scale selector, Avazha icon, and dynamic text */
-      align-items: center;            /* Vertically center the items */
-      width: 80%;                     /* Adjust as needed for layout */
-      max-width: 800px;               /* Optional: Limit maximum width */
-      margin: 10px auto;              /* Center horizontally with some top margin */
-      position: relative;             /* To position the Avazha columns absolutely within */
-      /* Removed background-color to eliminate white area */
-      /* background-color: rgba(255,255,255,0.6); */
-    }
-
-    .scale-controls select {
-      font-size: 1.6rem; /* Increased from var(--controls-font-size) to 1.6rem (2x) */
-      padding: 10px 16px; /* Adjusted padding for larger size */
-      /* Optional: Add border or other styles */
-    }
-
-    .scale-controls span#labelAtZeroAngle {
-      font-weight: bold; /* Make dynamic text bold */
-      font-size: 2.5rem;;
-      margin-left: var(--label-margin-left); /* Space between selectors */
-    }
-
-    /* ===== Main: Center the Circle ===== */
-    main {
-      flex: 1; /* Occupy leftover vertical space */
-      display: flex;
-      flex-direction: column; /* Vertical alignment */
-      justify-content: center; /* Center horizontally */
-      align-items: center;     /* Center vertically */
-      position: relative;      /* For absolute positioning of legend/footer */
-      padding-bottom: 150px;    /* Extra space so legend/footer doesn't overlap bottom nav */
-    }
-
-    /* Circle container in the middle of main */
-    .container {
-      position: relative;
-      width: var(--outer-scale-size);
-      height: var(--outer-scale-size);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-    }
-
-    /* Outer scale circle */
-    .outer-scale {
-      position: absolute;
-      width: var(--outer-scale-size);
-      height: var(--outer-scale-size);
-      border-radius: 50%;
-      z-index: 1;
-    }
-
-    /* Inner diatonic circle */
-    .diatonic-scale {
-      position: absolute;
-      width: var(--chart-size);
-      height: var(--chart-size);
-      border-radius: 50%;
-      background: conic-gradient(
-        gray 0deg 120deg,
-        black 120deg 150deg,
-        gray 150deg 330deg,
-        black 330deg 360deg
-      );
-      z-index: 2;
-    }
-
-    /* Lines */
-    .line {
-      position: absolute;
-      width: var(--line-width);
-      height: calc(var(--outer-scale-size) / 2);
-      background-color: white;
-      transform-origin: bottom center;
-      top: 0;
-      left: 50%;
-      z-index: 3;
-    }
-    .line-diatonic {
-      position: absolute;
-      width: var(--line-width);
-      height: calc(var(--chart-size) / 2);
-      background-color: white;
-      transform-origin: bottom center;
-      top: 0;
-      left: 50%;
-      z-index: 4;
-    }
-
-    /* Inner circle labels (C, D, E...) */
-    .label {
-      position: absolute;
-      font-size: calc(var(--chart-size) / 15);
-      font-weight: bold;
-      transform: translate(-50%, -50%);
-      z-index: 5;
-      background-color: lightgreen;
-      padding: 2px 5px;
-      border-radius: 5px;
-    }
-
-    /* Outer dynamic labels */
-    .dynamic-label {
-      position: absolute;
-      font-size: calc(var(--chart-size) / 18);
-      font-weight: bold; /* Ensure dynamic text is bold */
-      transform: translate(-50%, -50%);
-      z-index: 6;
-      background-color: lightblue;
-      padding: 2px 5px;
-      border-radius: 5px;
-      text-align: center;
-      white-space: nowrap; /* Prevent text wrapping */
-    }
-    .dynamic-label sup {
-      font-size: 0.6em;
-      vertical-align: super;
-      line-height: 1;
-      margin: 0 1px;
-    }
-
-    /* TEETER ANIMATION */
-    @keyframes teeter {
-      0%   { transform: translate(-50%, -50%) rotate(0deg); }
-      20%  { transform: translate(-50%, -50%) rotate(10deg); }
-      40%  { transform: translate(-50%, -50%) rotate(-10deg); }
-      60%  { transform: translate(-50%, -50%) rotate(10deg); }
-      80%  { transform: translate(-50%, -50%) rotate(-10deg); }
-      100% { transform: translate(-50%, -50%) rotate(0deg); }
-    }
-    .teeter-animate {
-      animation: teeter 1s ease-in-out infinite;
-    }
-
-    /* ===== Avazha Floating Icon ===== */
-    .avazha-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      /* Remove margin-left to eliminate space consideration */
-      /* margin-left: 20px; */ 
-      position: fixed; /* Changed from relative to fixed */
-      top: 63px;        /* Adjust as needed */
-      right: 80px;      /* Adjust as needed */
-      z-index: 1001;    /* Higher than other elements to overlay */
-    }
-
-    .avazha-button {
-      background: rgba(230, 230, 250, 0.5); /* Pale violet with transparency */
-      border: none;
-      border-radius: 50%;
-      padding: 10px 15px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.3s;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      animation: bounce 2s infinite;
-    }
-
-    .avazha-button:hover {
-      background: rgba(230, 230, 250, 0.7); /* Slightly less transparent on hover */
-    }
-
-    #avazhaLabel {
-      font-size: 0.9rem;
-      color: #333;
-    }
-
-    /* Bouncing Animation */
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-    }
-
-    /* Avazha Columns */
-    .avazha-columns {
-      position: absolute; /* Position absolutely within the fixed container */
-      top: 100%;           /* Position below the Avazha button */
-      left: 0;
-      /* width: 200px; */        /* Removed fixed width to allow flexibility */
-      /* background: rgba(230, 230, 250, 0.5); */ /* Removed background from container */
-      border-radius: 8px;
-      padding: 10px;
-      display: flex;
-      flex-direction: row; /* Ensure row direction */
-      gap: 20px;
-      animation: fadeIn 0.3s ease-in-out;
-      z-index: 1000;       /* Ensure it overlays other elements */
-    }
-    .avazha-columns.hidden {
-      display: none;
-    }
-
-    .avazha-column {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      align-items: center; /* Center items horizontally within the column */
-      background: rgba(230, 230, 250, 0.5); /* Pale violet transparent */
-      border-radius: 5px; /* Optional: for better appearance */
-      padding: 5px;       /* Optional: for spacing */
-      /* width: auto; */       /* Removed fixed width */
-      /* To allow the column to adjust its width based on content */
-      white-space: nowrap; /* Ensure text within items doesn't wrap */
-    }
-
-    .avazha-item {
-      text-align: center;
-      font-size: 0.7rem; /* Reduced font size for smaller text */
-      color: #333;
-      width: auto; /* Allow width to adjust based on content */
-      white-space: nowrap; /* Prevent text from wrapping */
-    }
-
-    /* Fade-in Animation for Columns */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Legend at bottom-left inside main, above bottom nav => bottom: 70px */
-    .legend {
-      position: absolute;
-      bottom: 70px;
-      left: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-      background-color: transparent; /* Fully transparent */
-      padding: 10px;
-      border-radius: 5px;
-      font-size: 0.9rem;
-    }
-    .legend-row {
-      display: flex;
-      gap: 10px;
-    }
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .color-box {
-      width: 14px;
-      height: 14px;
-      border: 1px solid #000;
-    }
-
-    /* Footer at bottom-right inside main, above bottom nav => bottom: 80px */
-    footer {
-      position: absolute;
-      bottom: 80px;
-      right: 10px;
-      font-size: 12px;
-      color: gray;
-      text-align: right;
-    }
-
-    /* Bottom Nav (fixed) pinned to bottom of viewport */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      background-color: rgba(240, 240, 240, 0.9);
-      padding: 10px 0;
-      box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
-      z-index: 999;
-    }
-    .bottom-nav a {
-      text-decoration: none;
-      color: #333;
-      font-size: 0.9rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      transition: color 0.3s;
-    }
-    .bottom-nav a:hover {
-      color: #000;
-    }
-    .nav-icon {
-      font-size: var(--nav-icon-size);
-      margin-bottom: 2px;
-    }
-
-    
-    /* Responsive Adjustments */
-    @media (max-width: 768px) {
-      .scale-controls {
-        flex-wrap: wrap; /* Allow items to wrap on smaller screens */
-        justify-content: center;
-      }
-      .avazha-container {
-        margin-left: 0;
-        margin-top: 10px; /* Space above Avazha icon when wrapped */
-      }
-      .avazha-columns {
-        flex-direction: row; /* Ensure row direction */
-        gap: 10px;
-        width: 150px; /* Adjust width as needed */
-      }
-      .avazha-columns.hidden {
-        display: none;
-      }
-    }
-
-    /* Responsive for medium screens (<=768px) */
-    @media (max-width: 768px) {
-      :root {
-        --chart-size: 40vw;
-        --outer-scale-size: calc(var(--chart-size) * 1.5);
-      }
-      .label {
-        font-size: calc(var(--chart-size) / 12);
-      }
-      .scale-controls {
-        width: 90%; /* Adjust width for smaller screens */
-      }
-    }
-
-    /* Responsive for small screens (<=480px) */
-    @media (max-width: 480px) {
-      :root {
-        --chart-size: 60vw;
-        --outer-scale-size: calc(var(--chart-size) * 1.5);
-      }
-      .scale-controls {
-        flex-direction: column; /* Stack selectors vertically on very small screens */
-        align-items: stretch;    /* Stretch to fill width */
-      }
-      .scale-controls span#labelAtZeroAngle {
-        margin-left: 0;
-        margin-top: var(--label-margin-left); /* Add top margin when stacked */
-      }
-      .avazha-columns {
-        flex-direction: row; /* Ensure row direction */
-        gap: 5px;
-        width: 100%; /* Flexible width */
-      }
-      .popup-modal {
-        width: 90%; /* Further reduce width on very small screens */
-        padding: 15px; /* Adjust padding */
-      }
-      
-      .popup-title {
-        font-size: 1rem; /* Adjust title font size */
-      }
-      
-      .popup-instruction span {
-        font-size: 0.9rem; /* Adjust instruction text font size */
-      }
-      
-      .popup-button {
-        padding: 6px 12px; /* Adjust button padding */
-        font-size: 0.8rem; /* Adjust button font size */
-      }
-
-      /* Adjust My App Label Font Size on Small Screens */
-      .my-app-label {
-        font-size: 0.7rem;
-      }
-    }
-
-    /* New CSS for Play Scale Button */
-    .play-button-container {
-      margin-top: var(--button-margin-top);
-    }
-    .play-button-container button {
-      font-size: var(--controls-font-size);
-      padding: 8px 12px;
-      border: none;
-      border-radius: 6px;
-      background-color: #4CAF50; /* Green background */
-      color: white;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-    .play-button-container button:hover {
-      background-color: #45a049;
-    }
-
-    /* ===== My App Button Styles ===== */
-    .my-app-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      position: fixed;
-      top: 500px;        /* Moved down from 120px */
-      right: 25px;       /* Adjust as needed */
-      z-index: 1001;     /* Higher than other elements to overlay */
-      animation: bounce 2s infinite; /* Apply bounce animation to container */
-    }
-
-    .my-app-button {
-      background: rgba(255, 215, 0, 0.5); /* Gold with transparency */
-      border: none;
-      border-radius: 50%;
-      padding: 10px 15px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.3s;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      /* Removed animation from button */
-    }
-
-    .my-app-button:hover {
-      background: rgba(255, 215, 0, 0.7); /* Less transparent on hover */
-    }
-
-    .my-app-icon {
-      width: var(--icon-size);
-      height: var(--icon-size);
-    }
-
-    .my-app-icon img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain; /* Ensure SVG scales correctly */
-    }
-
-    /* ===== My App Label Styles ===== */
-    .my-app-label {
-      margin-top: 8px;
-      font-size: 0.8rem;
-      color: #333;
-      text-align: center;
-    }
-
-    /* ===== Pop-up Modal Styles ===== */
-    .popup-overlay {
-      display: none; /* Hidden by default */
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: var(--overlay-background);
-      justify-content: center;
-      align-items: center;
-      z-index: 2000;
-    }
-
-    .popup-modal {
-      background: var(--popup-background);
-      width: var(--popup-width);
-      padding: 20px;
-      border-radius: var(--popup-border-radius);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      max-height: 80vh;
-      overflow-y: auto;
-    }
-
-    .popup-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .popup-title {
-      font-size: 1.2rem;
-      font-weight: bold;
-    }
-
-    .popup-close {
-      background: none;
-      border: none;
-      font-size: 1.2rem;
-      cursor: pointer;
-    }
-
-    .popup-content {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .popup-instruction {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .popup-instruction img {
-      width: 24px;  /* Adjust the size as needed */
-      height: 24px; /* Adjust the size as needed */
-      object-fit: contain; /* Maintain aspect ratio */
-    }
-
-    .popup-button {
-      align-self: flex-end;
-      padding: 8px 16px;
-      background-color: var(--button-color);
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background-color 0.3s;
-      font-size: var(--controls-font-size);
-    }
-
-    .popup-button:hover {
-      background-color: var(--button-hover-color);
-    }
-
-    /* RTL Support */
-    .rtl {
-      direction: rtl;
-    }
-
-/* Move Avazha icon to the left in RTL (Farsi) mode */
-.rtl .avazha-container {
-  left: 80px;   /* Position 80px from the left */
-  right: auto;  /* Remove the right positioning */
-}
-    
-  </style>
+  <!-- Link to External CSS -->
+  <link rel="stylesheet" href="indexstyle.css" />
 </head>
 <body>
   <!-- HEADER -->
@@ -838,7 +219,6 @@
     });
   </script>
 
-
   <!-- Main Script (Scale + Avazha + Rotation logic) -->
   <script>
     /*
@@ -846,21 +226,21 @@
       It ensures that all functionalities coexist without conflicts.
     */
 
-    const scaleSelector   = document.getElementById("scaleSelector");
-    const languageSelector= document.getElementById("languageSelector");
-    const circleContainer = document.getElementById("circleContainer");
-    const outerScale      = document.getElementById("outerScale");
-    const diatonicScale   = document.getElementById("diatonicScale");
-    const labelAtZeroAngle= document.getElementById("labelAtZeroAngle");
-    const playScaleBtn    = document.getElementById("playScale");
-    const pageTitle       = document.getElementById("pageTitle");
-    const bottomNavLabels = document.querySelectorAll('.bottom-nav span[data-translate]');
+    const scaleSelector    = document.getElementById("scaleSelector");
+    const languageSelector = document.getElementById("languageSelector");
+    const circleContainer  = document.getElementById("circleContainer");
+    const outerScale       = document.getElementById("outerScale");
+    const diatonicScale    = document.getElementById("diatonicScale");
+    const labelAtZeroAngle = document.getElementById("labelAtZeroAngle");
+    const playScaleBtn     = document.getElementById("playScale");
+    const pageTitle        = document.getElementById("pageTitle");
+    const bottomNavLabels  = document.querySelectorAll('.bottom-nav span[data-translate]');
 
-    const myAppButton     = document.getElementById("myAppButton");
-    const installPopup    = document.getElementById("installPopup");
-    const closePopupBtn   = document.getElementById("closePopup");
-    const dismissPopupBtn = document.getElementById("dismissPopup");
-    const myAppContainer  = document.getElementById("myAppContainer");
+    const myAppButton      = document.getElementById("myAppButton");
+    const installPopup     = document.getElementById("installPopup");
+    const closePopupBtn    = document.getElementById("closePopup");
+    const dismissPopupBtn  = document.getElementById("dismissPopup");
+    const myAppContainer   = document.getElementById("myAppContainer");
 
     let rotation        = 0;
     let currentLanguage = "en";
@@ -902,7 +282,7 @@
           addHome: "Add to Home Screen",
           dismiss: "Close"
         },
-        myAppLabel: "App" /* Changed from "Mon Application" to "App" as per user preference */
+        myAppLabel: "App"
       },
       en: {
         displayLabels: ["C", "D", "E", "F", "G", "A", "B"],
@@ -939,7 +319,7 @@
           addHome: "Add to Home Screen",
           dismiss: "Close"
         },
-        myAppLabel: "App" /* Changed from "My App" to "App" as per user preference */
+        myAppLabel: "App"
       },
       fa: {
         displayLabels: ["دو", "رِ", "می", "فا", "سُل ", "لا", "سی "],
@@ -976,7 +356,7 @@
           addHome: "دکمه add to Home Screen را انتخاب کنید.",
           dismiss: "بستن"
         },
-        myAppLabel: "نصب" /* Changed to "اپلیکیشن" as per user preference */
+        myAppLabel: "نصب"
       }
     };
 
@@ -1047,7 +427,7 @@
 
         const label = document.createElement("div");
         label.classList.add("label");
-        label.innerHTML = displayLabels[index]; // Changed to innerHTML to support superscripts
+        label.innerHTML = displayLabels[index]; // Using innerHTML for possible superscripts
 
         const radians = (angle - 90) * (Math.PI / 180);
         label.style.top = `${50 + 40 * Math.sin(radians)}%`;
@@ -1161,22 +541,17 @@
     }
 
     // ===== Avazha Functionality =====
-
-    // Get Avazha Elements
     const avazhaContainer = document.getElementById('avazhaContainer');
     const avazhaButton = document.getElementById('avazhaButton');
     const avazhaColumns = document.getElementById('avazhaColumns');
     const avazhaDynamicColumn = document.getElementById('avazhaDynamicColumn');
 
-    // Function to toggle Avazha columns
     function toggleAvazhaColumns() {
       avazhaColumns.classList.toggle('hidden');
     }
 
-    // Event Listener for Avazha Button
     avazhaButton.addEventListener('click', toggleAvazhaColumns);
 
-    // Function to update Avazha visibility based on selected scale
     function updateAvazhaVisibility() {
       const selectedScale = scaleSelector.value;
       if (selectedScale === 'Shur') {
@@ -1184,24 +559,21 @@
         populateAvazhaDynamicColumn();
       } else {
         avazhaContainer.style.display = 'none';
-        avazhaColumns.classList.add('hidden'); // Ensure columns are hidden when not Shur
+        avazhaColumns.classList.add('hidden');
       }
     }
 
-    // Function to populate the dynamic second column
     function populateAvazhaDynamicColumn() {
       avazhaDynamicColumn.innerHTML = ''; // Clear existing content
       const dynamicLabels = outerScale.querySelectorAll('.dynamic-label');
-
       // Extract the second, third, fourth, and fifth labels
-      // Adjust indices based on your actual labels
       const labelsArray = Array.from(dynamicLabels).slice(1, 5);
 
       labelsArray.forEach(label => {
         const displayText = label.innerHTML;
         const itemDiv = document.createElement("div");
         itemDiv.classList.add("avazha-item");
-        itemDiv.innerHTML = displayText; // Use innerHTML to preserve any HTML formatting
+        itemDiv.innerHTML = displayText;
         avazhaDynamicColumn.appendChild(itemDiv);
       });
     }
@@ -1235,10 +607,7 @@
       avazhaFixedItems.forEach(item => {
         const key = item.getAttribute('data-translate').split('.')[1]; // e.g., "abuAta"
         if (translations[currentLanguage].avazhaItems && translations[currentLanguage].avazhaItems[key]) {
-          item.textContent = `${translations[currentLanguage].avazhaItems[key]}`;
-        } else {
-          // Default to existing text if no translation is available
-          item.textContent = item.textContent; // No change
+          item.textContent = translations[currentLanguage].avazhaItems[key];
         }
       });
 
@@ -1252,26 +621,18 @@
       }
     }
 
-    // Helper function to capitalize first letter (if needed)
-    function capitalizeFirstLetter(string) {
-      return string.charAt(0).toUpperCase() + string.slice(1);
-    }
-
-    // Update Avazha label based on language
     function updateAvazhaLabel() {
       const avazhaLabel = document.getElementById('avazhaLabel');
       const translation = translations[currentLanguage].avazha;
       avazhaLabel.textContent = translation;
     }
 
-    // Language & scale events
     languageSelector.addEventListener("change", () => {
       currentLanguage = languageSelector.value;
       updateStaticLabels();
       updateDynamicLabels();
       updateUIControls();
-      populateAvazhaDynamicColumn(); // Update dynamic column labels
-
+      populateAvazhaDynamicColumn();
       // Adjust RTL for Farsi
       if (currentLanguage === 'fa') {
         document.body.classList.add('rtl');
@@ -1284,7 +645,7 @@
       updateOuterScale(scaleSelector.value);
       updateDynamicLabels();
       updateUIControls();
-      updateAvazhaVisibility(); // Ensure Avazha visibility is updated
+      updateAvazhaVisibility();
       if (navigator.vibrate) navigator.vibrate(100);
     });
 
@@ -1292,12 +653,10 @@
 
     // ===== My App Functionality =====
 
-    // Function to check if PWA is installed
     function isPWAInstalled() {
       return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
     }
 
-    // Function to show or hide the My App button
     function toggleMyAppButton() {
       if (!isPWAInstalled()) {
         myAppContainer.style.display = 'flex';
@@ -1306,22 +665,18 @@
       }
     }
 
-    // Event Listener for My App Button
     myAppButton.addEventListener("click", () => {
       installPopup.style.display = 'flex';
     });
 
-    // Event Listener for Close Popup Button
     closePopupBtn.addEventListener("click", () => {
       installPopup.style.display = 'none';
     });
 
-    // Event Listener for Dismiss Popup Button
     dismissPopupBtn.addEventListener("click", () => {
       installPopup.style.display = 'none';
     });
 
-    // Function to update Pop-up content based on language
     function updatePopupContent() {
       const { installPopup } = translations[currentLanguage];
       document.getElementById('popupTitle').textContent = installPopup.title;
@@ -1330,13 +685,11 @@
       dismissPopupBtn.textContent = installPopup.dismiss;
     }
 
-    // Listen for the appinstalled event to hide the My App button
     window.addEventListener('appinstalled', () => {
       myAppContainer.style.display = 'none';
       console.log('PWA was installed');
     });
 
-    // Initial Setup
     updateOuterScale("Shur");
     updateStaticLabels();
     updateDynamicLabels();
@@ -1348,8 +701,8 @@
     const baseFrequencies = {
       "Do": 261.63, "Re": 293.66, "Mi": 329.63, "Fa": 349.23,
       "Sol": 392.00, "La": 440.00, "Si": 493.88,
-      "C": 261.63,    "D": 293.66,  "E": 329.63,  "F": 349.23,
-      "G": 392.00,    "A": 440.00,  "B": 493.88
+      "C": 261.63,   "D": 293.66,  "E": 329.63,  "F": 349.23,
+      "G": 392.00,   "A": 440.00,  "B": 493.88
     };
 
     function adjustFrequencyByCents(freq, cents) {
@@ -1431,7 +784,7 @@
 
       const noteDuration = 1.0;
       let lastFreq = 0;
-      let firstNoteFrequency = null; // To store the first note's frequency
+      let firstNoteFrequency = null; // Store the first note's frequency
 
       for (let i = 0; i < 7; i++) {
         const angle = angles[i % angles.length];
@@ -1446,7 +799,7 @@
 
         if (freq) {
           if (i === 0) {
-            firstNoteFrequency = freq; // Store the first note's frequency
+            firstNoteFrequency = freq;
           }
           while (freq <= lastFreq) {
             freq *= 2;
@@ -1459,9 +812,9 @@
         }
       }
 
-      // **Play the first note again in the next octave**
+      // Play the first note again in the next octave
       if (firstNoteFrequency) {
-        const freqNextOctave = firstNoteFrequency * 2; // Next octave
+        const freqNextOctave = firstNoteFrequency * 2;
         playNote(audioCtx, freqNextOctave, noteDuration, currentTime);
         animateLabelDuringNote(parseableNotes[0], audioCtx, currentTime, 1.0);
       }
@@ -1482,33 +835,21 @@
     } else {
       langSelector.value = "en"; // Default to English
     }
-
     // Trigger language switch based on selection
     langSelector.dispatchEvent(new Event("change"));
   </script>
 
   <!-- Add to Home Screen and My App Modal Scripts -->
   <script>
-    // Initially check if the app is installed
     window.addEventListener('load', () => {
       toggleMyAppButton();
     });
 
-    // Function to show the installation pop-up if PWA is not installed
     function showInstallPopup() {
       if (!isPWAInstalled()) {
         installPopup.style.display = 'flex';
       }
     }
-
-    // Optionally, you can trigger the pop-up based on certain conditions or user interactions
-    // For example, show the pop-up after 5 seconds if the app is not installed
-    /*
-    setTimeout(() => {
-      showInstallPopup();
-    }, 5000);
-    */
   </script>
-   
 </body>
 </html>

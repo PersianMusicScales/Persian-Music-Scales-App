@@ -31,7 +31,7 @@ const FILES_TO_CACHE = [
 
   // Images/Icons (add any others you want cached)
   './assets/icons/icon-192x192.png',
-  './assets/images/myBackground.jpg',
+  './assets/images/mybackground.jpg',
   './assets/images/header-bg.png',
 
   // Service Worker itself (optional, but you can cache it)

@@ -1,0 +1,122 @@
+:root {
+    --controls-font-size: 1.6rem;
+    --nav-icon-size: 1.5rem;
+    --primary-bg-color: #f6da84;
+    --header-bg-color: #222;
+    --header-text-color: #fff;
+    --footer-bg-color: #222;
+    --footer-text-color: #fff;
+    --link-hover-color: #4CAF50;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    /* background-image: url('aboutBackground.png');
+       background-size: cover;
+       background-position: center;
+       background-repeat: no-repeat; */
+    background-color: var(--primary-bg-color);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+header {
+    position: relative; /* Establish positioning context */
+    background-image: url('assets/images/header-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent overlay color */
+    color: var(--header-text-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    z-index: 1;
+}
+
+header h1 {
+    font-size: 2.7rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Text shadow for visibility */
+}
+
+.language-selector {
+    font-size: var(--controls-font-size);
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 20px auto;
+    background: #fff;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+footer {
+    text-align: center;
+    padding: 10px;
+    background-color: var(--footer-bg-color);
+    color: var(--footer-text-color);
+}
+
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: rgba(240, 240, 240, 0.9);
+    padding: 10px 0;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.bottom-nav a {
+    text-decoration: none;
+    color: #333;
+    font-size: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: color 0.3s;
+}
+
+.bottom-nav a:hover {
+    color: var(--link-hover-color);
+}
+
+.nav-icon {
+    font-size: var(--nav-icon-size);
+    margin-bottom: 2px;
+}
+
+[lang="fa"] {
+    direction: rtl;
+    text-align: right;
+    font-family: Tahoma, Arial, sans-serif;
+}
+
+section {
+    display: none;
+}
+
+section.active {
+    display: block;
+}
+
+.justified-text {
+    text-align: justify;
+}

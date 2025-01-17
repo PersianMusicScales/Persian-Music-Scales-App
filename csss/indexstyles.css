@@ -1,39 +1,64 @@
-/* Root Variables for Easy Theme Management */
 :root {
-  --chart-size: 20vw;                /* Size of the inner circle (diatonic) */
-  --line-width: 2px;                 /* Thickness of the lines */
-  --outer-scale-size: calc(var(--chart-size) * 1.5); /* Size of the outer scale */
-  
-  --controls-font-size: 0.8rem;      /* Font size for controls (selectors, buttons) */
-  --nav-icon-size: 1.5rem;           /* Font size for bottom navigation icons */
-  --button-margin-top: 20px;         /* Top margin for the Play Scale button */
-  --label-margin-left: 10px;         /* Left margin for dynamic labels */
-  
-  /* Color Palette */
-  --primary-color: #4CAF50;           /* Primary theme color */
-  --secondary-color: #ffffff;         /* Secondary color (e.g., text on buttons) */
-  --background-color: #f0f0f0;       /* Background color for the offline page */
-  --footer-color: gray;               /* Color for the footer text */
+  --chart-size: 20vw;         /* Size of the inner circle (diatonic) */
+  --line-width: 2px;          /* Thickness of the lines */
+  --outer-scale-size: calc(var(--chart-size) * 1.5);
+
+  --controls-font-size: 0.8rem;  /* For the top controls */
+  --nav-icon-size: 1.5rem;       /* For bottom nav icons */
+  --button-margin-top: 20px;     /* Added for spacing */
+  --label-margin-left: 10px;     /* Added for spacing between selectors */
+  --popup-width: 300px;          /* Width of the pop-up */
+  --popup-background: rgba(255, 255, 255, 0.95);
+  --popup-border-radius: 10px;
+  --overlay-background: rgba(0, 0, 0, 0.5);
+  --button-color: #4CAF50;
+  --button-hover-color: #45a049;
+  --dismiss-button-color: #f44336;
+  --dismiss-button-hover-color: #d32f2f;
+  --icon-size: 24px;
 }
 
-/* Reset and Base Styling */
+/* Hidden by default */
+#add-to-home {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  z-index: 1000;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+#add-to-home:hover {
+  background-color: #45a049;
+}
+
+/* Reset/base styling */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+/*
+ * Body in column mode:
+ * Header at the top,
+ * <main> in the middle with flex: 1 (centers the circle),
+ * Bottom nav is fixed at the bottom of the viewport.
+ */
 body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  
   font-family: Arial, sans-serif;
-  
+
   /* Background Image */
-  background: url("images/myBackground.jpg") no-repeat center center fixed;
+  background: url("assets/images/mybackground.jpg") no-repeat center center fixed;
   background-size: cover;
-  
   position: relative;
 }
 
@@ -42,181 +67,138 @@ header {
   display: flex;
   justify-content: space-between; /* Space between title and language selector */
   align-items: center;
-  
+  background-position: center;
   background-color: rgba(242, 242, 242, 0.8);
   padding: 8px 20px;
-  
   position: relative;
 }
 
 header h1 {
-  font-size: 1.2rem;
+  font-size: 1.8rem;
   margin: 0;
 }
 
+/* Language selector positioned at top right */
 .language-selector {
   font-size: var(--controls-font-size);
   padding: 3px 5px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: #fff;
-  cursor: pointer;
 }
 
 /* ===== Scale Controls ===== */
 .scale-controls {
   display: flex;
-  justify-content: space-between; /* Space between scale selector and dynamic text */
+  justify-content: space-between;
   align-items: center;
-  
   width: 80%;
-  max-width: 600px;
-  
+  max-width: 800px;
   margin: 10px auto;
-  
-  /* Optional: Add background or border if desired */
-  /* background-color: rgba(255, 255, 255, 0.6); */
-  /* border: 1px solid #ddd; */
-  /* border-radius: 4px; */
-  padding: 10px;
+  position: relative;
 }
 
 .scale-controls select {
-  font-size: var(--controls-font-size);
-  padding: 5px 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  
-  background-color: #fff;
-  cursor: pointer;
+  font-size: 1.6rem;
+  padding: 10px 16px;
 }
 
 .scale-controls span#labelAtZeroAngle {
   font-weight: bold;
-  font-size: var(--controls-font-size);
+  font-size: 2.5rem;;
   margin-left: var(--label-margin-left);
-  color: #333;
 }
 
-/* ===== Main Content ===== */
+/* ===== Main: Center the Circle ===== */
 main {
-  flex: 1; /* Occupies remaining vertical space */
-  
+  flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  
   position: relative;
-  
-  padding-bottom: 60px; /* Prevent overlap with bottom nav */
+  padding-bottom: 150px; /* Extra space so legend/footer doesn't overlap bottom nav */
 }
 
-/* ===== Circle Container ===== */
+/* Circle container in the middle of main */
 .container {
   position: relative;
   width: var(--outer-scale-size);
   height: var(--outer-scale-size);
-  
   display: flex;
   justify-content: center;
   align-items: center;
-  
   cursor: pointer;
 }
 
-/* ===== Outer Scale Circle ===== */
+/* Outer scale circle */
 .outer-scale {
   position: absolute;
   width: var(--outer-scale-size);
   height: var(--outer-scale-size);
-  
   border-radius: 50%;
   z-index: 1;
-  
-  /* Placeholder background, will be set dynamically via JavaScript */
-  background: conic-gradient(gray 0deg 120deg, black 120deg 150deg, gray 150deg 330deg, black 330deg 360deg);
 }
 
-/* ===== Inner Diatonic Circle ===== */
+/* Inner diatonic circle */
 .diatonic-scale {
   position: absolute;
   width: var(--chart-size);
   height: var(--chart-size);
-  
   border-radius: 50%;
-  
-  /* Placeholder background, will be set dynamically via JavaScript */
-  background: conic-gradient(gray 0deg 120deg, black 120deg 150deg, gray 150deg 330deg, black 330deg 360deg);
-  
+  background: conic-gradient(
+    gray 0deg 120deg,
+    black 120deg 150deg,
+    gray 150deg 330deg,
+    black 330deg 360deg
+  );
   z-index: 2;
 }
 
-/* ===== Lines ===== */
+/* Lines */
 .line {
   position: absolute;
   width: var(--line-width);
   height: calc(var(--outer-scale-size) / 2);
-  
   background-color: white;
   transform-origin: bottom center;
-  
   top: 0;
   left: 50%;
-  
   z-index: 3;
 }
-
 .line-diatonic {
   position: absolute;
   width: var(--line-width);
   height: calc(var(--chart-size) / 2);
-  
   background-color: white;
   transform-origin: bottom center;
-  
   top: 0;
   left: 50%;
-  
   z-index: 4;
 }
 
-/* ===== Labels ===== */
-/* Inner Circle Labels (e.g., C, D, E...) */
+/* Inner circle labels (C, D, E...) */
 .label {
   position: absolute;
   font-size: calc(var(--chart-size) / 15);
   font-weight: bold;
-  
   transform: translate(-50%, -50%);
-  
   z-index: 5;
-  
   background-color: lightgreen;
   padding: 2px 5px;
   border-radius: 5px;
-  
-  white-space: nowrap;
 }
 
-/* Outer Dynamic Labels */
+/* Outer dynamic labels */
 .dynamic-label {
   position: absolute;
   font-size: calc(var(--chart-size) / 18);
   font-weight: bold;
-  
   transform: translate(-50%, -50%);
-  
   z-index: 6;
-  
   background-color: lightblue;
   padding: 2px 5px;
   border-radius: 5px;
-  
   text-align: center;
   white-space: nowrap;
 }
-
 .dynamic-label sup {
   font-size: 0.6em;
   vertical-align: super;
@@ -224,7 +206,7 @@ main {
   margin: 0 1px;
 }
 
-/* ===== Teeter Animation ===== */
+/* TEETER ANIMATION */
 @keyframes teeter {
   0%   { transform: translate(-50%, -50%) rotate(0deg); }
   20%  { transform: translate(-50%, -50%) rotate(10deg); }
@@ -233,171 +215,367 @@ main {
   80%  { transform: translate(-50%, -50%) rotate(-10deg); }
   100% { transform: translate(-50%, -50%) rotate(0deg); }
 }
-
 .teeter-animate {
   animation: teeter 1s ease-in-out infinite;
 }
 
-/* ===== Legend ===== */
-.legend {
-  position: absolute;
-  bottom: 70px;
-  left: 10px;
-  
+/* ===== Avazha Floating Icon ===== */
+.avazha-container {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  
-  background-color: transparent;
-  padding: 10px;
-  border-radius: 5px;
-  
+  align-items: center;
+  position: fixed;
+  top: 63px;
+  right: 80px;
+  z-index: 1001;
+}
+
+.avazha-button {
+  background: rgba(230, 230, 250, 0.5);
+  border: none;
+  border-radius: 50%;
+  padding: 10px 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  animation: bounce 2s infinite;
+}
+
+.avazha-button:hover {
+  background: rgba(230, 230, 250, 0.7);
+}
+
+#avazhaLabel {
   font-size: 0.9rem;
   color: #333;
 }
 
+/* Bouncing Animation */
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.avazha-columns {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  animation: fadeIn 0.3s ease-in-out;
+  z-index: 1000;
+}
+.avazha-columns.hidden {
+  display: none;
+}
+
+.avazha-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  background: rgba(230, 230, 250, 0.5);
+  border-radius: 5px;
+  padding: 5px;
+  white-space: nowrap;
+}
+
+.avazha-item {
+  text-align: center;
+  font-size: 0.7rem;
+  color: #333;
+  width: auto;
+  white-space: nowrap;
+}
+
+/* Fade-in Animation for Columns */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Legend at bottom-left inside main, above bottom nav => bottom: 70px */
+.legend {
+  position: absolute;
+  bottom: 70px;
+  left: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background-color: transparent;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 0.9rem;
+}
 .legend-row {
   display: flex;
   gap: 10px;
 }
-
 .legend-item {
   display: flex;
   align-items: center;
   gap: 4px;
 }
-
 .color-box {
   width: 14px;
   height: 14px;
   border: 1px solid #000;
 }
 
-/* ===== Footer ===== */
+/* Footer at bottom-right inside main, above bottom nav => bottom: 80px */
 footer {
   position: absolute;
   bottom: 80px;
   right: 10px;
-  
   font-size: 12px;
-  color: var(--footer-color);
-  
+  color: gray;
   text-align: right;
 }
 
-/* ===== Bottom Navigation ===== */
+/* Bottom Nav (fixed) pinned to bottom of viewport */
 .bottom-nav {
   position: fixed;
   bottom: 0;
   left: 0;
-  
   width: 100%;
-  
   display: flex;
   justify-content: space-around;
   align-items: center;
-  
   background-color: rgba(240, 240, 240, 0.9);
   padding: 10px 0;
-  
-  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
-  
+  box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
   z-index: 999;
 }
+.bottom-nav a {
+  text-decoration: none;
+  color: #333;
+  font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: color 0.3s;
+}
+.bottom-nav a:hover {
+  color: #000;
+}
+.nav-icon {
+  font-size: var(--nav-icon-size);
+  margin-bottom: 2px;
+}
 
-    /* Bottom Nav (fixed) pinned to bottom of viewport */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      background-color: rgba(240, 240, 240, 0.9);
-      padding: 10px 0;
-      box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
-      z-index: 999;
-    }
-    .bottom-nav a {
-      text-decoration: none;
-      color: #333;
-      font-size: 0.9rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      transition: color 0.3s;
-    }
-    .nav-icon {
-      font-size: var(--nav-icon-size);
-      margin-bottom: 2px;
-    }
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .scale-controls {
+    flex-wrap: wrap; 
+    justify-content: center;
+  }
+  .avazha-container {
+    margin-left: 0;
+    margin-top: 10px;
+  }
+  .avazha-columns {
+    flex-direction: row;
+    gap: 10px;
+    width: 150px;
+  }
+  .avazha-columns.hidden {
+    display: none;
+  }
+}
 
-
-/* ===== Responsive Design ===== */
-/* Medium Screens (<=768px) */
 @media (max-width: 768px) {
   :root {
     --chart-size: 40vw;
     --outer-scale-size: calc(var(--chart-size) * 1.5);
   }
-  
   .label {
     font-size: calc(var(--chart-size) / 12);
   }
-  
   .scale-controls {
     width: 90%;
   }
 }
 
-/* Small Screens (<=480px) */
 @media (max-width: 480px) {
   :root {
     --chart-size: 60vw;
     --outer-scale-size: calc(var(--chart-size) * 1.5);
   }
-  
   .scale-controls {
-    flex-direction: column; /* Stack selectors vertically */
-    align-items: stretch;    /* Stretch to fill width */
+    flex-direction: column;
+    align-items: stretch;
   }
-  
   .scale-controls span#labelAtZeroAngle {
     margin-left: 0;
-    margin-top: var(--label-margin-left); /* Add top margin when stacked */
+    margin-top: var(--label-margin-left);
+  }
+  .avazha-columns {
+    flex-direction: row;
+    gap: 5px;
+    width: 100%;
+  }
+  .popup-modal {
+    width: 90%;
+    padding: 15px;
+  }
+  .popup-title {
+    font-size: 1rem;
+  }
+  .popup-instruction span {
+    font-size: 0.9rem;
+  }
+  .popup-button {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+  .my-app-label {
+    font-size: 0.7rem;
   }
 }
 
-/* ===== Play Scale Button ===== */
+/* New CSS for Play Scale Button */
 .play-button-container {
   margin-top: var(--button-margin-top);
 }
-
 .play-button-container button {
   font-size: var(--controls-font-size);
   padding: 8px 12px;
-  
   border: none;
   border-radius: 6px;
-  
-  background-color: var(--primary-color);
-  color: var(--secondary-color);
-  
+  background-color: #4CAF50;
+  color: white;
   cursor: pointer;
-  
   transition: background-color 0.3s;
 }
-
 .play-button-container button:hover {
-  background-color: #45a049; /* Darker shade on hover */
+  background-color: #45a049;
 }
 
-/* ===== Accessibility Enhancements ===== */
-/* Focus Styles for Interactive Elements */
-button:focus,
-select:focus,
-a:focus {
-  outline: 2px solid #4CAF50;
-  outline-offset: 2px;
+/* ===== My App Button Styles ===== */
+.my-app-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: fixed;
+  top: 500px; 
+  right: 25px;
+  z-index: 1001;
+  animation: bounce 2s infinite;
+}
+.my-app-button {
+  background: rgba(255, 215, 0, 0.5);
+  border: none;
+  border-radius: 50%;
+  padding: 10px 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.my-app-button:hover {
+  background: rgba(255, 215, 0, 0.7);
+}
+.my-app-icon {
+  width: var(--icon-size);
+  height: var(--icon-size);
+}
+.my-app-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.my-app-label {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: #333;
+  text-align: center;
+}
+
+/* ===== Pop-up Modal Styles ===== */
+.popup-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--overlay-background);
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+.popup-modal {
+  background: var(--popup-background);
+  width: var(--popup-width);
+  padding: 20px;
+  border-radius: var(--popup-border-radius);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.popup-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+.popup-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+.popup-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.popup-instruction {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.popup-instruction img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+.popup-button {
+  align-self: flex-end;
+  padding: 8px 16px;
+  background-color: var(--button-color);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-size: var(--controls-font-size);
+}
+.popup-button:hover {
+  background-color: var(--button-hover-color);
+}
+
+/* RTL Support */
+.rtl {
+  direction: rtl;
+}
+
+/* Move Avazha icon to the left in RTL (Farsi) mode */
+.rtl .avazha-container {
+  left: 80px;
+  right: auto;
 }

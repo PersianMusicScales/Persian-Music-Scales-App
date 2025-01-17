@@ -1,19 +1,44 @@
-const CACHE_VERSION = 'v2'; // Increment this version to force cache update
+// service-worker.js
+const CACHE_VERSION = 'v4'; 
 const CACHE_NAME = `persian-music-scales-${CACHE_VERSION}`;
 
+// List all essential files for offline
 const FILES_TO_CACHE = [
+  // Root pages
   './',
   './index.html',
-  './manifest.json',
-  './main.js', // Ensure this is included
-  './service-worker.js',
-  './styles.css',
+  './about.html',
+  './guide.html',
+  './tuner.html',
   './offline.html',
-  './icons/icon-192x192.png',
-  './images/myBackground.jpg'
+
+  // Manifest
+  './config/manifest.json',
+
+  // CSS files
+  './csss/indexstyle.css',
+  './csss/aboutstyle.css',
+  './csss/guidestyle.css',
+  './csss/tunerstyle.css',
+
+  // JavaScript files
+  './src/main.js',
+  './src/app.js',
+  './src/frequency-bars.js',
+  './src/meter.js',
+  './src/notes.js',
+  './src/tuner.js',
+
+  // Images/Icons (add any others you want cached)
+  './assets/icons/icon-192x192.png',
+  './assets/images/myBackground.jpg',
+  './assets/images/header-bg.png',
+
+  // Service Worker itself (optional, but you can cache it)
+  './service-worker.js'
 ];
 
-// Install event: Cache all necessary assets
+// =============== Install ===============
 self.addEventListener('install', event => {
   console.log('[Service Worker] Install');
   event.waitUntil(
@@ -24,7 +49,7 @@ self.addEventListener('install', event => {
   );
 });
 
-// Activate event: Clean up old caches
+// =============== Activate ===============
 self.addEventListener('activate', event => {
   console.log('[Service Worker] Activate');
   event.waitUntil(
@@ -41,48 +66,62 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch event: Serve files with cache-then-network strategy for JS/HTML
+// =============== Fetch ===============
 self.addEventListener('fetch', event => {
+  // Only handle GET requests
   if (event.request.method !== 'GET') return;
 
-  // Cache-Then-Network strategy for index.html and .js files
-  if (event.request.url.includes('index.html') || event.request.url.endsWith('.js')) {
+  // Cache-Then-Network for HTML & JS so updates load quickly
+  if (
+    event.request.url.endsWith('.html') ||
+    event.request.url.endsWith('.js')
+  ) {
     event.respondWith(
       fetch(event.request)
         .then(networkResponse => {
+          // Cache a clone of the response
           const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then(cache => {
             cache.put(event.request, responseToCache);
           });
-          return networkResponse; // Serve the updated file from the network
+          return networkResponse; 
         })
-        .catch(() => caches.match(event.request)) // Fallback to cache if offline
+        .catch(() => {
+          // If offline, try cache
+          return caches.match(event.request);
+        })
     );
     return;
   }
 
-  // Default Cache-First strategy for all other requests
+  // For everything else (CSS, images, etc.), use Cache-First
   event.respondWith(
     caches.match(event.request).then(cachedResponse => {
       if (cachedResponse) {
-        return cachedResponse; // Serve the cached version if available
+        return cachedResponse; // Serve from cache if present
       }
-      const fetchRequest = event.request.clone();
-      return fetch(fetchRequest).then(networkResponse => {
-        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-          return networkResponse; // Return the network response if valid
-        }
-        const responseToCache = networkResponse.clone();
-        caches.open(CACHE_NAME).then(cache => {
-          cache.put(event.request, responseToCache); // Cache the new response
+      // Else fetch from network
+      return fetch(event.request)
+        .then(networkResponse => {
+          // Valid network response? Cache it
+          if (
+            networkResponse &&
+            networkResponse.status === 200 &&
+            networkResponse.type === 'basic'
+          ) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          // If offline and navigation request, serve offline.html
+          if (event.request.mode === 'navigate') {
+            return caches.match('./offline.html');
+          }
         });
-        return networkResponse; // Serve the network response
-      }).catch(() => {
-        // Fallback to offline.html for navigation requests
-        if (event.request.mode === 'navigate') {
-          return caches.match('./offline.html');
-        }
-      });
     })
   );
 });

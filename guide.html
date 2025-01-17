@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    
-    <!-- PWA Manifest -->
+  <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#4B4E6D" />
   
@@ -11,7 +10,6 @@
   
   <!-- Page Title -->
   <title>Persian Music Scales</title>
-
 
   <!-- Description for SEO -->
   <meta name="description" content="Explore Persian Music Scales with interactive features. Learn about microtones and traditional music scales." />
@@ -22,260 +20,142 @@
   <meta property="og:url" content="https://persianmusicscales.github.io/Persian-Music-Scales-App/" />
   <meta property="og:type" content="website" />
 
-    
-    <style>
-        :root {
-            --controls-font-size: 1.6rem;
-            --nav-icon-size: 1.5rem;
-            --primary-bg-color: #f6da84;
-            --header-bg-color: #222;
-            --header-text-color: #fff;
-            --footer-bg-color: #222;
-            --footer-text-color: #fff;
-            --link-hover-color: #4CAF50;
+  <!-- Link to External CSS -->
+  <link rel="stylesheet" href="csss/guidestyle.css" />
+
+  <script>
+    function switchLanguage() {
+      const lang = document.getElementById("languageSelector").value;
+      document.querySelectorAll("section").forEach(section => {
+        section.classList.toggle("active", section.lang === lang);
+      });
+
+      // Update the document title based on the selected language
+      if (lang === "fa") {
+          document.title = "گام‌های موسیقی ایرانی";
+          document.getElementById("pageTitle").textContent = "گام‌های موسیقی ایرانی";
+      } else {
+          document.title = "Persian Music Scales";
+          document.getElementById("pageTitle").textContent = "Persian Music Scales";
+      }
+
+      // Update Bottom Menu Labels
+      const bottomNavLinks = document.querySelectorAll(".bottom-nav a");
+      bottomNavLinks.forEach(link => {
+        const enText = link.getAttribute("data-en");
+        const faText = link.getAttribute("data-fa");
+        if (lang === "fa") {
+          // Replace English text with Persian
+          link.querySelector(".menu-text").textContent = faText;
+        } else {
+          // Replace Persian text with English
+          link.querySelector(".menu-text").textContent = enText;
         }
+      });
+    }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    document.addEventListener("DOMContentLoaded", () => {
+      // Detect the user's language
+      const userLang = navigator.language || navigator.languages[0];
+      const langSelector = document.getElementById("languageSelector");
+      
+      // Check if the language is Farsi (Persian)
+      if (userLang.includes("fa")) {
+          langSelector.value = "fa"; // Set to Farsi
+      } else {
+          langSelector.value = "en"; // Default to English
+      }
 
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-        /* background-image: url('guideBackground.png');
-    background-size: cover; /* Ensure the image covers the entire background */
-    /* background-position: center; /* Center the image */
-    /*background-repeat: no-repeat; /* Prevent tiling */
-            background-color: var(--primary-bg-color);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-       header {
-    position: relative; /* Establish positioning context */
-    background-image: url('assets/images/header-bg.png');
-    background-size: cover;
-    background-position: center;
-    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent overlay color */
-    color: var(--header-text-color);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    z-index: 1;
-}
-
-
-        header h1 {
-            font-size: 2.7rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Text shadow for visibility */
-        }
-
-        .language-selector {
-            font-size: var(--controls-font-size);
-            padding: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            background-color: #fff;
-        }
-
-        .container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 20px auto;
-            background: #fff;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        footer {
-            text-align: center;
-            padding: 10px;
-            background-color: var(--footer-bg-color);
-            color: var(--footer-text-color);
-        }
-
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            background-color: rgba(240, 240, 240, 0.9);
-            padding: 10px 0;
-            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        .bottom-nav a {
-            text-decoration: none;
-            color: #333;
-            font-size: 0.9rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            transition: color 0.3s;
-        }
-
-        .bottom-nav a:hover {
-            color: var(--link-hover-color);
-        }
-
-        .nav-icon {
-            font-size: var(--nav-icon-size);
-            margin-bottom: 2px;
-        }
-
-        [lang="fa"] {
-            direction: rtl;
-            text-align: right;
-            font-family: Tahoma, Arial, sans-serif;
-        }
-
-        section {
-            display: none;
-        }
-
-        section.active {
-            display: block;
-        }
-    </style>
-    <script>
-        function switchLanguage() {
-            const lang = document.getElementById("languageSelector").value;
-            document.querySelectorAll("section").forEach(section => {
-                section.classList.toggle("active", section.lang === lang);
-            });
-
-            // Update the document title based on the selected language
-            if (lang === "fa") {
-                document.title = "گام‌های موسیقی ایرانی";
-                document.getElementById("pageTitle").textContent = "گام‌های موسیقی ایرانی";
-            } else {
-                document.title = "Persian Music Scales";
-                document.getElementById("pageTitle").textContent = "Persian Music Scales";
-            }
-
-            // Update Bottom Menu Labels
-            const bottomNavLinks = document.querySelectorAll(".bottom-nav a");
-            bottomNavLinks.forEach(link => {
-                const enText = link.getAttribute("data-en");
-                const faText = link.getAttribute("data-fa");
-                if (lang === "fa") {
-                    // Replace English text with Persian
-                    link.querySelector(".menu-text").textContent = faText;
-                } else {
-                    // Replace Persian text with English
-                    link.querySelector(".menu-text").textContent = enText;
-                }
-            });
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            // Detect the user's language
-            const userLang = navigator.language || navigator.languages[0];
-            const langSelector = document.getElementById("languageSelector");
-            
-            // Check if the language is Farsi (Persian)
-            if (userLang.includes("fa")) {
-                langSelector.value = "fa"; // Set to Farsi
-            } else {
-                langSelector.value = "en"; // Default to English
-            }
-
-            // Trigger language switch
-            switchLanguage();
-        });
-    </script>
+      // Trigger language switch
+      switchLanguage();
+    });
+  </script>
 </head>
 <body>
-    <header>
-        <h1 id="pageTitle">Persian Music Scales</h1> <!-- Original H1 -->
-        <select id="languageSelector" class="language-selector" aria-label="Select Language" onchange="switchLanguage()">
-            <option value="en" selected>EN</option>
-            <option value="fa">فا</option>
-        </select>
-    </header>
-    <main class="container">
-        
+  <header>
+    <h1 id="pageTitle">Persian Music Scales</h1> <!-- Original H1 -->
+    <select id="languageSelector" class="language-selector" aria-label="Select Language" onchange="switchLanguage()">
+      <option value="en" selected>EN</option>
+      <option value="fa">فا</option>
+    </select>
+  </header>
+
+  <main class="container">
     <!-- English Section -->
     <section lang="en" class="active">
-        <h1>Persian Music Scales App</h1>
-        <p>Explore the beauty of Persian music through interactive tools. This app helps you visualize traditional Persian scales, their microtones, and their connections to Western diatonic scales. Perfect for musicians, students, and anyone curious about Persian music.</p>
+      <h1>Persian Music Scales App</h1>
+      <p>Explore the beauty of Persian music through interactive tools. This app helps you visualize traditional Persian scales, their microtones, and their connections to Western diatonic scales. Perfect for musicians, students, and anyone curious about Persian music.</p>
 
-        <h2>How It Works</h2>
-        <p>The app features two interactive circles:</p>
-        <ul>
-            <li> <strong>Diatonic Circle:</strong> Represents the Western scale. Rotate it to change the tonic (root note) and observe its relationship with Persian scales.</li>
-            <img src="assets/images/diatonic-circle.png" alt="Diatonic Circle" style="width:50%; max-width:600px; margin-top:20px;">
-            <li> <strong>Persian Scales Circle:</strong> Aligns dynamically with the Diatonic Circle to show the tonal (root) note and intervals of Persian scales.</li>
-            <img src="assets/images/Persian Scale.png" alt="Persian Scale" style="width:50%; max-width:600px; margin-top:20px;">
-            
-        </ul>
-    
-        
-        <h3>Finding the Tonal Note</h3>
-        <p>The <strong>tonal note</strong> of the Persian scale is always aligned with the <strong>12 o’clock position</strong> on the Persian Scales Circle. To identify the tonal note:</p>
-        <ul>
-            <li> Look at the note at the top of the Persian Scales Circle (12 o’clock).</li>
-            <li> This note represents the root (tonal) note of the current Persian scale.</li>
-            <li> Adjust the Diatonic Circle to explore transpositions, and the Persian scale’s tonal note updates accordingly.</li>
-        </ul>
-       
+      <h2>How It Works</h2>
+      <p>The app features two interactive circles:</p>
+      <ul>
+        <li>
+          <strong>Diatonic Circle:</strong> Represents the Western scale. Rotate it to change the tonic (root note) and observe its relationship with Persian scales.
+        </li>
+        <img src="assets/images/diatonic-circle.png" alt="Diatonic Circle" style="width:50%; max-width:600px; margin-top:20px;">
+        <li>
+          <strong>Persian Scales Circle:</strong> Aligns dynamically with the Diatonic Circle to show the tonal (root) note and intervals of Persian scales.
+        </li>
+        <img src="assets/images/Persian Scale.png" alt="Persian Scale" style="width:50%; max-width:600px; margin-top:20px;">
+      </ul>
 
-        <h2>Example</h2>
-        <p>If the Persian scale’s root is "Do" at the 12 o’clock position, rotating the Diatonic Circle by 60° shifts the root note to "Re." This updates the key signature and dynamically adjusts the Persian scale’s intervals for transposition.</p>
-        
-       <img src="assets/images/example.png" alt="Persian Music Scales Visualization" style="width:100%; max-width:600px; margin-top:20px;">
+      <h3>Finding the Tonal Note</h3>
+      <p>The <strong>tonal note</strong> of the Persian scale is always aligned with the <strong>12 o’clock position</strong> on the Persian Scales Circle. To identify the tonal note:</p>
+      <ul>
+        <li>Look at the note at the top of the Persian Scales Circle (12 o’clock).</li>
+        <li>This note represents the root (tonal) note of the current Persian scale.</li>
+        <li>Adjust the Diatonic Circle to explore transpositions, and the Persian scale’s tonal note updates accordingly.</li>
+      </ul>
 
-        <h2>Read More</h2>
-        <p>We invite you to explore the full article for more details:</p>
-        <p><a href="https://sites.google.com/view/persianmusicscales/article">Full Article</a></p>
+      <h2>Example</h2>
+      <p>If the Persian scale’s root is "Do" at the 12 o’clock position, rotating the Diatonic Circle by 60° shifts the root note to "Re." This updates the key signature and dynamically adjusts the Persian scale’s intervals for transposition.</p>
+      <img src="assets/images/example.png" alt="Persian Music Scales Visualization" style="width:100%; max-width:600px; margin-top:20px;">
+
+      <h2>Read More</h2>
+      <p>We invite you to explore the full article for more details:</p>
+      <p><a href="https://sites.google.com/view/persianmusicscales/article">Full Article</a></p>
     </section>
 
     <!-- Farsi Section -->
     <section lang="fa">
-        <h1>اپلیکیشن گام‌های موسیقی ایرانی</h1>
-        <p>زیبایی موسیقی ایرانی را از طریق ابزارهای تعاملی کشف کنید. این اپلیکیشن به شما کمک می‌کند گام‌های سنتی ایرانی، فواصل ریزپرده‌ای و ارتباط آنها با گام‌های دیاتونیک غربی را مشاهده کنید. مناسب برای نوازندگان، دانشجویان و علاقه‌مندان به موسیقی ایرانی.</p>
+      <h1>اپلیکیشن گام‌های موسیقی ایرانی</h1>
+      <p>زیبایی موسیقی ایرانی را از طریق ابزارهای تعاملی کشف کنید. این اپلیکیشن به شما کمک می‌کند گام‌های سنتی ایرانی، فواصل ریزپرده‌ای و ارتباط آنها با گام‌های دیاتونیک غربی را مشاهده کنید. مناسب برای نوازندگان، دانشجویان و علاقه‌مندان به موسیقی ایرانی.</p>
 
-        <h2>نحوه کار</h2>
-        <p>این اپلیکیشن شامل دو دایره تعاملی است:</p>
-        <ul>
-            <li> <strong>دایره دیاتونیک:</strong> نمایانگر گام غربی است. با چرخاندن آن می‌توانید نت پایه (نت اصلی) را تغییر داده و ارتباط آن را با گام‌های ایرانی مشاهده کنید.</li>
-            
-            <img src="assets/images/diatonic-circle.png" alt="دایره دیاتونیک" style="width:50%; max-width:600px; margin-top:20px;">
-           
-            <li> <strong>دایره گام‌های ایرانی:</strong> به صورت پویا با دایره دیاتونیک هماهنگ شده و نت اصلی و فواصل گام‌های ایرانی را نمایش می‌دهد.</li>
-            <img src="assets/images/Persian Scale.png" alt="گام ایرانی" style="width:50%; max-width:600px; margin-top:20px;">
-            
-        </ul>
-   
-        
-        <h3>یافتن نت اصلی</h3>
-        <p><strong>نت اصلی</strong> گام ایرانی همیشه در <strong>موقعیت ساعت ۱۲</strong> روی دایره گام‌های ایرانی قرار دارد. برای یافتن نت اصلی:</p>
-        <ul>
-            <li> به نتی که در بالای دایره گام‌های ایرانی (موقعیت ساعت ۱۲) قرار دارد نگاه کنید.</li>
-            <li> این نت نشان‌دهنده نت پایه (اصلی) گام ایرانی فعلی است.</li>
-            <li> دایره دیاتونیک را برای بررسی جابجایی‌ها بچرخانید؛ نت اصلی گام ایرانی به طور پویا به‌روزرسانی می‌شود.</li>
-        </ul>
+      <h2>نحوه کار</h2>
+      <p>این اپلیکیشن شامل دو دایره تعاملی است:</p>
+      <ul>
+        <li>
+          <strong>دایره دیاتونیک:</strong> نمایانگر گام غربی است. با چرخاندن آن می‌توانید نت پایه (نت اصلی) را تغییر داده و ارتباط آن را با گام‌های ایرانی مشاهده کنید.
+        </li>
+        <img src="assets/images/diatonic-circle.png" alt="دایره دیاتونیک" style="width:50%; max-width:600px; margin-top:20px;">
 
-        <h2>مثال</h2>
-        <p>اگر نت پایه گام ایرانی "دو" در موقعیت ساعت ۱۲ باشد، با چرخاندن دایره دیاتونیک به اندازه ۶۰ درجه، نت پایه به "رِ" تغییر می‌کند. این تغییر سرکلید گام را به‌روزرسانی کرده و فواصل گام ایرانی را به طور پویا تنظیم می‌کند.</p>
-       
-        <img src="assets/images/example.png" alt="نمونه دایره گام‌های ایرانی" style="width:100%; max-width:600px; margin-top:20px;">
+        <li>
+          <strong>دایره گام‌های ایرانی:</strong> به صورت پویا با دایره دیاتونیک هماهنگ شده و نت اصلی و فواصل گام‌های ایرانی را نمایش می‌دهد.
+        </li>
+        <img src="assets/images/Persian Scale.png" alt="گام ایرانی" style="width:50%; max-width:600px; margin-top:20px;">
+      </ul>
 
-        <h2>بیشتر بخوانید<br></h2>
-        <p>من شما را دعوت می‌کنم تا برای جزئیات کامل به مقاله کامل نگاهی بیندازید:</p>
-        <p><a href="https://sites.google.com/view/persianmusicscales/article">مقاله</a></p>
+      <h3>یافتن نت اصلی</h3>
+      <p>
+        <strong>نت اصلی</strong> گام ایرانی همیشه در <strong>موقعیت ساعت ۱۲</strong> روی دایره گام‌های ایرانی قرار دارد. برای یافتن نت اصلی:
+      </p>
+      <ul>
+        <li>به نتی که در بالای دایره گام‌های ایرانی (موقعیت ساعت ۱۲) قرار دارد نگاه کنید.</li>
+        <li>این نت نشان‌دهنده نت پایه (اصلی) گام ایرانی فعلی است.</li>
+        <li>دایره دیاتونیک را برای بررسی جابجایی‌ها بچرخانید؛ نت اصلی گام ایرانی به طور پویا به‌روزرسانی می‌شود.</li>
+      </ul>
+
+      <h2>مثال</h2>
+      <p>اگر نت پایه گام ایرانی "دو" در موقعیت ساعت ۱۲ باشد، با چرخاندن دایره دیاتونیک به اندازه ۶۰ درجه، نت پایه به "رِ" تغییر می‌کند. این تغییر سرکلید گام را به‌روزرسانی کرده و فواصل گام ایرانی را به طور پویا تنظیم می‌کند.</p>
+      <img src="assets/images/example.png" alt="نمونه دایره گام‌های ایرانی" style="width:100%; max-width:600px; margin-top:20px;">
+
+      <h2>بیشتر بخوانید<br></h2>
+      <p>من شما را دعوت می‌کنم تا برای جزئیات کامل به مقاله کامل نگاهی بیندازید:</p>
+      <p><a href="https://sites.google.com/view/persianmusicscales/article">مقاله</a></p>
     </section>
-</main>
+  </main>
 
-
-   <!-- Bottom Menu (fixed) -->
+  <!-- Bottom Menu (fixed) -->
   <nav class="bottom-nav">
     <a href="index.html" data-en="Scales" data-fa="گام‌ها">
       <div class="nav-icon">🎼</div>
@@ -295,9 +175,8 @@
     </a>
   </nav>
 
-
-    <footer>
-        <p>&copy; 2024 Pouya Hosseini. All rights reserved.</p>
-    </footer>
+  <footer>
+    <p>&copy; 2024 Pouya Hosseini. All rights reserved.</p>
+  </footer>
 </body>
 </html>

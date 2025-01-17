@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-       <!-- PWA Manifest -->
+  <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#4B4E6D" />
   
@@ -11,7 +11,6 @@
   <!-- Page Title -->
   <title>Persian Music Scales</title>
 
-
   <!-- Description for SEO -->
   <meta name="description" content="Explore Persian Music Scales with interactive features. Learn about microtones and traditional music scales." />
 
@@ -20,177 +19,57 @@
   <meta property="og:description" content="Persian Music Education – Scales, Microtones, and Innovation at Your Fingertips" />
   <meta property="og:url" content="https://persianmusicscales.github.io/Persian-Music-Scales-App/" />
   <meta property="og:type" content="website" />
-    
-    <style>
-        :root {
-            --controls-font-size: 1.6rem;
-            --nav-icon-size: 1.5rem;
-            --primary-bg-color: #f6da84;
-            --header-bg-color: #222;
-            --header-text-color: #fff;
-            --footer-bg-color: #222;
-            --footer-text-color: #fff;
-            --link-hover-color: #4CAF50;
-        }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
- body {
-    font-family: Arial, sans-serif;
-    line-height: 1.6;
-    /* background-image: url('aboutBackground.png');
-    background-size: cover; /* Ensure the image covers the entire background */
-    /* background-position: center; /* Center the image */
-    /*background-repeat: no-repeat; /* Prevent tiling */
-        background-color: var(--primary-bg-color);
-        display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-}
-
-      header {
-    position: relative; /* Establish positioning context */
-    background-image: url('assets/images/header-bg.png');
-    background-size: cover;
-    background-position: center;
-    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent overlay color */
-    color: var(--header-text-color);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    z-index: 1;
-}
-
-
-        header h1 {
-            font-size: 2.7rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Text shadow for visibility */
-        }
-
-        .language-selector {
-            font-size: var(--controls-font-size);
-            padding: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            background-color: #fff;
-        }
-
-        .container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 20px auto;
-            background: #fff;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        footer {
-            text-align: center;
-            padding: 10px;
-            background-color: var(--footer-bg-color);
-            color: var(--footer-text-color);
-        }
-
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            background-color: rgba(240, 240, 240, 0.9);
-            padding: 10px 0;
-            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        .bottom-nav a {
-            text-decoration: none;
-            color: #333;
-            font-size: 0.9rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            transition: color 0.3s;
-        }
-
-        .bottom-nav a:hover {
-            color: var(--link-hover-color);
-        }
-
-        .nav-icon {
-            font-size: var(--nav-icon-size);
-            margin-bottom: 2px;
-        }
-
-        [lang="fa"] {
-            direction: rtl;
-            text-align: right;
-            font-family: Tahoma, Arial, sans-serif;
-        }
-
-        section {
-            display: none;
-        }
-
-        section.active {
-            display: block;
-        }
-
-            
-    </style>
-    <script>
-        function switchLanguage() {
-            const lang = document.getElementById("languageSelector").value;
-            document.querySelectorAll("section").forEach(section => {
-                section.classList.toggle("active", section.lang === lang);
-            });
-
-            // Update the document title based on the selected language
-            if (lang === "fa") {
-                document.title = "گام‌های موسیقی ایرانی";
-                document.getElementById("pageTitle").textContent = "گام‌های موسیقی ایرانی";
-            } else {
-                document.title = "Persian Music Scales";
-                document.getElementById("pageTitle").textContent = "Persian Music Scales";
-            }
-
-            // Update Bottom Menu Labels
-            const bottomNavLinks = document.querySelectorAll(".bottom-nav a");
-            bottomNavLinks.forEach(link => {
-                const enText = link.getAttribute("data-en");
-                const faText = link.getAttribute("data-fa");
-                if (lang === "fa") {
-                    // Replace English text with Persian
-                    link.querySelector(".menu-text").textContent = faText;
-                } else {
-                    // Replace Persian text with English
-                    link.querySelector(".menu-text").textContent = enText;
-                }
-            });
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            // Detect the user's language
-            const userLang = navigator.language || navigator.languages[0];
-            const langSelector = document.getElementById("languageSelector");
-            
-            // Check if the language is Farsi (Persian)
-            if (userLang.includes("fa")) {
-                langSelector.value = "fa"; // Set to Farsi
-            } else {
-                langSelector.value = "en"; // Default to English
-            }
-
-            // Trigger language switch
-            switchLanguage();
+  <!-- Link to External CSS -->
+  <link rel="stylesheet" href="csss/aboutstyle.css" />
+  
+  <script>
+    function switchLanguage() {
+        const lang = document.getElementById("languageSelector").value;
+        document.querySelectorAll("section").forEach(section => {
+            section.classList.toggle("active", section.lang === lang);
         });
-    </script>
+
+        // Update the document title based on the selected language
+        if (lang === "fa") {
+            document.title = "گام‌های موسیقی ایرانی";
+            document.getElementById("pageTitle").textContent = "گام‌های موسیقی ایرانی";
+        } else {
+            document.title = "Persian Music Scales";
+            document.getElementById("pageTitle").textContent = "Persian Music Scales";
+        }
+
+        // Update Bottom Menu Labels
+        const bottomNavLinks = document.querySelectorAll(".bottom-nav a");
+        bottomNavLinks.forEach(link => {
+            const enText = link.getAttribute("data-en");
+            const faText = link.getAttribute("data-fa");
+            if (lang === "fa") {
+                // Replace English text with Persian
+                link.querySelector(".menu-text").textContent = faText;
+            } else {
+                // Replace Persian text with English
+                link.querySelector(".menu-text").textContent = enText;
+            }
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        // Detect the user's language
+        const userLang = navigator.language || navigator.languages[0];
+        const langSelector = document.getElementById("languageSelector");
+        
+        // Check if the language is Farsi (Persian)
+        if (userLang.includes("fa")) {
+            langSelector.value = "fa"; // Set to Farsi
+        } else {
+            langSelector.value = "en"; // Default to English
+        }
+
+        // Trigger language switch
+        switchLanguage();
+    });
+  </script>
 </head>
 <body>
     <header>
@@ -204,14 +83,22 @@
     <main class="container">
         <section lang="en" class="active">
             <h2>About<br></h2>
-            <p> </p>
-            <p class="justified-text">I created this app to share my passion for Persian music and make its rich traditions more accessible to everyone. It features interactive tools and resources to help you explore the scales, their structure, and their cultural significance.</p>
-            <p class="justified-text">Whether you're a musician, a student, or simply curious about Persian music, this app is here to guide you on an inspiring journey through this beautiful art form.<br></p>
+            <p></p>
+            <p class="justified-text">
+              I created this app to share my passion for Persian music and make its rich 
+              traditions more accessible to everyone. It features interactive tools and resources 
+              to help you explore the scales, their structure, and their cultural significance.
+            </p>
+            <p class="justified-text">
+              Whether you're a musician, a student, or simply curious about Persian music, this app 
+              is here to guide you on an inspiring journey through this beautiful art form.<br>
+            </p>
 
-            <h2>Contact Me<br>
-            </h2>
-              <p> </p>
-            <p class="justified-text">You can get in touch through the following platforms:</p>
+            <h2>Contact Me<br></h2>
+            <p></p>
+            <p class="justified-text">
+              You can get in touch through the following platforms:
+            </p>
             <div>
                 <a href="https://www.academia.edu/126192335/Exploring_Persian_Music_Scales_through_Interactive_Visualizations">Academia.edu</a>
                 <a href="https://github.com/PersianMusicScales">GitHub</a>
@@ -219,29 +106,34 @@
                 <a href="https://www.youtube.com/@pouya-hosseini">YouTube</a>
             </div>
 
-            <h2>Support<br>
-            </h2>
-              <p> </p>
-            <p class="justified-text">If you would like to support my work, you can make a donation via PayPal:<br></p>
+            <h2>Support<br></h2>
+            <p></p>
+            <p class="justified-text">
+              If you would like to support my work, you can make a donation via PayPal:<br>
+            </p>
             <p><a href="https://www.paypal.me/pouyahosseini">PayPal @pouyahosseini</a></p>
 
-            <h2>Version 1.0<br>
-            </h2>
-
+            <h2>Version 1.0<br></h2>
         </section>
 
         <section lang="fa">
-            <h2>درباره<br>
-            </h2>
-              <p> </p>
-            <p class="justified-text">این اپلیکیشن با هدف ارائه دسترسی آسان‌تر و لذت‌بخش‌تر به گام‌های موسیقی ایرانی طراحی شده است. این برنامه ابزارهای تعاملی و منابع آموزشی را فراهم می‌کند تا به شما کمک کند ساختار و اهمیت فرهنگی این گام‌ها را کشف کنید.</p>
+            <h2>درباره<br></h2>
+            <p></p>
             <p class="justified-text">
-                چه نوازنده باشید، چه دانشجو یا فقط به موسیقی ایرانی علاقه‌مند باشید، این اپلیکیشن راهی جذاب برای یادگیری و قدردانی از این میراث غنی موسیقی به شما ارائه می‌دهد.<br></p>
+              این اپلیکیشن با هدف ارائه دسترسی آسان‌تر و لذت‌بخش‌تر به گام‌های موسیقی ایرانی 
+              طراحی شده است. این برنامه ابزارهای تعاملی و منابع آموزشی را فراهم می‌کند تا به شما کمک 
+              کند ساختار و اهمیت فرهنگی این گام‌ها را کشف کنید.
+            </p>
+            <p class="justified-text">
+              چه نوازنده باشید، چه دانشجو یا فقط به موسیقی ایرانی علاقه‌مند باشید، این اپلیکیشن راهی جذاب 
+              برای یادگیری و قدردانی از این میراث غنی موسیقی به شما ارائه می‌دهد.<br>
+            </p>
 
-            <h2>تماس با من<br>
-            </h2>
-              <p> </p>
-            <p>می‌توانید از طریق پلتفرم‌های زیر با من در ارتباط باشید:<br></p>
+            <h2>تماس با من<br></h2>
+            <p></p>
+            <p>
+              می‌توانید از طریق پلتفرم‌های زیر با من در ارتباط باشید:<br>
+            </p>
             <div>
                 <a href="https://www.academia.edu/126192335/Exploring_Persian_Music_Scales_through_Interactive_Visualizations">Academia.edu</a>
                 <a href="https://github.com/PersianMusicScales">GitHub</a>
@@ -249,39 +141,37 @@
                 <a href="https://www.youtube.com/@pouya-hosseini">یوتیوب</a>
             </div>
 
-            <h2>
-                حمایت<br>
-            </h2>
-              <p> </p>
+            <h2>حمایت<br></h2>
+            <p></p>
             <p>
-                اگر می‌خواهید از کار من حمایت کنید، می‌توانید از طریق پی پال کمک مالی کنید:<br></p>
+              اگر می‌خواهید از کار من حمایت کنید، می‌توانید از طریق پی پال کمک مالی کنید:<br>
+            </p>
             <p><a href="https://www.paypal.me/pouyahosseini">PayPal @pouyahosseini</a></p>
         </section>
     </main>
 
-  <!-- Bottom Menu (fixed) -->
-  <nav class="bottom-nav">
-    <a href="index.html" data-en="Scales" data-fa="گام‌ها">
-      <div class="nav-icon">🎼</div>
-      <span class="menu-text">Scales</span>
-    </a>
-    <a href="tuner.html" data-en="Tuner" data-fa="تیونر">
-      <div class="nav-icon">🎹</div>
-      <span class="menu-text">Tuner</span>
-    </a>
-    <a href="guide.html" data-en="Guide" data-fa="راهنما">
-      <div class="nav-icon">📖</div>
-      <span class="menu-text">Guide</span>
-    </a>
-    <a href="about.html" data-en="About" data-fa="درباره">
-      <div class="nav-icon">ℹ️</div>
-      <span class="menu-text">About</span>
-    </a>
-  </nav>
-
+    <!-- Bottom Menu (fixed) -->
+    <nav class="bottom-nav">
+      <a href="index.html" data-en="Scales" data-fa="گام‌ها">
+        <div class="nav-icon">🎼</div>
+        <span class="menu-text">Scales</span>
+      </a>
+      <a href="tuner.html" data-en="Tuner" data-fa="تیونر">
+        <div class="nav-icon">🎹</div>
+        <span class="menu-text">Tuner</span>
+      </a>
+      <a href="guide.html" data-en="Guide" data-fa="راهنما">
+        <div class="nav-icon">📖</div>
+        <span class="menu-text">Guide</span>
+      </a>
+      <a href="about.html" data-en="About" data-fa="درباره">
+        <div class="nav-icon">ℹ️</div>
+        <span class="menu-text">About</span>
+      </a>
+    </nav>
 
     <footer>
-        <p>&copy; 2024 Pouya Hosseini. All rights reserved.</p>
+      <p>&copy; 2024 Pouya Hosseini. All rights reserved.</p>
     </footer>
 </body>
 </html>

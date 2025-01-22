@@ -2,7 +2,7 @@
   "name": "Persian Music Scales",
   "short_name": "Persian Scales",
   "start_url": "index.html",
-  "scope": "./",
+  "scope": "index.html",
   "display": "standalone",
   "background_color": "#4CAF50",
   "theme_color": "#4CAF50",

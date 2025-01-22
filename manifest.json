@@ -90,5 +90,22 @@
       "origin": "https://persianmusicscales.github.io",
       "scope": "/"
     }
-  ]
+  ],
+  "permissions": ["background-sync", "push-notifications"],
+  "push_notification": {
+    "enabled": true,
+    "options": {
+      "vibrate": [100, 50, 100],
+      "actions": [
+        {
+          "action": "explore",
+          "title": "Explore Scales",
+          "icon": "assets/icons/icon-192x192.png"
+        }
+      ]
+    }
+  },
+  "background_fetch": {
+    "enabled": true
+  }
 }

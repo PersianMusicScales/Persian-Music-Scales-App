@@ -5,8 +5,8 @@
   "start_url": "https://persianmusicscales.github.io/Persian-Music-Scales-App/index.html",
   "scope": "/",
   "display": "fullscreen",
-  "background_color": "#4CAF50",
-  "theme_color": "#4CAF50",
+  "background_color": "#303130",
+  "theme_color": "#303130",
   "description": "Explore and play various Persian music scales interactively.",
   "orientation": "portrait",
   "icons": [

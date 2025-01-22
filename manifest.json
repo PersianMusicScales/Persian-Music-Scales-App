@@ -2,7 +2,7 @@
   "id": "/",
   "name": "Persian Music Scales",
   "short_name": "Persian Scales",
-  "start_url": "https://persianmusicscales.github.io/Persian-Music-Scales-App/index.html",
+  "start_url": "https://persianmusicscales.github.io/Persian-Music-Scales-App/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#4CAF50",

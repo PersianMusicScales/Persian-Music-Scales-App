@@ -6,14 +6,14 @@ const CACHE_NAME = `persian-music-scales-${CACHE_VERSION}`;
 const FILES_TO_CACHE = [
   // Root pages
   './',
-  './index.html',
-  './about.html',
-  './guide.html',
-  './tuner.html',
-  './offline.html',
+  './htmls/index.html',
+  './htmls/about.html',
+  './htmls/guide.html',
+  './htmls/tuner.html',
+  './htmls/offline.html',
 
   // Manifest
-  './config/manifest.json',
+  './manifest.json',
 
   // CSS files
   './csss/indexstyle.css',

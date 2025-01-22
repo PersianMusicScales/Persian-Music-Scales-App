@@ -1,8 +1,9 @@
 {
+  "id": "/",
   "name": "Persian Music Scales",
   "short_name": "Persian Scales",
   "start_url": "index.html",
-  "scope": "index.html",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#4CAF50",
   "theme_color": "#4CAF50",
@@ -73,5 +74,21 @@
     }
   ],
   "lang": "en-US",
-  "dir": "ltr"
+  "dir": "ltr",
+  "categories": ["education", "music", "entertainment"],
+  "iarc_rating_id": "/",
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "launch_handler": {
+    "client_mode": "navigate-new"
+  },
+  "background_sync": {
+    "periodic_sync": true
+  },
+  "scope_extensions": [
+    {
+      "origin": "https://persianmusicscales.github.io",
+      "scope": "/"
+    }
+  ]
 }

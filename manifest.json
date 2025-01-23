@@ -4,7 +4,7 @@
   "short_name": "Music Scales",
   "start_url": "index.html",
   "scope": "/",
-  "display": "fullscreen",
+  "display": "standalone",
   "background_color": "#303130",
   "theme_color": "#303130",
   "description": "Explore and play various Persian music scales interactively.",

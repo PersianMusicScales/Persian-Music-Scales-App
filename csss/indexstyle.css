@@ -93,15 +93,28 @@ header h1 {
   position: relative;
 }
 
-.scale-controls select {
-  font-size: 1.6rem;
-  padding: 10px 16px;
+.scale-controls {
+  display: flex;
+  justify-content: center; /* Ensures center alignment */
+  align-items: center;
+  width: 80%;
+  max-width: 800px;
+  margin: 10px auto;
+  position: relative;
 }
 
 .scale-controls span#labelAtZeroAngle {
   font-weight: bold;
-  font-size: 2.5rem;;
+  font-size: 2.5rem;
   margin-left: var(--label-margin-left);
+  max-width: 200px;  /* Set a reasonable width */
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 /* ===== Main: Center the Circle ===== */

@@ -85,7 +85,7 @@ header h1 {
 /* ===== Scale Controls ===== */
 .scale-controls {
   display: flex;
-  justify-content: space-between; /* Keep elements spaced */
+  justify-content: space-between;
   align-items: center;
   width: 80%;
   max-width: 800px;
@@ -96,23 +96,12 @@ header h1 {
 .scale-controls select {
   font-size: 1.6rem;
   padding: 10px 16px;
-  flex-shrink: 0;  /* Prevent the scale selector from resizing */
-  min-width: 150px; /* Ensure it stays at a reasonable size */
 }
 
 .scale-controls span#labelAtZeroAngle {
   font-weight: bold;
-  font-size: 2.5rem;
-  min-width: 200px;  /* Prevent shrinking */
-  max-width: 250px;  /* Ensure consistent width */
-  flex-basis: 70px;  /* Fixed width allocation */
-  text-align: left;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex-grow: 0;  /* Prevent expansion */
-  display: flex;
-  justify-content: left;
+  font-size: 2.5rem;;
+  margin-left: var(--label-margin-left);
 }
 
 /* ===== Main: Center the Circle ===== */
@@ -420,22 +409,10 @@ footer {
     flex-direction: column;
     align-items: stretch;
   }
-.scale-controls span#labelAtZeroAngle {
-  font-weight: bold;
-  font-size: 2.5rem;
-  min-width: 200px;  /* Prevent shrinking */
-  max-width: 250px;  /* Ensure consistent width */
-  flex-basis: 70px;  /* Fixed width allocation */
-  text-align: left;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex-grow: 0;  /* Prevent expansion */
-  display: flex;
-  justify-content: left;
-}
-
-  
+  .scale-controls span#labelAtZeroAngle {
+    margin-left: 0;
+    margin-top: var(--label-margin-left);
+  }
   .avazha-columns {
     flex-direction: row;
     gap: 5px;

@@ -57,9 +57,7 @@ body {
   font-family: Arial, sans-serif;
 
   /* Background Image */
-  background: url("../assets/images/mybackground.jpg") no-repeat center center fixed;
-  background-size: cover;
-  position: relative;
+background-color: #F3BB6E;
 }
 
 /* ===== Header ===== */

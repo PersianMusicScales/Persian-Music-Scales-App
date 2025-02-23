@@ -34,7 +34,6 @@
       height: 100vh;
       background: transparent;
       z-index: 10000;
-      /* Allow underlying elements to receive events */
       pointer-events: none;
     }
     /* Tap container for layout */
@@ -191,7 +190,7 @@
     <div class="legend">
       <div class="legend-row">
         <div class="legend-item">
-          <span class="color-box" style="background: #48625f;"></span>
+          <span class="color-box" style="background: gray;"></span>
           200 cents
         </div>
         <div class="legend-item">
@@ -262,15 +261,14 @@
     </div>
   </div>
 
-  <!-- Global Event Listener for Two-Tap Overlay (without blocking underlying taps) -->
+  <!-- Global Event Listener for Tap Overlay -->
   <script>
-    // If the app is installed (standalone display or iOS standalone), remove the tap overlay immediately.
-    if (window.matchMedia('(display-mode: standalone)').matches ||
-        window.navigator.standalone === true) {
-      const overlay = document.getElementById('tapOverlay');
-      if (overlay) overlay.parentNode.removeChild(overlay);
-    }
-    
+    // Determine installation status.
+    // If the app is installed, removal threshold is 1 tap; otherwise, 2 taps.
+    const isInstalled = window.matchMedia('(display-mode: standalone)').matches ||
+                        window.navigator.standalone === true;
+    const removalThreshold = isInstalled ? 1 : 2;
+
     let tapCount = 0;
     let touchFired = false;
     
@@ -278,7 +276,7 @@
       const overlay = document.getElementById('tapOverlay');
       if (!overlay) return; // Already removed
       
-      // On touch devices, ignore the subsequent click event if touchstart has fired.
+      // On touch devices, ignore the subsequent click if touchstart has fired.
       if (event.type === 'touchstart') {
         touchFired = true;
       } else if (event.type === 'click' && touchFired) {
@@ -286,14 +284,15 @@
       }
       
       tapCount++;
-      if (tapCount === 1) {
-        // On first tap, shift the animation wrapper from right to left.
+      // For not-installed apps, on first tap move the animation wrapper.
+      if (tapCount === 1 && removalThreshold === 2) {
         const wrapper = document.getElementById('tapAnimationWrapper');
         if (wrapper) {
           wrapper.classList.add('move-left');
         }
-      } else if (tapCount >= 2) {
-        // On second tap, fade out and remove the overlay.
+      }
+      // Remove the overlay when the tap count reaches the threshold.
+      if (tapCount >= removalThreshold) {
         overlay.style.transition = 'opacity 0.3s ease';
         overlay.style.opacity = '0';
         setTimeout(() => {
@@ -304,15 +303,15 @@
         document.removeEventListener('click', handleGlobalTap, true);
         document.removeEventListener('touchstart', handleGlobalTap, true);
       }
-      // Allow the event to propagate so that other tap functionality (like rotating the diatonic) remains active.
+      // Allow event propagation so underlying interactions (e.g., diatonic rotation) still work.
     }
     
-    // Use capturing so that our handler counts taps even if underlying elements have their own handlers.
+    // Use capturing so that our handler counts taps even if other handlers exist.
     document.addEventListener('touchstart', handleGlobalTap, true);
     document.addEventListener('click', handleGlobalTap, true);
   </script>
 
-  <!-- Scripts moved to external file(s) -->
+  <!-- External Scripts -->
   <script src="src/index.js"></script>
 </body>
 </html>

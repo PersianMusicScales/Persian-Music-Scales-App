@@ -142,9 +142,9 @@ main {
   height: var(--chart-size);
   border-radius: 50%;
   background: conic-gradient(
-    gray 0deg 120deg,
+    #48625f 0deg 120deg,
     black 120deg 150deg,
-    gray 150deg 330deg,
+    #48625f 150deg 330deg,
     black 330deg 360deg
   );
   z-index: 2;

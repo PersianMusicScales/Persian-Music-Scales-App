@@ -101,7 +101,17 @@ header h1 {
 }
 
 .scale-controls span#labelAtZeroAngle {
-  flex-basis: 200px;  /* Fixed width allocation */
+  font-weight: bold;
+  font-size: 2.5rem;
+  min-width: 200px;  /* Prevent shrinking */
+  max-width: 250px;  /* Ensure consistent width */
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-grow: 0;  /* Prevent expansion */
+  display: flex;
+  justify-content: center;
 }
 
 /* ===== Main: Center the Circle ===== */

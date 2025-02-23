@@ -135,17 +135,17 @@ main {
   z-index: 1;
 }
 
-/* Inner diatonic circle */
+/* Inner diatonic circle with paler colors */
 .diatonic-scale {
   position: absolute;
   width: var(--chart-size);
   height: var(--chart-size);
   border-radius: 50%;
   background: conic-gradient(
-    #48625f 0deg 120deg,
-    black 120deg 150deg,
-    #48625f 150deg 330deg,
-    black 330deg 360deg
+    #789693 0deg 120deg,  /* Lighter teal instead of #48625f */
+    #333333 120deg 150deg, /* Slightly softer black */
+    #789693 150deg 330deg, /* Lighter teal instead of #48625f */
+    #333333 330deg 360deg  /* Slightly softer black */
   );
   z-index: 2;
 }

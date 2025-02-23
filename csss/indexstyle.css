@@ -111,7 +111,7 @@ header h1 {
   text-overflow: ellipsis;
   flex-grow: 0;  /* Prevent expansion */
   display: flex;
-  justify-content: center;
+  justify-content: left;
 }
 
 /* ===== Main: Center the Circle ===== */

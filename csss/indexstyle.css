@@ -105,6 +105,7 @@ header h1 {
   font-size: 2.5rem;
   min-width: 200px;  /* Prevent shrinking */
   max-width: 250px;  /* Ensure consistent width */
+  flex-basis: 200px;  /* Fixed width allocation */
   text-align: left;
   white-space: nowrap;
   overflow: hidden;
@@ -419,10 +420,22 @@ footer {
     flex-direction: column;
     align-items: stretch;
   }
-  .scale-controls span#labelAtZeroAngle {
-    margin-left: 0;
-    margin-top: var(--label-margin-left);
-  }
+.scale-controls span#labelAtZeroAngle {
+  font-weight: bold;
+  font-size: 2.5rem;
+  min-width: 200px;  /* Prevent shrinking */
+  max-width: 250px;  /* Ensure consistent width */
+  flex-basis: 200px;  /* Fixed width allocation */
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-grow: 0;  /* Prevent expansion */
+  display: flex;
+  justify-content: left;
+}
+
+  
   .avazha-columns {
     flex-direction: row;
     gap: 5px;

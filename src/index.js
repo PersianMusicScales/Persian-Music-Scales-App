@@ -186,39 +186,40 @@ const scaleData = {
   Shur: {
     angles: [0, 45, 90, 150, 210, 240, 300],
     colors:
-      "conic-gradient(#F7E7C6 0deg 45deg, #F7E7C6 45deg 90deg, gray 90deg 150deg, gray 150deg 210deg, black 210deg 240deg, gray 240deg 300deg, gray 300deg 360deg)",
+      "conic-gradient(#F7E7C6 0deg 45deg, #F7E7C6 45deg 90deg, #48625f 90deg 150deg, #48625f 150deg 210deg, black 210deg 240deg, #48625f 240deg 300deg, #48625f 300deg 360deg)",
   },
   nava: {
     angles: [0, 60, 90, 150, 210, 255, 300],
     colors:
-      "conic-gradient(gray 0deg 60deg, black 60deg 90deg, gray 90deg 150deg, gray 150deg 210deg, #F7E7C6 210deg 255deg, #F7E7C6 255deg 300deg, gray 300deg 360deg)",
+      "conic-gradient(#48625f 0deg 60deg, black 60deg 90deg, #48625f 90deg 150deg, #48625f 150deg 210deg, #F7E7C6 210deg 255deg, #F7E7C6 255deg 300deg, #48625f 300deg 360deg)",
   },
   segah: {
     angles: [0, 60, 105, 150, 210, 255, 300],
     colors:
-      "conic-gradient(gray 0deg 60deg, #F7E7C6 60deg 105deg, #F7E7C6 105deg 150deg, gray 150deg 210deg, #F7E7C6 210deg 255deg, #F7E7C6 255deg 300deg, gray 300deg 360deg)",
+      "conic-gradient(#48625f 0deg 60deg, #F7E7C6 60deg 105deg, #F7E7C6 105deg 150deg, #48625f 150deg 210deg, #F7E7C6 210deg 255deg, #F7E7C6 255deg 300deg, #48625f 300deg 360deg)",
   },
   homayoun: {
     angles: [0, 45, 120, 150, 210, 240, 300],
     colors:
-      "conic-gradient(#F7E7C6 0deg 45deg, #1A3B66 45deg 120deg, black 120deg 150deg, gray 150deg 210deg, black 210deg 240deg, gray 240deg 300deg, gray 300deg 360deg)",
+      "conic-gradient(#F7E7C6 0deg 45deg, #1A3B66 45deg 120deg, black 120deg 150deg, #48625f 150deg 210deg, black 210deg 240deg, #48625f 240deg 300deg, #48625f 300deg 360deg)",
   },
   esfahan: {
     angles: [0, 60, 90, 150, 210, 255, 330],
     colors:
-      "conic-gradient(gray 0deg 60deg, black 60deg 90deg, gray 90deg 150deg, gray 150deg 210deg, #F7E7C6 210deg 255deg, #1A3B66 255deg 330deg, black 330deg 360deg)",
+      "conic-gradient(#48625f 0deg 60deg, black 60deg 90deg, #48625f 90deg 150deg, #48625f 150deg 210deg, #F7E7C6 210deg 255deg, #1A3B66 255deg 330deg, black 330deg 360deg)",
   },
   chahargah: {
     angles: [0, 45, 120, 150, 210, 255, 330],
     colors:
-      "conic-gradient(#F7E7C6 0deg 45deg, #1A3B66 45deg 120deg, black 120deg 150deg, gray 150deg 210deg, #F7E7C6 210deg 255deg, #1A3B66 255deg 330deg, black 330deg 360deg)",
+      "conic-gradient(#F7E7C6 0deg 45deg, #1A3B66 45deg 120deg, black 120deg 150deg, #48625f 150deg 210deg, #F7E7C6 210deg 255deg, #1A3B66 255deg 330deg, black 330deg 360deg)",
   },
   mahur: {
     angles: [0, 60, 120, 150, 210, 270, 330],
     colors:
-      "conic-gradient(gray 0deg 60deg, gray 60deg 120deg, black 120deg 150deg, gray 150deg 210deg, gray 210deg 270deg, gray 270deg 330deg, black 330deg 360deg)",
+      "conic-gradient(#48625f 0deg 60deg, #48625f 60deg 120deg, black 120deg 150deg, #48625f 150deg 210deg, #48625f 210deg 270deg, #48625f 270deg 330deg, black 330deg 360deg)",
   },
 };
+
 
 const diatonicAngles = [0, 60, 120, 150, 210, 270, 330];
 

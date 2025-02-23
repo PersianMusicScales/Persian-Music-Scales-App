@@ -264,11 +264,27 @@
 
   <!-- Global Event Listener for Two-Tap Overlay (without blocking underlying taps) -->
   <script>
+    // If the app is installed (standalone display or iOS standalone), remove the tap overlay immediately.
+    if (window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true) {
+      const overlay = document.getElementById('tapOverlay');
+      if (overlay) overlay.parentNode.removeChild(overlay);
+    }
+    
     let tapCount = 0;
+    let touchFired = false;
+    
     function handleGlobalTap(event) {
       const overlay = document.getElementById('tapOverlay');
       if (!overlay) return; // Already removed
-
+      
+      // On touch devices, ignore the subsequent click event if touchstart has fired.
+      if (event.type === 'touchstart') {
+        touchFired = true;
+      } else if (event.type === 'click' && touchFired) {
+        return;
+      }
+      
       tapCount++;
       if (tapCount === 1) {
         // On first tap, shift the animation wrapper from right to left.
@@ -285,15 +301,15 @@
             overlay.parentNode.removeChild(overlay);
           }
         }, 300);
-        // Remove global listeners since overlay is removed.
         document.removeEventListener('click', handleGlobalTap, true);
         document.removeEventListener('touchstart', handleGlobalTap, true);
       }
-      // Allow event propagation so underlying tap functions still execute.
+      // Allow the event to propagate so that other tap functionality (like rotating the diatonic) remains active.
     }
-    // Use capturing phase to catch taps even if other handlers are present.
-    document.addEventListener('click', handleGlobalTap, true);
+    
+    // Use capturing so that our handler counts taps even if underlying elements have their own handlers.
     document.addEventListener('touchstart', handleGlobalTap, true);
+    document.addEventListener('click', handleGlobalTap, true);
   </script>
 
   <!-- Scripts moved to external file(s) -->

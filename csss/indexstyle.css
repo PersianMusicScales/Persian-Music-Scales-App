@@ -101,6 +101,7 @@ header h1 {
 .scale-controls span#labelAtZeroAngle {
   font-weight: bold;
   font-size: 2rem;;
+  flex-basis: 60px;  /* Fixed width allocation */
   margin-left: var(--label-margin-left);
 }
 
@@ -409,10 +410,13 @@ footer {
     flex-direction: column;
     align-items: stretch;
   }
-  .scale-controls span#labelAtZeroAngle {
-    margin-left: 0;
-    margin-top: var(--label-margin-left);
-  }
+
+.scale-controls span#labelAtZeroAngle {
+  font-weight: bold;
+  font-size: 2rem;;
+  flex-basis: 60px;  /* Fixed width allocation */
+  margin-left: var(--label-margin-left);
+}
   .avazha-columns {
     flex-direction: row;
     gap: 5px;

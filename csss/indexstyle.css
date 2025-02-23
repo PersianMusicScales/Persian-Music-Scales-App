@@ -179,7 +179,7 @@ main {
   font-weight: bold;
   transform: translate(-50%, -50%);
   z-index: 5;
-  background-color: lightgreen;
+  background-color: white;
   padding: 2px 5px;
   border-radius: 5px;
 }

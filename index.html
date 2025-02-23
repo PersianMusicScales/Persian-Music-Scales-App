@@ -22,8 +22,97 @@
 
   <!-- Link to External CSS -->
   <link rel="stylesheet" href="csss/indexstyle.css" />
+
+  <!-- Tap Overlay CSS -->
+  <style>
+    /* Overlay container covers the viewport but does not block pointer events */
+    #tapOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: transparent;
+      z-index: 10000;
+      /* Allow underlying elements to receive events */
+      pointer-events: none;
+    }
+    /* Tap container for layout */
+    .tap-container {
+      position: relative;
+      width: 60px;
+      height: 60px;
+      margin: auto;
+    }
+    /* Wraps both ripple and hand icon so they move together */
+    .tap-animation-wrapper {
+      position: absolute;
+      top: 550%;
+      left: 50%;
+      /* Initially shifted 30px to the right */
+      transform: translate(-50%, -50%) translateX(70px);
+      transition: transform 0.5s ease;
+    }
+    /* When the wrapper gets the "move-left" class, shift 30px to the left */
+    .tap-animation-wrapper.move-left {
+      transform: translate(-50%, -50%) translateX(-70px);
+    }
+    /* Center the ripple inside the wrapper */
+    .ripple {
+      position: absolute;
+      top: 550%;
+      left: 50%;
+      width: 60px;
+      height: 60px;
+      transform: translate(-50%, -50%);
+      border: 2px solid #3498db;
+      border-radius: 50%;
+      animation: ripple 1.5s infinite;
+    }
+    /* Hand icon centered in the wrapper with vertical waving */
+    .hand-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 18px;
+      animation: handWave 1.5s infinite;
+    }
+    /* Tap text below the container */
+    .tap-text {
+      position: absolute;
+      top: 65px;
+      width: 100%;
+      text-align: center;
+      font-family: sans-serif;
+      color: #333;
+      font-size: 12px;
+    }
+    /* Keyframes for the ripple (expanding/fading circle) */
+    @keyframes ripple {
+      0%   { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+    }
+    /* Keyframes for hand vertical waving */
+    @keyframes handWave {
+      0%   { transform: translate(-50%, -50%) translateY(0); }
+      50%  { transform: translate(-50%, -50%) translateY(10px); }
+      100% { transform: translate(-50%, -50%) translateY(0); }
+    }
+  </style>
 </head>
 <body>
+  <!-- Tap Overlay (visible on top but allows underlying interactions) -->
+  <div id="tapOverlay">
+    <div class="tap-container">
+      <div class="tap-animation-wrapper" id="tapAnimationWrapper">
+        <div class="ripple"></div>
+        <div class="hand-icon">👆</div>
+      </div>
+      <div class="tap-text">Tap</div>
+    </div>
+  </div>
+
   <!-- HEADER -->
   <header>
     <h1 id="pageTitle">Persian Music Scales</h1>
@@ -172,6 +261,40 @@
       <button class="popup-button" id="dismissPopup">Understand</button>
     </div>
   </div>
+
+  <!-- Global Event Listener for Two-Tap Overlay (without blocking underlying taps) -->
+  <script>
+    let tapCount = 0;
+    function handleGlobalTap(event) {
+      const overlay = document.getElementById('tapOverlay');
+      if (!overlay) return; // Already removed
+
+      tapCount++;
+      if (tapCount === 1) {
+        // On first tap, shift the animation wrapper from right to left.
+        const wrapper = document.getElementById('tapAnimationWrapper');
+        if (wrapper) {
+          wrapper.classList.add('move-left');
+        }
+      } else if (tapCount >= 2) {
+        // On second tap, fade out and remove the overlay.
+        overlay.style.transition = 'opacity 0.3s ease';
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+          if (overlay.parentNode) {
+            overlay.parentNode.removeChild(overlay);
+          }
+        }, 300);
+        // Remove global listeners since overlay is removed.
+        document.removeEventListener('click', handleGlobalTap, true);
+        document.removeEventListener('touchstart', handleGlobalTap, true);
+      }
+      // Allow event propagation so underlying tap functions still execute.
+    }
+    // Use capturing phase to catch taps even if other handlers are present.
+    document.addEventListener('click', handleGlobalTap, true);
+    document.addEventListener('touchstart', handleGlobalTap, true);
+  </script>
 
   <!-- Scripts moved to external file(s) -->
   <script src="src/index.js"></script>

@@ -55,10 +55,14 @@ header h1 {
     width: 90%;
     max-width: 1200px;
     margin: 20px auto;
-    background: #fff;
-    padding: 20px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    border-radius: 15px;
+
+    background: rgba(255, 255, 255, 0.92); /* ← soft background */
+    backdrop-filter: blur(6px);           /* ← glass effect (iOS friendly) */
+    -webkit-backdrop-filter: blur(6px);
+
+    padding: 24px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+    border-radius: 18px;
 }
 
 footer {

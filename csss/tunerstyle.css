@@ -4,14 +4,39 @@ html {
 
 body {
   position: fixed;
-  font-family: sans-serif;
-  color: #2c3e50;
-  margin: 0;
+  inset: 0;
   width: 100%;
   height: 100%;
+  margin: 0;
+
+  font-family: sans-serif;
+  color: #2c3e50;
   cursor: default;
   user-select: none;
+
+  /* ✅ Strong overlay + image */
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.75)),
+    url('../assets/images/aboutBackground.png');
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+
+  background-color: #ffffff;
 }
+
+/* ✅ Extra veil overlay (works even if canvas/wrapper interferes) */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+  z-index: 1;
+}
+
 
 .notes {
   margin: auto;

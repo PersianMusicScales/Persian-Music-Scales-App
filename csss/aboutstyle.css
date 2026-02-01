@@ -24,6 +24,24 @@ body {
        background-repeat: no-repeat;
 }
 
+/* Light-mode overlay */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(255,255,255,0.28);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Dark-mode overlay */
+@media (prefers-color-scheme: dark) {
+  body::before {
+    background: rgba(0,0,0,0.25);
+  }
+}
+
+
 header {
     position: relative; /* Establish positioning context */
     background-image: url('../assets/images/header-bg.png');

@@ -50,6 +50,7 @@
  * <main> in the middle with flex: 1 (centers the circle),
  * Bottom nav is fixed at the bottom of the viewport.
  */
+/* Body background */
 body {
   display: flex;
   flex-direction: column;
@@ -62,13 +63,21 @@ body {
   background-repeat: no-repeat;
 }
 
+/* Light-mode overlay */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
-  background: rgba(255,255,255,0.22);
+  background: rgba(255,255,255,0.28);
   pointer-events: none;
   z-index: -1;
+}
+
+/* Dark-mode overlay */
+@media (prefers-color-scheme: dark) {
+  body::before {
+    background: rgba(0,0,0,0.25);
+  }
 }
 
 /* ===== Header ===== */

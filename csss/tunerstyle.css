@@ -1,59 +1,17 @@
-/* =========================
-   ROOT / LAYOUT
-   ========================= */
-
-html, body {
+html {
   height: 100%;
 }
 
 body {
   position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-
   font-family: sans-serif;
   color: #2c3e50;
+  margin: 0;
+  width: 100%;
+  height: 100%;
   cursor: default;
   user-select: none;
-
-  /* ✅ Strong overlay + image */
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.75)),
-    url('../assets/images/aboutBackground.png');
-
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-
-  background-color: #ffffff;
 }
-
-/* ✅ Extra veil overlay (works even if canvas/wrapper interferes) */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.35);
-  pointer-events: none;
-  z-index: 1;
-}
-
-/* Put your UI above the overlay */
-.notes,
-.meter,
-.frequency-bars,
-.a4,
-.auto {
-  position: relative;
-  z-index: 2;
-}
-
-/* =========================
-   NOTES DISPLAY
-   ========================= */
 
 .notes {
   margin: auto;
@@ -72,11 +30,31 @@ body::after {
   display: inline-block;
   padding-right: 30px;
   padding-left: 10px;
-  -webkit-tap-highlight-color: transparent;
 }
 
 .note.active {
   color: #e74c3c;
+}
+
+.notes-list {
+  overflow: auto;
+  overflow: -moz-scrollbars-none;
+  white-space: nowrap;
+  -ms-overflow-style: none;
+  -webkit-mask-image: -webkit-linear-gradient(
+    left,
+    rgba(255, 255, 255, 0),
+    #fff,
+    rgba(255, 255, 255, 0)
+  );
+}
+
+.notes-list::-webkit-scrollbar {
+  display: none;
+}
+
+.note {
+  -webkit-tap-highlight-color: transparent;
 }
 
 .note span {
@@ -94,32 +72,6 @@ body::after {
   bottom: 0.3em;
 }
 
-/* =========================
-   NOTES LIST
-   ========================= */
-
-.notes-list {
-  overflow: auto;
-  overflow: -moz-scrollbars-none;
-  white-space: nowrap;
-  -ms-overflow-style: none;
-
-  -webkit-mask-image: -webkit-linear-gradient(
-    left,
-    rgba(255, 255, 255, 0),
-    #fff,
-    rgba(255, 255, 255, 0)
-  );
-}
-
-.notes-list::-webkit-scrollbar {
-  display: none;
-}
-
-/* =========================
-   FREQUENCY DISPLAY
-   ========================= */
-
 .frequency {
   font-size: 32px;
 }
@@ -128,10 +80,6 @@ body::after {
   font-size: 50%;
   margin-left: 0.25em;
 }
-
-/* =========================
-   METER
-   ========================= */
 
 .meter {
   position: fixed;
@@ -181,18 +129,20 @@ body::after {
   border-top-width: 20px;
 }
 
-/* =========================
-   FREQUENCY BARS
-   ========================= */
-
 .frequency-bars {
   position: fixed;
   bottom: 0;
 }
 
-/* =========================
-   CONTROLS / BUTTONS
-   ========================= */
+@media (max-width: 768px) {
+  .meter {
+    width: 100%;
+  }
+
+  .notes {
+    width: 100%;
+  }
+}
 
 .swal-button {
   background: #2c3e50;
@@ -212,18 +162,4 @@ body::after {
   position: absolute;
   top: 16px;
   right: 16px;
-}
-
-/* =========================
-   RESPONSIVE
-   ========================= */
-
-@media (max-width: 768px) {
-  .meter {
-    width: 100%;
-  }
-
-  .notes {
-    width: 100%;
-  }
 }

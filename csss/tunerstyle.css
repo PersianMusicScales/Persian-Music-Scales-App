@@ -18,37 +18,46 @@ body {
   cursor: default;
   user-select: none;
 
-  /* Background image */
   background-image: url('../assets/images/aboutBackground.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
 
-  /* Stacking context for overlay */
-  z-index: -1;
+  /* create a stacking context */
+  z-index: 0;
 }
 
-/* =========================
-   BACKGROUND OVERLAY
-   ========================= */
-
-/* Light mode */
+/* Overlay layer (sits above background, below UI) */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
-  background: rgba(240, 244, 248, 0.25); /* cool gray-blue */
+
+  /* OPTION 1: neutral "glass" overlay */
+  background: rgba(255, 255, 255, 0.55);
+
+  /* OPTIONAL: add a tiny dark component to boost contrast */
+  /* background: linear-gradient(rgba(255,255,255,0.55), rgba(255,255,255,0.55)),
+              rgba(0,0,0,0.10); */
+
   pointer-events: none;
+
+  /* IMPORTANT: behind content but above background */
   z-index: 0;
 }
 
-/* Dark mode */
-@media (prefers-color-scheme: dark) {
-  body::before {
-    background: rgba(0, 0, 0, 0.25);
-  }
+/* Force your UI above the overlay */
+body > * {
+  position: relative;
+  z-index: 1;
 }
 
+/* Dark mode: slightly stronger overlay */
+@media (prefers-color-scheme: dark) {
+  body::before {
+    background: rgba(0, 0, 0, 0.35);
+  }
+}
 /* =========================
    NOTES DISPLAY
    ========================= */

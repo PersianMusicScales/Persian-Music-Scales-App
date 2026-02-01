@@ -41,7 +41,7 @@ body::after {
   content: "";
   position: fixed;
   inset: 0;
-  background: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.45);
   pointer-events: none;
   z-index: 1;
 }

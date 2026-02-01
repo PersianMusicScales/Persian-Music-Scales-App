@@ -124,7 +124,7 @@ header h1 {
   font-weight: bold;
   font-size: 2rem;
   position: relative;
-  top: 7px;
+  top: 12px;
   margin-left: var(--label-margin-left);
   line-height: 1;
 

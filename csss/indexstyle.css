@@ -73,12 +73,6 @@ body::before {
   z-index: -1;
 }
 
-/* Dark-mode overlay */
-@media (prefers-color-scheme: dark) {
-  body::before {
-    background: rgba(0,0,0,0.45);
-  }
-}
 
 /* ===== Header ===== */
 header {

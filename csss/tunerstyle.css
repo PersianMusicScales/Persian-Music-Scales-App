@@ -1,3 +1,7 @@
+/* =========================
+   ROOT / LAYOUT
+   ========================= */
+
 html {
   height: 100%;
 }
@@ -14,10 +18,7 @@ body {
   cursor: default;
   user-select: none;
 
-  /* Create stacking context */
-  z-index: 0;
-
-  /* Background + base overlay (baked into background) */
+  /* Background + base overlay baked into background */
   background-image:
     linear-gradient(rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.75)),
     url('../assets/images/aboutBackground.png');
@@ -25,14 +26,17 @@ body {
   background-position: center;
   background-repeat: no-repeat;
 
-  /* NOTE: with position: fixed, background-attachment: fixed can be buggy on mobile,
-     so it's safer to remove it unless you really need it */
-  /* background-attachment: fixed; */
-
+  /* Mobile/WebView friendly */
   background-color: #ffffff;
+
+  /* Create stacking context baseline */
+  z-index: 0;
+
+  /* Optional: reserve space if bottom nav overlaps content */
+  /* padding-bottom: 72px; */
 }
 
-/* Extra veil overlay (optional) */
+/* Extra veil overlay (under UI, under bottom nav) */
 body::after {
   content: "";
   position: fixed;
@@ -42,14 +46,17 @@ body::after {
   z-index: 1;
 }
 
-/* ✅ Force all UI above the veil overlay */
+/* =========================
+   MAIN TUNER UI (above overlay)
+   ========================= */
+
 .notes,
 .meter,
 .frequency-bars,
 .a4,
 .auto {
   position: relative;
-  z-index: 2;
+  z-index: 10;
 }
 
 /* =========================
@@ -80,6 +87,25 @@ body::after {
   color: #e74c3c;
 }
 
+.note span {
+  position: absolute;
+  right: 0.25em;
+  font-size: 40%;
+  font-weight: normal;
+}
+
+.note-sharp {
+  top: 0.3em;
+}
+
+.note-octave {
+  bottom: 0.3em;
+}
+
+/* =========================
+   NOTES LIST
+   ========================= */
+
 .notes-list {
   overflow: auto;
   overflow: -moz-scrollbars-none;
@@ -95,21 +121,6 @@ body::after {
 
 .notes-list::-webkit-scrollbar {
   display: none;
-}
-
-.note span {
-  position: absolute;
-  right: 0.25em;
-  font-size: 40%;
-  font-weight: normal;
-}
-
-.note-sharp {
-  top: 0.3em;
-}
-
-.note-octave {
-  bottom: 0.3em;
 }
 
 /* =========================
@@ -201,7 +212,7 @@ body::after {
 }
 
 /* =========================
-   BUTTONS / CONTROLS
+   CONTROLS / BUTTONS
    ========================= */
 
 .swal-button {
@@ -222,4 +233,17 @@ body::after {
   position: absolute;
   top: 16px;
   right: 16px;
+}
+
+/* =========================
+   BOTTOM NAV (ALWAYS ON TOP)
+   ========================= */
+/* If your bottom navigation uses a different class/id,
+   change .bottom-nav to match your element. */
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  z-index: 100;
 }

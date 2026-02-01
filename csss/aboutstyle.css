@@ -18,7 +18,7 @@
 body {
     font-family: Arial, sans-serif;
     line-height: 1.6;
-    background-image: url('aboutBackground.png');
+    background-image: url('../assets/images/aboutBackground.png');
        background-size: cover;
        background-position: center;
        background-repeat: no-repeat;

@@ -31,14 +31,6 @@ body {
   background-attachment: fixed;
 }
 
-/* Dark mode: stronger overlay */
-@media (prefers-color-scheme: dark) {
-  body {
-    background-image:
-      linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)),
-      url('../assets/images/aboutBackground.png');
-  }
-}
 
 /* =========================
    NOTES DISPLAY

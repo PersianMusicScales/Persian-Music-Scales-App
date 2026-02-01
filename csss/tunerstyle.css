@@ -18,61 +18,37 @@ body {
   cursor: default;
   user-select: none;
 
-  /* ✅ Overlay + image (overlay is the FIRST layer) */
+  /* ✅ Strong overlay + image */
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.55)),
+    linear-gradient(rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.75)),
     url('../assets/images/aboutBackground.png');
 
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-
-  /* optional */
   background-attachment: fixed;
+
+  background-color: #ffffff;
 }
 
-
-/* =========================
-   NOTES DISPLAY
-   ========================= */
-
-.notes {
-  margin: auto;
-  width: 400px;
+/* ✅ Extra veil overlay (works even if canvas/wrapper interferes) */
+body::after {
+  content: "";
   position: fixed;
-  top: 50%;
-  left: 0;
-  right: 0;
-  text-align: center;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+  z-index: 1;
 }
 
-.note {
-  font-size: 90px;
-  font-weight: bold;
+/* Put your UI above the overlay */
+.notes,
+.meter,
+.frequency-bars,
+.a4,
+.auto {
   position: relative;
-  display: inline-block;
-  padding-right: 30px;
-  padding-left: 10px;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.note.active {
-  color: #e74c3c;
-}
-
-.note span {
-  position: absolute;
-  right: 0.25em;
-  font-size: 40%;
-  font-weight: normal;
-}
-
-.note-sharp {
-  top: 0.3em;
-}
-
-.note-octave {
-  bottom: 0.3em;
+  z-index: 2;
 }
 
 /* =========================

@@ -2,7 +2,7 @@
    ROOT / LAYOUT
    ========================= */
 
-html {
+html, body {
   height: 100%;
 }
 
@@ -49,6 +49,49 @@ body::after {
 .auto {
   position: relative;
   z-index: 2;
+}
+
+/* =========================
+   NOTES DISPLAY
+   ========================= */
+
+.notes {
+  margin: auto;
+  width: 400px;
+  position: fixed;
+  top: 50%;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+
+.note {
+  font-size: 90px;
+  font-weight: bold;
+  position: relative;
+  display: inline-block;
+  padding-right: 30px;
+  padding-left: 10px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.note.active {
+  color: #e74c3c;
+}
+
+.note span {
+  position: absolute;
+  right: 0.25em;
+  font-size: 40%;
+  font-weight: normal;
+}
+
+.note-sharp {
+  top: 0.3em;
+}
+
+.note-octave {
+  bottom: 0.3em;
 }
 
 /* =========================

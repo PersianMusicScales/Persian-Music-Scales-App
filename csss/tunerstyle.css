@@ -14,20 +14,25 @@ body {
   cursor: default;
   user-select: none;
 
-  /* ✅ Strong overlay + image */
+  /* Create stacking context */
+  z-index: 0;
+
+  /* Background + base overlay (baked into background) */
   background-image:
     linear-gradient(rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.75)),
     url('../assets/images/aboutBackground.png');
-
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-attachment: fixed;
+
+  /* NOTE: with position: fixed, background-attachment: fixed can be buggy on mobile,
+     so it's safer to remove it unless you really need it */
+  /* background-attachment: fixed; */
 
   background-color: #ffffff;
 }
 
-/* ✅ Extra veil overlay (works even if canvas/wrapper interferes) */
+/* Extra veil overlay (optional) */
 body::after {
   content: "";
   position: fixed;
@@ -37,6 +42,19 @@ body::after {
   z-index: 1;
 }
 
+/* ✅ Force all UI above the veil overlay */
+.notes,
+.meter,
+.frequency-bars,
+.a4,
+.auto {
+  position: relative;
+  z-index: 2;
+}
+
+/* =========================
+   NOTES DISPLAY
+   ========================= */
 
 .notes {
   margin: auto;
@@ -55,6 +73,7 @@ body::after {
   display: inline-block;
   padding-right: 30px;
   padding-left: 10px;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .note.active {
@@ -78,10 +97,6 @@ body::after {
   display: none;
 }
 
-.note {
-  -webkit-tap-highlight-color: transparent;
-}
-
 .note span {
   position: absolute;
   right: 0.25em;
@@ -97,6 +112,10 @@ body::after {
   bottom: 0.3em;
 }
 
+/* =========================
+   FREQUENCY DISPLAY
+   ========================= */
+
 .frequency {
   font-size: 32px;
 }
@@ -105,6 +124,10 @@ body::after {
   font-size: 50%;
   margin-left: 0.25em;
 }
+
+/* =========================
+   METER
+   ========================= */
 
 .meter {
   position: fixed;
@@ -154,10 +177,18 @@ body::after {
   border-top-width: 20px;
 }
 
+/* =========================
+   FREQUENCY BARS
+   ========================= */
+
 .frequency-bars {
   position: fixed;
   bottom: 0;
 }
+
+/* =========================
+   RESPONSIVE
+   ========================= */
 
 @media (max-width: 768px) {
   .meter {
@@ -168,6 +199,10 @@ body::after {
     width: 100%;
   }
 }
+
+/* =========================
+   BUTTONS / CONTROLS
+   ========================= */
 
 .swal-button {
   background: #2c3e50;

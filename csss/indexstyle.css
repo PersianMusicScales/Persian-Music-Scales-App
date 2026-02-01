@@ -56,8 +56,19 @@ body {
   min-height: 100vh;
   font-family: Arial, sans-serif;
 
-  /* Background Image */
-background-color: #F3BB6E;
+  background-image: url('../assets/images/indexBackground.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(255,255,255,0.22);
+  pointer-events: none;
+  z-index: -1;
 }
 
 /* ===== Header ===== */

@@ -37,7 +37,7 @@ body::before {
   content: "";
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(240, 244, 248, 0.55); /* cool gray-blue */
   pointer-events: none;
   z-index: -1;
 }

@@ -250,56 +250,32 @@
 
 
 
-  <!-- Prominent quick scale finder: fixed overlay, so it never moves the circle. -->
+  <!-- Direct floating microphone recorder: hold, release, analyze, and loop. -->
   <section id="quickScaleFinder" class="quick-scale-finder" aria-label="Find the scale">
     <button
       id="quickScaleFinderButton"
       class="quick-scale-finder-button"
       type="button"
-      aria-expanded="false"
+      aria-pressed="false"
       aria-controls="quickScaleFinderPanel"
+      aria-describedby="quickScaleFinderHelp"
     >
       <span class="quick-finder-icon-ring" aria-hidden="true">
         <span class="quick-finder-icon-core">🎙</span>
       </span>
       <span class="quick-finder-copy">
         <strong id="quickScaleFinderLabel" data-analyzer-text="quickFindScale">Find the scale</strong>
-        <small id="quickScaleFinderHelp" data-analyzer-text="quickFindScaleHelp">Record or upload a short phrase</small>
+        <small id="quickScaleFinderHelp" data-analyzer-text="quickHoldHint">Hold to record</small>
       </span>
     </button>
 
     <div
       id="quickScaleFinderPanel"
-      class="quick-scale-finder-panel"
-      role="dialog"
-      aria-modal="false"
-      aria-labelledby="quickScaleFinderTitle"
+      class="quick-recording-popover"
+      aria-live="polite"
       hidden
     >
-      <div class="quick-finder-panel-header">
-        <div>
-          <strong id="quickScaleFinderTitle" data-analyzer-text="quickPanelTitle">What scale is this?</strong>
-          <small data-analyzer-text="quickPanelHelp">Record a clear phrase or choose an audio file.</small>
-        </div>
-        <button id="closeQuickScaleFinder" class="quick-finder-close" type="button" aria-label="Close">&times;</button>
-      </div>
-
-      <button
-        id="quickHoldToRecordButton"
-        class="hold-record-button quick-hold-record-button"
-        type="button"
-        aria-pressed="false"
-      >
-        <span class="record-button-ring" aria-hidden="true">
-          <span class="record-button-core">🎙</span>
-        </span>
-        <span class="record-button-copy">
-          <strong data-analyzer-text="holdToRecord">Hold to record</strong>
-          <small data-analyzer-text="releaseToAnalyze">Release the button to stop and analyze automatically.</small>
-        </span>
-      </button>
-
-      <div id="quickRecordingFeedback" class="recording-feedback quick-recording-feedback" data-state="ready" aria-live="polite">
+      <div id="quickRecordingFeedback" class="recording-feedback quick-recording-feedback" data-state="ready">
         <span class="recording-dot" aria-hidden="true"></span>
         <strong id="quickRecordingStatus" data-analyzer-text="recordReady">Microphone ready</strong>
         <time id="quickRecordingTimer" datetime="PT0S">0:00</time>
@@ -308,14 +284,6 @@
         <div id="quickMicrophoneLevel" class="microphone-level-fill"></div>
       </div>
       <button id="quickCancelRecordingButton" class="cancel-recording-button" type="button" hidden data-analyzer-text="cancelRecording">Cancel recording</button>
-
-      <div class="quick-finder-actions">
-        <button id="quickUploadTrackButton" class="quick-finder-secondary" type="button">
-          <span aria-hidden="true">♫</span>
-          <span data-analyzer-text="quickUpload">Upload a track</span>
-        </button>
-        <button id="quickOpenFullAnalyzer" class="quick-finder-text-button" type="button" data-analyzer-text="quickMoreSettings">More settings</button>
-      </div>
       <p class="quick-finder-privacy" data-analyzer-text="microphonePrivacy">The recording stays in this browser and is not uploaded.</p>
     </div>
   </section>

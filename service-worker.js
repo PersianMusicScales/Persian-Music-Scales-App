@@ -1,7 +1,7 @@
-/* Persian Music Scales PWA service worker — automatic analyzer + aligned radial visualizer v4 */
+/* Persian Music Scales PWA service worker — hybrid About template + analyzer v4.1 */
 "use strict";
 
-const CACHE_VERSION = "v8-minor-auto-aligned-visualizer";
+const CACHE_VERSION = "v9-about-hybrid-template";
 const CACHE_NAME = `persian-music-scales-${CACHE_VERSION}`;
 
 /* These files are required for the main application and analyzer shell. */

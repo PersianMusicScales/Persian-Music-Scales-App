@@ -167,6 +167,7 @@
   <main>
     <!-- Circle container -->
     <div class="container" id="circleContainer">
+      <canvas id="radialSpectrumCanvas" class="radial-spectrum-canvas" aria-hidden="true"></canvas>
       <div class="diatonic-scale" id="diatonicScale"></div>
       <div class="outer-scale" id="outerScale"></div>
     </div>
@@ -343,6 +344,64 @@
 
         <p class="analyzer-help" data-analyzer-text="help">Solo and melody-dominant recordings produce the most reliable note sequence.</p>
 
+        <details class="visualizer-settings" open>
+          <summary data-analyzer-text="visualizerTitle">Circular spectrum visualizer</summary>
+          <label class="analyzer-toggle compact" for="visualizerEnabled">
+            <input id="visualizerEnabled" type="checkbox" checked>
+            <span>
+              <strong data-analyzer-text="visualizerEnabled">Show radial spectrum halo</strong>
+              <small data-analyzer-text="visualizerHelp">Bars remain fixed on the circle and grow radially outward with the music.</small>
+            </span>
+          </label>
+          <div class="analyzer-field-grid visualizer-grid">
+            <div class="analyzer-field">
+              <label for="visualizerMode" data-analyzer-text="visualizerMode">Visualizer mode</label>
+              <select id="visualizerMode">
+                <option value="hybrid" data-analyzer-text="visualizerHybrid" selected>Hybrid spectrum + pitch</option>
+                <option value="pitch" data-analyzer-text="visualizerPitch">Pitch-class emphasis</option>
+                <option value="spectrum" data-analyzer-text="visualizerSpectrum">Full frequency spectrum</option>
+                <option value="melody" data-analyzer-text="visualizerMelody">Melody-focused</option>
+                <option value="minimal" data-analyzer-text="visualizerMinimal">Minimal</option>
+              </select>
+            </div>
+            <div class="analyzer-field">
+              <div class="analyzer-range-label">
+                <label for="visualizerSensitivity" data-analyzer-text="visualizerSensitivity">Sensitivity</label>
+                <output id="visualizerSensitivityValue">75%</output>
+              </div>
+              <input id="visualizerSensitivity" class="analyzer-range" type="range" min="20" max="140" value="75" step="1">
+            </div>
+            <div class="analyzer-field">
+              <div class="analyzer-range-label">
+                <label for="visualizerSmoothing" data-analyzer-text="visualizerSmoothing">Smoothing</label>
+                <output id="visualizerSmoothingValue">72%</output>
+              </div>
+              <input id="visualizerSmoothing" class="analyzer-range" type="range" min="0" max="95" value="72" step="1">
+            </div>
+            <div class="analyzer-field">
+              <div class="analyzer-range-label">
+                <label for="visualizerLength" data-analyzer-text="visualizerLength">Maximum bar length</label>
+                <output id="visualizerLengthValue">62%</output>
+              </div>
+              <input id="visualizerLength" class="analyzer-range" type="range" min="20" max="100" value="62" step="1">
+            </div>
+            <div class="analyzer-field">
+              <div class="analyzer-range-label">
+                <label for="visualizerBackground" data-analyzer-text="visualizerBackground">Background intensity</label>
+                <output id="visualizerBackgroundValue">35%</output>
+              </div>
+              <input id="visualizerBackground" class="analyzer-range" type="range" min="0" max="100" value="35" step="1">
+            </div>
+            <div class="analyzer-field">
+              <div class="analyzer-range-label">
+                <label for="visualizerMelodyEmphasis" data-analyzer-text="visualizerMelodyEmphasis">Melody emphasis</label>
+                <output id="visualizerMelodyEmphasisValue">82%</output>
+              </div>
+              <input id="visualizerMelodyEmphasis" class="analyzer-range" type="range" min="0" max="100" value="82" step="1">
+            </div>
+          </div>
+        </details>
+
         <div class="analyzer-actions analyzer-actions-playback">
           <button id="analyzeTrackButton" class="analyzer-button primary" type="button" disabled>Analyze Track</button>
           <button id="trackPlayPauseButton" class="analyzer-button secondary" type="button" disabled>▶ Original</button>
@@ -394,6 +453,10 @@
         </p>
 
         <div id="bestMatch" class="best-match">
+          <div id="ambiguityNotice" class="ambiguity-notice" role="status" aria-live="polite">
+            <strong id="ambiguityTitle"></strong>
+            <p id="ambiguityText"></p>
+          </div>
           <div class="best-match-main">
             <div>
               <h4 id="bestMatchName" class="best-match-name"></h4>
@@ -404,9 +467,42 @@
             </div>
           </div>
           <div class="analyzer-card-heading" style="margin-top: 13px; margin-bottom: 5px;">
-            <h3 data-analyzer-text="alternatives">Other candidates</h3>
+            <h3 data-analyzer-text="alternatives">Candidate interpretations</h3>
+            <span data-analyzer-text="candidateHint">Select one to apply it to the circle</span>
           </div>
-          <div id="candidateList" class="candidate-list"></div>
+          <div id="candidateList" class="candidate-list candidate-choice-list" role="radiogroup" aria-label="Scale candidates"></div>
+
+          <div id="candidateComparison" class="candidate-comparison"></div>
+
+          <div class="manual-override">
+            <div class="analyzer-card-heading">
+              <h3 data-analyzer-text="manualOverride">Manual scale and tonic</h3>
+            </div>
+            <div class="manual-override-grid">
+              <div class="analyzer-field">
+                <label for="manualScale" data-analyzer-text="manualScale">Scale</label>
+                <select id="manualScale">
+                  <option value="Shur">Shur</option>
+                  <option value="nava">Nava</option>
+                  <option value="segah">Segah</option>
+                  <option value="homayoun">Homayoun</option>
+                  <option value="esfahan">Esfahan</option>
+                  <option value="chahargah">Chahargah</option>
+                  <option value="mahur">Mahur / Rast Panjgah</option>
+                </select>
+              </div>
+              <div class="analyzer-field">
+                <label for="manualTonic" data-analyzer-text="manualTonic">Tonic</label>
+                <select id="manualTonic"></select>
+              </div>
+              <button id="applyManualCandidate" class="analyzer-button secondary" type="button" data-analyzer-text="applyManual">Apply interpretation</button>
+            </div>
+          </div>
+
+          <details class="analysis-explanation">
+            <summary data-analyzer-text="whyResult">Why this result?</summary>
+            <p id="analysisExplanationText"></p>
+          </details>
         </div>
       </section>
 

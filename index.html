@@ -300,6 +300,36 @@
           </select>
         </div>
 
+        <label class="analyzer-toggle" for="extractPredominantMelody">
+          <input id="extractPredominantMelody" type="checkbox" checked>
+          <span>
+            <strong data-analyzer-text="extractMelody">Extract a simplified predominant melody</strong>
+            <small data-analyzer-text="extractMelodyHelp">Follow one continuous, hummable melodic line instead of treating every simultaneous note equally.</small>
+          </span>
+        </label>
+
+        <div class="analyzer-field" style="margin-top: 11px;">
+          <div class="analyzer-range-label">
+            <label for="melodicDetail" data-analyzer-text="detail">Melodic detail</label>
+            <output id="melodicDetailValue">65%</output>
+          </div>
+          <input id="melodicDetail" class="analyzer-range" type="range" min="0" max="100" value="65" step="1">
+          <div class="analyzer-range-ends">
+            <span data-analyzer-text="stable">Stable</span>
+            <span data-analyzer-text="detailed">Detailed / ornaments</span>
+          </div>
+        </div>
+
+        <div class="analyzer-field" style="margin-top: 10px;">
+          <label for="melodyRegister" data-analyzer-text="register">Melody register preference</label>
+          <select id="melodyRegister">
+            <option value="auto" data-analyzer-text="registerAuto" selected>Automatic</option>
+            <option value="upper" data-analyzer-text="registerUpper">Prefer upper voice</option>
+            <option value="neutral" data-analyzer-text="registerNeutral">No register preference</option>
+            <option value="lower" data-analyzer-text="registerLower">Prefer lower voice</option>
+          </select>
+        </div>
+
         <div class="analyzer-field-grid" style="margin-top: 10px;">
           <div class="analyzer-field">
             <label for="analysisMinFrequency" data-analyzer-text="minPitch">Lowest pitch (Hz)</label>
@@ -313,9 +343,10 @@
 
         <p class="analyzer-help" data-analyzer-text="help">Solo and melody-dominant recordings produce the most reliable note sequence.</p>
 
-        <div class="analyzer-actions">
+        <div class="analyzer-actions analyzer-actions-playback">
           <button id="analyzeTrackButton" class="analyzer-button primary" type="button" disabled>Analyze Track</button>
-          <button id="trackPlayPauseButton" class="analyzer-button secondary" type="button" disabled>▶ Play</button>
+          <button id="trackPlayPauseButton" class="analyzer-button secondary" type="button" disabled>▶ Original</button>
+          <button id="melodyPlayPauseButton" class="analyzer-button melody" type="button" disabled>♫ Simplified Melody</button>
           <button id="trackStopButton" class="analyzer-button ghost" type="button" disabled>■ Stop</button>
         </div>
 
@@ -339,6 +370,11 @@
         </div>
         <div class="analyzer-canvas-wrap" style="margin-top: 8px;">
           <canvas id="noteTimelineCanvas" aria-label="Detected note timeline"></canvas>
+        </div>
+        <div class="timeline-legend" aria-hidden="true">
+          <span><i class="timeline-key raw"></i><span data-analyzer-text="rawMaterial">Detected material</span></span>
+          <span><i class="timeline-key structural"></i><span data-analyzer-text="structural">Selected melody</span></span>
+          <span><i class="timeline-key ornament"></i><span data-analyzer-text="ornament">Ornament / short note</span></span>
         </div>
         <input id="analysisSeek" class="analyzer-seek" type="range" min="0" max="1000" value="0" step="1" aria-label="Track position">
         <div class="analyzer-time-row">
@@ -390,6 +426,10 @@
           <div class="now-playing-cell">
             <small data-analyzer-text="deviation">Tuning</small>
             <strong id="nowPlayingDeviation">—</strong>
+          </div>
+          <div class="now-playing-cell">
+            <small data-analyzer-text="noteRole">Function</small>
+            <strong id="nowPlayingRole">—</strong>
           </div>
         </div>
       </section>

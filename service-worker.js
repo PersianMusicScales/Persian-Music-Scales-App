@@ -1,7 +1,7 @@
-/* Persian Music Scales PWA service worker — analyzer-ready */
+/* Persian Music Scales PWA service worker — predominant-melody analyzer v2 */
 "use strict";
 
-const CACHE_VERSION = "v5-audio-analyzer";
+const CACHE_VERSION = "v6-predominant-melody";
 const CACHE_NAME = `persian-music-scales-${CACHE_VERSION}`;
 
 /* These files are required for the main application and analyzer shell. */
@@ -80,7 +80,7 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (["script", "style", "worker"].includes(request.destination)) {
-    event.respondWith(staleWhileRevalidate(request));
+    event.respondWith(networkFirstAsset(request));
     return;
   }
 
@@ -100,6 +100,18 @@ async function networkFirstNavigation(request) {
       (await cache.match("./htmls/offline.html")) ||
       new Response("Offline", { status: 503, headers: { "Content-Type": "text/plain" } })
     );
+  }
+}
+
+
+async function networkFirstAsset(request) {
+  const cache = await caches.open(CACHE_NAME);
+  try {
+    const response = await fetch(request, { cache: "no-cache" });
+    if (response.ok) await cache.put(request, response.clone());
+    return response;
+  } catch (error) {
+    return (await cache.match(request)) || new Response("Offline", { status: 503 });
   }
 }
 

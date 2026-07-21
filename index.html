@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XESVPFKGYY"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-XESVPFKGYY');
+</script>
+  
+  <meta name="google-site-verification" content="bar9iVDKejX30uUGMR7PgldOZCrXmeHWHFh6p5Cgv7w" />
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#4B4E6D" />
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Page Title -->
+  <title>Persian Music Scales</title>
+
+  <!-- Description for SEO -->
+  <meta name="description" content="Explore Persian Music Scales with interactive features. Learn about microtones and traditional music scales." />
+
+  <!-- Open Graph Metadata for Link Sharing -->
+  <meta property="og:title" content="Persian Music Scale App" />
+  <meta property="og:description" content="Persian Music Education – Scales, Microtones, and Innovation at Your Fingertips" />
+  <meta property="og:url" content="https://persianmusicscales.github.io/Persian-Music-Scales-App/" />
+  <meta property="og:type" content="website" />
+
+  <!-- Link to External CSS -->
+  <link rel="stylesheet" href="csss/indexstyle.css" />
+  <link rel="stylesheet" href="csss/audio-analyzer.css" />
+
+  <!-- Tap Overlay CSS -->
+  <style>
+    /* Overlay container covers the viewport but does not block pointer events */
+    #tapOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: transparent;
+      z-index: 10000;
+      pointer-events: none;
+    }
+    /* Tap container for layout */
+    .tap-container {
+      position: relative;
+      width: 60px;
+      height: 60px;
+      margin: auto;
+    }
+    /* Wraps both ripple and hand icon so they move together */
+    .tap-animation-wrapper {
+      position: absolute;
+      top: 650%;
+      left: 50%;
+      /* Initially shifted 30px to the right */
+      transform: translate(-50%, -50%) translateX(70px);
+      transition: transform 0.5s ease;
+    }
+    /* When the wrapper gets the "move-left" class, shift 30px to the left */
+    .tap-animation-wrapper.move-left {
+      transform: translate(-50%, -50%) translateX(-70px);
+    }
+    /* Center the ripple inside the wrapper */
+    .ripple {
+      position: absolute;
+      top: 650%;
+      left: 50%;
+      width: 60px;
+      height: 60px;
+      transform: translate(-50%, -50%);
+      border: 2px solid #3498db;
+      border-radius: 50%;
+      animation: ripple 1.5s infinite;
+    }
+    /* Hand icon centered in the wrapper with vertical waving */
+    .hand-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 18px;
+      animation: handWave 1.5s infinite;
+    }
+ 
+    /* Keyframes for the ripple (expanding/fading circle) */
+    @keyframes ripple {
+      0%   { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+    }
+    /* Keyframes for hand vertical waving */
+    @keyframes handWave {
+      0%   { transform: translate(-50%, -50%) translateY(0); }
+      50%  { transform: translate(-50%, -50%) translateY(10px); }
+      100% { transform: translate(-50%, -50%) translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Tap Overlay (visible on top but allows underlying interactions) -->
+  <div id="tapOverlay">
+    <div class="tap-container">
+      <div class="tap-animation-wrapper" id="tapAnimationWrapper">
+        <div class="ripple"></div>
+        <div class="hand-icon">👆</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header>
+    <h1 id="pageTitle">Persian Music Scales</h1>
+    <!-- Language Selector positioned at top right -->
+    <select id="languageSelector" class="language-selector" aria-label="Select Language">
+      <option value="en">en</option>
+      <option value="fr">fr</option>
+      <option value="fa">فا</option>
+    </select>
+  </header>
+
+  <!-- SCALE CONTROLS BELOW HEADER -->
+  <div class="scale-controls">
+    <select id="scaleSelector" aria-label="Select Scale">
+      <option value="Shur">Shur</option>
+      <option value="nava">Nava</option>
+      <option value="segah">Segah</option>
+      <option value="homayoun">Homayoun</option>
+      <option value="esfahan">Esfahan</option>
+      <option value="chahargah">Chahargah</option>
+      <option value="mahur">Mahur / Rast Panjgah</option>
+      <option value="minor">Minor</option>
+    </select>
+    
+    <!-- Avazha Floating Icon -->
+    <div id="avazhaContainer" class="avazha-container">
+      <button id="avazhaButton" class="avazha-button">
+        <span id="avazhaLabel">Avazha</span>
+      </button>
+      <!-- Expandable Columns -->
+      <div id="avazhaColumns" class="avazha-columns hidden">
+        <div class="avazha-column">
+          <div class="avazha-item" data-translate="avazha.abuAta">Abu Ata</div>
+          <div class="avazha-item" data-translate="avazha.bayatTork">Bayat Tork</div>
+          <div class="avazha-item" data-translate="avazha.afshari">Afshari</div>
+          <div class="avazha-item" data-translate="avazha.dashti">Dashti</div>
+        </div>
+        <div class="avazha-column" id="avazhaDynamicColumn">
+          <!-- Dynamic labels will be inserted here via JavaScript -->
+        </div>
+      </div>
+    </div>
+    
+    <!-- Dynamic Label -->
+    <span id="labelAtZeroAngle" class="glow-sun"></span>
+  </div>
+
+  <!-- MAIN: Center the circle, place legend/footer inside -->
+  <main>
+    <!-- Circle container -->
+    <div class="container" id="circleContainer">
+      <canvas id="radialSpectrumCanvas" class="radial-spectrum-canvas" aria-hidden="true"></canvas>
+      <div class="diatonic-scale" id="diatonicScale"></div>
+      <div class="outer-scale" id="outerScale"></div>
+    </div>
+
+    <!-- Play Scale Button Container -->
+    <div class="play-button-container">
+      <button id="playScale">► Play Scale</button>
+    </div>
+
+    <!-- Audio Track Analyzer entry point -->
+    <div class="analyzer-launch-row">
+      <button
+        id="openAudioAnalyzer"
+        class="analyzer-launch-button"
+        type="button"
+        aria-haspopup="dialog"
+        aria-controls="audioAnalyzerDrawer"
+      >🎧 Analyze Track</button>
+      <div id="analysisMiniBadge" class="analysis-mini-badge" aria-live="polite">
+        <strong id="analysisMiniBadgeText"></strong>
+      </div>
+    </div>
+
+     
+    <!-- Add to Home Screen Button -->
+    <button id="add-to-home">Install App</button>
+    
+    <!-- My App Button -->
+    <div class="my-app-container" id="myAppContainer">
+      <button id="myAppButton" class="my-app-button">
+        <div class="my-app-icon">
+          <!-- Insert Your SVG Icon Here -->
+          <img src="assets/icons/myapp_icon.svg" alt="My App Icon">
+        </div>
+      </button>
+      <!-- Bounded Text Label for My App Button -->
+      <span class="my-app-label" data-translate="myAppLabel">App</span>
+    </div>
+
+
+    <!-- Legend at bottom-left, above bottom nav -->
+<div class="legend">
+
+  <div class="legend-row">
+    <div class="legend-item">
+      <span class="color-box" style="background: #48625f;"></span>
+      <span class="glow-sun">200 cents</span>
+    </div>
+
+    <div class="legend-item">
+      <span class="color-box" style="background: black;"></span>
+      <span class="glow-sun">100 cents</span>
+    </div>
+  </div>
+
+  <div class="legend-row">
+    <div class="legend-item">
+      <span class="color-box" style="background: #F7E7C6;"></span>
+      <span class="glow-sun">150 cents</span>
+    </div>
+
+    <div class="legend-item">
+      <span class="color-box" style="background: #1A3B66;"></span>
+      <span class="glow-sun">250 cents</span>
+    </div>
+  </div>
+
+</div>
+
+    <!-- Footer at bottom-right, above bottom nav -->
+    <footer>
+      Copyright © 2024
+      <br/>
+      Pouya Hosseini
+    </footer>
+  </main>
+
+
+
+
+
+  <!-- Prominent quick scale finder: fixed overlay, so it never moves the circle. -->
+  <section id="quickScaleFinder" class="quick-scale-finder" aria-label="Find the scale">
+    <button
+      id="quickScaleFinderButton"
+      class="quick-scale-finder-button"
+      type="button"
+      aria-expanded="false"
+      aria-controls="quickScaleFinderPanel"
+    >
+      <span class="quick-finder-icon-ring" aria-hidden="true">
+        <span class="quick-finder-icon-core">🎙</span>
+      </span>
+      <span class="quick-finder-copy">
+        <strong id="quickScaleFinderLabel" data-analyzer-text="quickFindScale">Find the scale</strong>
+        <small id="quickScaleFinderHelp" data-analyzer-text="quickFindScaleHelp">Record or upload a short phrase</small>
+      </span>
+    </button>
+
+    <div
+      id="quickScaleFinderPanel"
+      class="quick-scale-finder-panel"
+      role="dialog"
+      aria-modal="false"
+      aria-labelledby="quickScaleFinderTitle"
+      hidden
+    >
+      <div class="quick-finder-panel-header">
+        <div>
+          <strong id="quickScaleFinderTitle" data-analyzer-text="quickPanelTitle">What scale is this?</strong>
+          <small data-analyzer-text="quickPanelHelp">Record a clear phrase or choose an audio file.</small>
+        </div>
+        <button id="closeQuickScaleFinder" class="quick-finder-close" type="button" aria-label="Close">&times;</button>
+      </div>
+
+      <button
+        id="quickHoldToRecordButton"
+        class="hold-record-button quick-hold-record-button"
+        type="button"
+        aria-pressed="false"
+      >
+        <span class="record-button-ring" aria-hidden="true">
+          <span class="record-button-core">🎙</span>
+        </span>
+        <span class="record-button-copy">
+          <strong data-analyzer-text="holdToRecord">Hold to record</strong>
+          <small data-analyzer-text="releaseToAnalyze">Release the button to stop and analyze automatically.</small>
+        </span>
+      </button>
+
+      <div id="quickRecordingFeedback" class="recording-feedback quick-recording-feedback" data-state="ready" aria-live="polite">
+        <span class="recording-dot" aria-hidden="true"></span>
+        <strong id="quickRecordingStatus" data-analyzer-text="recordReady">Microphone ready</strong>
+        <time id="quickRecordingTimer" datetime="PT0S">0:00</time>
+      </div>
+      <div class="microphone-level-track" aria-hidden="true">
+        <div id="quickMicrophoneLevel" class="microphone-level-fill"></div>
+      </div>
+      <button id="quickCancelRecordingButton" class="cancel-recording-button" type="button" hidden data-analyzer-text="cancelRecording">Cancel recording</button>
+
+      <div class="quick-finder-actions">
+        <button id="quickUploadTrackButton" class="quick-finder-secondary" type="button">
+          <span aria-hidden="true">♫</span>
+          <span data-analyzer-text="quickUpload">Upload a track</span>
+        </button>
+        <button id="quickOpenFullAnalyzer" class="quick-finder-text-button" type="button" data-analyzer-text="quickMoreSettings">More settings</button>
+      </div>
+      <p class="quick-finder-privacy" data-analyzer-text="microphonePrivacy">The recording stays in this browser and is not uploaded.</p>
+    </div>
+  </section>
+
+
+  <!-- Audio Track Analyzer drawer -->
+  <div id="audioAnalyzerBackdrop" class="audio-analyzer-backdrop" aria-hidden="true"></div>
+  <aside
+    id="audioAnalyzerDrawer"
+    class="audio-analyzer-drawer"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="audioAnalyzerTitle"
+    aria-hidden="true"
+  >
+    <div class="analyzer-drawer-header">
+      <div class="analyzer-title-wrap">
+        <h2 id="audioAnalyzerTitle" data-analyzer-text="title">Track Scale Analyzer</h2>
+        <p data-analyzer-text="subtitle">Detect the strongest scale match and follow the melody on the circle.</p>
+      </div>
+      <button id="closeAudioAnalyzer" class="analyzer-icon-button" type="button" aria-label="Close analyzer">&times;</button>
+    </div>
+
+    <div class="analyzer-scroll">
+      <section class="analyzer-card" aria-labelledby="uploadTrackHeading">
+        <div class="analyzer-card-heading">
+          <h3 id="uploadTrackHeading" data-analyzer-text="uploadTitle">1. Load a recording</h3>
+          <span data-analyzer-text="local">Local processing</span>
+        </div>
+
+        <input id="trackFileInput" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,.webm" hidden>
+        <div id="audioDropZone" class="audio-drop-zone" role="button" tabindex="0">
+          <div>
+            <span class="drop-icon" aria-hidden="true">♫</span>
+            <strong data-analyzer-text="choose">Choose or drop an audio file</strong>
+            <small data-analyzer-text="formats">MP3, WAV, M4A, OGG and browser-supported audio</small>
+          </div>
+        </div>
+
+
+        <div class="analyzer-input-divider" data-analyzer-text="inputOr">or record a phrase</div>
+        <div class="microphone-recorder">
+          <button
+            id="holdToRecordButton"
+            class="hold-record-button"
+            type="button"
+            aria-pressed="false"
+          >
+            <span class="record-button-ring" aria-hidden="true">
+              <span class="record-button-core">🎙</span>
+            </span>
+            <span class="record-button-copy">
+              <strong data-analyzer-text="holdToRecord">Hold to record</strong>
+              <small data-analyzer-text="releaseToAnalyze">Release the button to stop and analyze automatically.</small>
+            </span>
+          </button>
+          <div id="recordingFeedback" class="recording-feedback" data-state="ready" aria-live="polite">
+            <span class="recording-dot" aria-hidden="true"></span>
+            <strong id="recordingStatus" data-analyzer-text="recordReady">Microphone ready</strong>
+            <time id="recordingTimer" datetime="PT0S">0:00</time>
+          </div>
+          <div class="microphone-level-track" aria-hidden="true">
+            <div id="microphoneLevel" class="microphone-level-fill"></div>
+          </div>
+          <button id="cancelRecordingButton" class="cancel-recording-button" type="button" hidden data-analyzer-text="cancelRecording">Cancel recording</button>
+          <p class="microphone-privacy" data-analyzer-text="microphonePrivacy">The recording stays in this browser and is not uploaded.</p>
+        </div>
+
+        <div id="trackSummary" class="track-summary">
+          <strong id="trackName"></strong>
+          <span id="trackMeta"></span>
+        </div>
+        <p class="auto-analysis-hint" data-analyzer-text="autoAnalysisHint">New tracks are analyzed automatically with the recommended defaults, then playback begins.</p>
+      </section>
+
+      <section class="analyzer-card" aria-labelledby="analysisSettingsHeading">
+        <div class="analyzer-card-heading analyzer-card-heading-actions">
+          <h3 id="analysisSettingsHeading" data-analyzer-text="settingsTitle">2. Analysis settings</h3>
+          <button id="resetAnalyzerDefaults" class="analyzer-reset-button" type="button" data-analyzer-text="resetDefaults">Reset defaults</button>
+        </div>
+
+        <div class="analyzer-field">
+          <label for="analysisMode" data-analyzer-text="mode">Recording type</label>
+          <select id="analysisMode">
+            <option value="melody" data-analyzer-text="melody">Solo / melody-dominant</option>
+            <option value="balanced" data-analyzer-text="balanced" selected>Balanced recording</option>
+            <option value="mix" data-analyzer-text="mix">Dense ensemble / full mix</option>
+          </select>
+        </div>
+
+        <label class="analyzer-toggle" for="extractPredominantMelody">
+          <input id="extractPredominantMelody" type="checkbox" checked>
+          <span>
+            <strong data-analyzer-text="extractMelody">Extract a simplified predominant melody</strong>
+            <small data-analyzer-text="extractMelodyHelp">Follow one continuous, hummable melodic line instead of treating every simultaneous note equally.</small>
+          </span>
+        </label>
+
+        <div class="analyzer-field" style="margin-top: 11px;">
+          <div class="analyzer-range-label">
+            <label for="melodicDetail" data-analyzer-text="detail">Melodic detail</label>
+            <output id="melodicDetailValue">65%</output>
+          </div>
+          <input id="melodicDetail" class="analyzer-range" type="range" min="0" max="100" value="65" step="1">
+          <div class="analyzer-range-ends">
+            <span data-analyzer-text="stable">Stable</span>
+            <span data-analyzer-text="detailed">Detailed / ornaments</span>
+          </div>
+        </div>
+
+        <div class="analyzer-field" style="margin-top: 10px;">
+          <label for="melodyRegister" data-analyzer-text="register">Melody register preference</label>
+          <select id="melodyRegister">
+            <option value="auto" data-analyzer-text="registerAuto" selected>Automatic</option>
+            <option value="upper" data-analyzer-text="registerUpper">Prefer upper voice</option>
+            <option value="neutral" data-analyzer-text="registerNeutral">No register preference</option>
+            <option value="lower" data-analyzer-text="registerLower">Prefer lower voice</option>
+          </select>
+        </div>
+
+        <div class="analyzer-field-grid" style="margin-top: 10px;">
+          <div class="analyzer-field">
+            <label for="analysisMinFrequency" data-analyzer-text="minPitch">Lowest pitch (Hz)</label>
+            <input id="analysisMinFrequency" type="number" min="40" max="400" step="5" value="70">
+          </div>
+          <div class="analyzer-field">
+            <label for="analysisMaxFrequency" data-analyzer-text="maxPitch">Highest pitch (Hz)</label>
+            <input id="analysisMaxFrequency" type="number" min="300" max="3000" step="25" value="1400">
+          </div>
+        </div>
+
+        <p class="analyzer-help" data-analyzer-text="help">Solo and melody-dominant recordings produce the most reliable note sequence.</p>
+
+        <details class="visualizer-settings" open>
+          <summary data-analyzer-text="visualizerTitle">Circular spectrum visualizer</summary>
+          <label class="analyzer-toggle compact" for="visualizerEnabled">
+            <input id="visualizerEnabled" type="checkbox" checked>
+            <span>
+              <strong data-analyzer-text="visualizerEnabled">Show radial spectrum halo</strong>
+              <small data-analyzer-text="visualizerHelp">Bars remain fixed on the circle and grow radially outward with the music.</small>
+            </span>
+          </label>
+          <div class="analyzer-field-grid visualizer-grid">
+            <div class="analyzer-field">
+              <label for="visualizerMode" data-analyzer-text="visualizerMode">Visualizer mode</label>
+              <select id="visualizerMode">
+                <option value="hybrid" data-analyzer-text="visualizerHybrid" selected>Hybrid spectrum + pitch</option>
+                <option value="pitch" data-analyzer-text="visualizerPitch">Pitch-class emphasis</option>
+                <option value="spectrum" data-analyzer-text="visualizerSpectrum">Full frequency spectrum</option>
+                <option value="melody" data-analyzer-text="visualizerMelody">Melody-focused</option>
+                <option value="minimal" data-analyzer-text="visualizerMinimal">Minimal</option>
+              </select>
+            </div>
+            <div class="analyzer-field">
+              <div class="analyzer-range-label">
+                <label for="visualizerSensitivity" data-analyzer-text="visualizerSensitivity">Sensitivity</label>
+                <output id="visualizerSensitivityValue">75%</output>
+              </div>
+              <input id="visualizerSensitivity" class="analyzer-range" type="range" min="20" max="140" value="75" step="1">
+            </div>
+            <div class="analyzer-field">
+              <div class="analyzer-range-label">
+                <label for="visualizerSmoothing" data-analyzer-text="visualizerSmoothing">Smoothing</label>
+                <output id="visualizerSmoothingValue">72%</output>
+              </div>
+              <input id="visualizerSmoothing" class="analyzer-range" type="range" min="0" max="95" value="72" step="1">
+            </div>
+            <div class="analyzer-field">
+              <div class="analyzer-range-label">
+                <label for="visualizerLength" data-analyzer-text="visualizerLength">Maximum bar length</label>
+                <output id="visualizerLengthValue">62%</output>
+              </div>
+              <input id="visualizerLength" class="analyzer-range" type="range" min="20" max="100" value="62" step="1">
+            </div>
+            <div class="analyzer-field">
+              <div class="analyzer-range-label">
+                <label for="visualizerBackground" data-analyzer-text="visualizerBackground">Background intensity</label>
+                <output id="visualizerBackgroundValue">35%</output>
+              </div>
+              <input id="visualizerBackground" class="analyzer-range" type="range" min="0" max="100" value="35" step="1">
+            </div>
+            <div class="analyzer-field">
+              <div class="analyzer-range-label">
+                <label for="visualizerMelodyEmphasis" data-analyzer-text="visualizerMelodyEmphasis">Melody emphasis</label>
+                <output id="visualizerMelodyEmphasisValue">82%</output>
+              </div>
+              <input id="visualizerMelodyEmphasis" class="analyzer-range" type="range" min="0" max="100" value="82" step="1">
+            </div>
+          </div>
+        </details>
+
+        <div class="analyzer-actions analyzer-actions-playback">
+          <button id="analyzeTrackButton" class="analyzer-button primary" type="button" disabled>Analyze Track</button>
+          <button id="trackPlayPauseButton" class="analyzer-button secondary" type="button" disabled>▶ Original</button>
+          <button id="melodyPlayPauseButton" class="analyzer-button melody" type="button" disabled>♫ Simplified Melody</button>
+          <button id="trackStopButton" class="analyzer-button ghost" type="button" disabled>■ Stop</button>
+        </div>
+
+        <div class="analyzer-status-row" aria-live="polite">
+          <span id="analysisStatus">Load a track to begin.</span>
+          <strong id="analysisProgressLabel">0%</strong>
+        </div>
+        <div class="analyzer-progress-track" aria-hidden="true">
+          <div id="analysisProgressBar" class="analyzer-progress-bar"></div>
+        </div>
+      </section>
+
+      <section class="analyzer-card" aria-labelledby="timelineHeading">
+        <div class="analyzer-card-heading">
+          <h3 id="timelineHeading" data-analyzer-text="timelineTitle">3. Track and detected-note timeline</h3>
+          <span data-analyzer-text="timelineHint">Seek anywhere</span>
+        </div>
+
+        <div class="analyzer-canvas-wrap">
+          <canvas id="waveformCanvas" aria-label="Audio waveform"></canvas>
+        </div>
+        <div class="analyzer-canvas-wrap" style="margin-top: 8px;">
+          <canvas id="noteTimelineCanvas" aria-label="Detected note timeline"></canvas>
+        </div>
+        <div class="timeline-legend" aria-hidden="true">
+          <span><i class="timeline-key raw"></i><span data-analyzer-text="rawMaterial">Detected material</span></span>
+          <span><i class="timeline-key structural"></i><span data-analyzer-text="structural">Selected melody</span></span>
+          <span><i class="timeline-key ornament"></i><span data-analyzer-text="ornament">Ornament / short note</span></span>
+        </div>
+        <input id="analysisSeek" class="analyzer-seek" type="range" min="0" max="1000" value="0" step="1" aria-label="Track position">
+        <div class="analyzer-time-row">
+          <span id="analysisCurrentTime">0:00</span>
+          <span id="analysisTotalTime">0:00</span>
+        </div>
+        <audio id="analysisAudio" preload="metadata"></audio>
+      </section>
+
+      <section class="analyzer-card" aria-labelledby="resultHeading">
+        <div class="analyzer-card-heading">
+          <h3 id="resultHeading" data-analyzer-text="resultTitle">4. Best scale match</h3>
+        </div>
+
+        <p id="analysisResultPlaceholder" class="analysis-result-placeholder" data-analyzer-text="resultEmpty">
+          The strongest scale candidates will appear here after analysis.
+        </p>
+
+        <div id="bestMatch" class="best-match">
+          <div id="ambiguityNotice" class="ambiguity-notice" role="status" aria-live="polite">
+            <strong id="ambiguityTitle"></strong>
+            <p id="ambiguityText"></p>
+          </div>
+          <div class="best-match-main">
+            <div>
+              <h4 id="bestMatchName" class="best-match-name"></h4>
+              <p id="bestMatchSubtitle" class="best-match-subtitle"></p>
+            </div>
+            <div id="confidenceRing" class="confidence-ring" aria-label="Match confidence">
+              <span id="confidenceText">0%</span>
+            </div>
+          </div>
+          <div class="analyzer-card-heading" style="margin-top: 13px; margin-bottom: 5px;">
+            <h3 data-analyzer-text="alternatives">Candidate interpretations</h3>
+            <span data-analyzer-text="candidateHint">Select one to apply it to the circle</span>
+          </div>
+          <div id="candidateList" class="candidate-list candidate-choice-list" role="radiogroup" aria-label="Scale candidates"></div>
+
+          <div id="candidateComparison" class="candidate-comparison"></div>
+
+          <div class="manual-override">
+            <div class="analyzer-card-heading">
+              <h3 data-analyzer-text="manualOverride">Manual scale and tonic</h3>
+            </div>
+            <div class="manual-override-grid">
+              <div class="analyzer-field">
+                <label for="manualScale" data-analyzer-text="manualScale">Scale</label>
+                <select id="manualScale">
+                  <option value="Shur">Shur</option>
+                  <option value="nava">Nava</option>
+                  <option value="segah">Segah</option>
+                  <option value="homayoun">Homayoun</option>
+                  <option value="esfahan">Esfahan</option>
+                  <option value="chahargah">Chahargah</option>
+                  <option value="mahur">Mahur / Rast Panjgah</option>
+                  <option value="minor">Minor</option>
+                </select>
+              </div>
+              <div class="analyzer-field">
+                <label for="manualTonic" data-analyzer-text="manualTonic">Tonic</label>
+                <select id="manualTonic"></select>
+              </div>
+              <button id="applyManualCandidate" class="analyzer-button secondary" type="button" data-analyzer-text="applyManual">Apply interpretation</button>
+            </div>
+          </div>
+
+          <details class="analysis-explanation">
+            <summary data-analyzer-text="whyResult">Why this result?</summary>
+            <p id="analysisExplanationText"></p>
+          </details>
+        </div>
+      </section>
+
+      <section class="analyzer-card" aria-labelledby="livePlaybackHeading">
+        <div class="analyzer-card-heading">
+          <h3 id="livePlaybackHeading" data-analyzer-text="currentTitle">Live playback</h3>
+        </div>
+        <div class="now-playing-grid">
+          <div class="now-playing-cell">
+            <small data-analyzer-text="currentNote">Note</small>
+            <strong id="nowPlayingNote">—</strong>
+          </div>
+          <div class="now-playing-cell">
+            <small data-analyzer-text="frequency">Frequency</small>
+            <strong id="nowPlayingFrequency">—</strong>
+          </div>
+          <div class="now-playing-cell">
+            <small data-analyzer-text="deviation">Tuning</small>
+            <strong id="nowPlayingDeviation">—</strong>
+          </div>
+          <div class="now-playing-cell">
+            <small data-analyzer-text="noteRole">Function</small>
+            <strong id="nowPlayingRole">—</strong>
+          </div>
+        </div>
+      </section>
+
+      <p class="analyzer-disclaimer" data-analyzer-text="disclaimer">
+        This is a best-match educational analysis, not a definitive dastgah or gusheh classification.
+      </p>
+    </div>
+  </aside>
+
+
+  <!-- Bottom Menu (fixed) -->
+  <nav class="bottom-nav">
+    <a href="index.html">
+      <div class="nav-icon">🎼</div>
+      <span data-translate="bottomNav.scales">Scales</span>
+    </a>
+    <a href="htmls/tuner.html">
+      <div class="nav-icon">🎹</div>
+      <span data-translate="bottomNav.tuner">Tuner</span>
+    </a>
+    <a href="htmls/guide.html">
+      <div class="nav-icon">📖</div>
+      <span data-translate="bottomNav.guide">Guide</span>
+    </a>
+    <a href="htmls/about.html">
+      <div class="nav-icon">ℹ️</div>
+      <span data-translate="bottomNav.about">About</span>
+    </a>
+  </nav>
+
+  <!-- Pop-up Modal for My App Installation Instructions -->
+  <div class="popup-overlay" id="installPopup">
+    <div class="popup-modal">
+      <div class="popup-header">
+        <div class="popup-title" id="popupTitle">Install The App</div>
+        <button class="popup-close" id="closePopup">&times;</button>
+      </div>
+      <div class="popup-content" id="popupContent">
+        <div class="popup-instruction">
+          <!-- Share Icon SVG -->
+          <img src="assets/icons/share.svg" alt="Share Icon">
+          <span id="instructionShare">Tap the Share Button</span>
+        </div>
+        <div class="popup-instruction">
+          <!-- Add to Home Screen Icon SVG -->
+          <img src="assets/icons/add_home.svg" alt="Add to Home Screen Icon">
+          <span id="instructionAdd">Add to Home Screen</span>
+        </div>
+      </div>
+      <button class="popup-button" id="dismissPopup">Understand</button>
+    </div>
+  </div>
+
+  <!-- Global Event Listener for Tap Overlay -->
+  <script>
+    // Determine installation status.
+    // If the app is installed, removal threshold is 1 tap; otherwise, 2 taps.
+    const isInstalled = window.matchMedia('(display-mode: standalone)').matches ||
+                        window.navigator.standalone === true;
+    const removalThreshold = isInstalled ? 1 : 2;
+
+    let tapCount = 0;
+    let touchFired = false;
+    
+    function handleGlobalTap(event) {
+      const overlay = document.getElementById('tapOverlay');
+      if (!overlay) return; // Already removed
+      
+      // On touch devices, ignore the subsequent click if touchstart has fired.
+      if (event.type === 'touchstart') {
+        touchFired = true;
+      } else if (event.type === 'click' && touchFired) {
+        return;
+      }
+      
+      tapCount++;
+      // For not-installed apps, on first tap move the animation wrapper.
+      if (tapCount === 1 && removalThreshold === 2) {
+        const wrapper = document.getElementById('tapAnimationWrapper');
+        if (wrapper) {
+          wrapper.classList.add('move-left');
+        }
+      }
+      // Remove the overlay when the tap count reaches the threshold.
+      if (tapCount >= removalThreshold) {
+        overlay.style.transition = 'opacity 0.3s ease';
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+          if (overlay.parentNode) {
+            overlay.parentNode.removeChild(overlay);
+          }
+        }, 300);
+        document.removeEventListener('click', handleGlobalTap, true);
+        document.removeEventListener('touchstart', handleGlobalTap, true);
+      }
+      // Allow event propagation so underlying interactions (e.g., diatonic rotation) still work.
+    }
+    
+    // Use capturing so that our handler counts taps even if other handlers exist.
+    document.addEventListener('touchstart', handleGlobalTap, true);
+    document.addEventListener('click', handleGlobalTap, true);
+  </script>
+
+  <!-- External Scripts -->
+  <script src="src/index.js"></script>
+  <script src="src/audio-analyzer.js"></script>
+</body>
+</html>
+
+
+
+
+

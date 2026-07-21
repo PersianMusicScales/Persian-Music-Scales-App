@@ -36,6 +36,7 @@
 
   <!-- Link to External CSS -->
   <link rel="stylesheet" href="csss/indexstyle.css" />
+  <link rel="stylesheet" href="csss/audio-analyzer.css" />
 
   <!-- Tap Overlay CSS -->
   <style>
@@ -174,6 +175,21 @@
     <div class="play-button-container">
       <button id="playScale">► Play Scale</button>
     </div>
+
+    <!-- Audio Track Analyzer entry point -->
+    <div class="analyzer-launch-row">
+      <button
+        id="openAudioAnalyzer"
+        class="analyzer-launch-button"
+        type="button"
+        aria-haspopup="dialog"
+        aria-controls="audioAnalyzerDrawer"
+      >🎧 Analyze Track</button>
+      <div id="analysisMiniBadge" class="analysis-mini-badge" aria-live="polite">
+        <strong id="analysisMiniBadgeText"></strong>
+      </div>
+    </div>
+
      
     <!-- Add to Home Screen Button -->
     <button id="add-to-home">Install App</button>
@@ -227,6 +243,163 @@
       Pouya Hosseini
     </footer>
   </main>
+
+
+
+  <!-- Audio Track Analyzer drawer -->
+  <div id="audioAnalyzerBackdrop" class="audio-analyzer-backdrop" aria-hidden="true"></div>
+  <aside
+    id="audioAnalyzerDrawer"
+    class="audio-analyzer-drawer"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="audioAnalyzerTitle"
+    aria-hidden="true"
+  >
+    <div class="analyzer-drawer-header">
+      <div class="analyzer-title-wrap">
+        <h2 id="audioAnalyzerTitle" data-analyzer-text="title">Track Scale Analyzer</h2>
+        <p data-analyzer-text="subtitle">Detect the strongest scale match and follow the melody on the circle.</p>
+      </div>
+      <button id="closeAudioAnalyzer" class="analyzer-icon-button" type="button" aria-label="Close analyzer">&times;</button>
+    </div>
+
+    <div class="analyzer-scroll">
+      <section class="analyzer-card" aria-labelledby="uploadTrackHeading">
+        <div class="analyzer-card-heading">
+          <h3 id="uploadTrackHeading" data-analyzer-text="uploadTitle">1. Load a recording</h3>
+          <span data-analyzer-text="local">Local processing</span>
+        </div>
+
+        <input id="trackFileInput" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac,.webm" hidden>
+        <div id="audioDropZone" class="audio-drop-zone" role="button" tabindex="0">
+          <div>
+            <span class="drop-icon" aria-hidden="true">♫</span>
+            <strong data-analyzer-text="choose">Choose or drop an audio file</strong>
+            <small data-analyzer-text="formats">MP3, WAV, M4A, OGG and browser-supported audio</small>
+          </div>
+        </div>
+
+        <div id="trackSummary" class="track-summary">
+          <strong id="trackName"></strong>
+          <span id="trackMeta"></span>
+        </div>
+      </section>
+
+      <section class="analyzer-card" aria-labelledby="analysisSettingsHeading">
+        <div class="analyzer-card-heading">
+          <h3 id="analysisSettingsHeading" data-analyzer-text="settingsTitle">2. Analysis settings</h3>
+        </div>
+
+        <div class="analyzer-field">
+          <label for="analysisMode" data-analyzer-text="mode">Recording type</label>
+          <select id="analysisMode">
+            <option value="melody" data-analyzer-text="melody">Solo / melody-dominant</option>
+            <option value="balanced" data-analyzer-text="balanced" selected>Balanced recording</option>
+            <option value="mix" data-analyzer-text="mix">Dense ensemble / full mix</option>
+          </select>
+        </div>
+
+        <div class="analyzer-field-grid" style="margin-top: 10px;">
+          <div class="analyzer-field">
+            <label for="analysisMinFrequency" data-analyzer-text="minPitch">Lowest pitch (Hz)</label>
+            <input id="analysisMinFrequency" type="number" min="40" max="400" step="5" value="70">
+          </div>
+          <div class="analyzer-field">
+            <label for="analysisMaxFrequency" data-analyzer-text="maxPitch">Highest pitch (Hz)</label>
+            <input id="analysisMaxFrequency" type="number" min="300" max="3000" step="25" value="1400">
+          </div>
+        </div>
+
+        <p class="analyzer-help" data-analyzer-text="help">Solo and melody-dominant recordings produce the most reliable note sequence.</p>
+
+        <div class="analyzer-actions">
+          <button id="analyzeTrackButton" class="analyzer-button primary" type="button" disabled>Analyze Track</button>
+          <button id="trackPlayPauseButton" class="analyzer-button secondary" type="button" disabled>▶ Play</button>
+          <button id="trackStopButton" class="analyzer-button ghost" type="button" disabled>■ Stop</button>
+        </div>
+
+        <div class="analyzer-status-row" aria-live="polite">
+          <span id="analysisStatus">Load a track to begin.</span>
+          <strong id="analysisProgressLabel">0%</strong>
+        </div>
+        <div class="analyzer-progress-track" aria-hidden="true">
+          <div id="analysisProgressBar" class="analyzer-progress-bar"></div>
+        </div>
+      </section>
+
+      <section class="analyzer-card" aria-labelledby="timelineHeading">
+        <div class="analyzer-card-heading">
+          <h3 id="timelineHeading" data-analyzer-text="timelineTitle">3. Track and detected-note timeline</h3>
+          <span data-analyzer-text="timelineHint">Seek anywhere</span>
+        </div>
+
+        <div class="analyzer-canvas-wrap">
+          <canvas id="waveformCanvas" aria-label="Audio waveform"></canvas>
+        </div>
+        <div class="analyzer-canvas-wrap" style="margin-top: 8px;">
+          <canvas id="noteTimelineCanvas" aria-label="Detected note timeline"></canvas>
+        </div>
+        <input id="analysisSeek" class="analyzer-seek" type="range" min="0" max="1000" value="0" step="1" aria-label="Track position">
+        <div class="analyzer-time-row">
+          <span id="analysisCurrentTime">0:00</span>
+          <span id="analysisTotalTime">0:00</span>
+        </div>
+        <audio id="analysisAudio" preload="metadata"></audio>
+      </section>
+
+      <section class="analyzer-card" aria-labelledby="resultHeading">
+        <div class="analyzer-card-heading">
+          <h3 id="resultHeading" data-analyzer-text="resultTitle">4. Best scale match</h3>
+        </div>
+
+        <p id="analysisResultPlaceholder" class="analysis-result-placeholder" data-analyzer-text="resultEmpty">
+          The strongest scale candidates will appear here after analysis.
+        </p>
+
+        <div id="bestMatch" class="best-match">
+          <div class="best-match-main">
+            <div>
+              <h4 id="bestMatchName" class="best-match-name"></h4>
+              <p id="bestMatchSubtitle" class="best-match-subtitle"></p>
+            </div>
+            <div id="confidenceRing" class="confidence-ring" aria-label="Match confidence">
+              <span id="confidenceText">0%</span>
+            </div>
+          </div>
+          <div class="analyzer-card-heading" style="margin-top: 13px; margin-bottom: 5px;">
+            <h3 data-analyzer-text="alternatives">Other candidates</h3>
+          </div>
+          <div id="candidateList" class="candidate-list"></div>
+        </div>
+      </section>
+
+      <section class="analyzer-card" aria-labelledby="livePlaybackHeading">
+        <div class="analyzer-card-heading">
+          <h3 id="livePlaybackHeading" data-analyzer-text="currentTitle">Live playback</h3>
+        </div>
+        <div class="now-playing-grid">
+          <div class="now-playing-cell">
+            <small data-analyzer-text="currentNote">Note</small>
+            <strong id="nowPlayingNote">—</strong>
+          </div>
+          <div class="now-playing-cell">
+            <small data-analyzer-text="frequency">Frequency</small>
+            <strong id="nowPlayingFrequency">—</strong>
+          </div>
+          <div class="now-playing-cell">
+            <small data-analyzer-text="deviation">Tuning</small>
+            <strong id="nowPlayingDeviation">—</strong>
+          </div>
+        </div>
+      </section>
+
+      <p class="analyzer-disclaimer" data-analyzer-text="disclaimer">
+        This is a best-match educational analysis, not a definitive dastgah or gusheh classification.
+      </p>
+    </div>
+  </aside>
+
 
   <!-- Bottom Menu (fixed) -->
   <nav class="bottom-nav">
@@ -323,6 +496,7 @@
 
   <!-- External Scripts -->
   <script src="src/index.js"></script>
+  <script src="src/audio-analyzer.js"></script>
 </body>
 </html>
 

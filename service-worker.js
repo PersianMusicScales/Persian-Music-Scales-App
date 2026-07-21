@@ -1,7 +1,7 @@
-/* Persian Music Scales PWA service worker — predominant-melody analyzer v2 */
+/* Persian Music Scales PWA service worker — selectable modal analyzer + radial visualizer v3 */
 "use strict";
 
-const CACHE_VERSION = "v6-predominant-melody";
+const CACHE_VERSION = "v7-modal-radial-visualizer";
 const CACHE_NAME = `persian-music-scales-${CACHE_VERSION}`;
 
 /* These files are required for the main application and analyzer shell. */

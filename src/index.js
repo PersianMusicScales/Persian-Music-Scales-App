@@ -361,6 +361,31 @@ function updateDynamicLabels() {
   labelAtZeroAngle.dataset.singleNote = zeroResult.parseableText.split("/")[0].trim();
 }
 
+function updateScaleTextSummary() {
+  const summary = document.getElementById("currentScaleSummaryText");
+  if (!summary) return;
+
+  const scaleName = scaleSelector.value;
+  const scale = scaleData[scaleName];
+  if (!scale) return;
+
+  const displayName =
+    translations[currentLanguage] &&
+    translations[currentLanguage].scales &&
+    translations[currentLanguage].scales[scaleName]
+      ? translations[currentLanguage].scales[scaleName]
+      : scaleName;
+
+  const cents = scale.angles.map((angle) => Math.round((angle * 1200) / 360));
+  const notes = Array.from(outerScale.querySelectorAll(".dynamic-label"))
+    .map((label) => label.dataset.singleNote)
+    .filter(Boolean);
+
+  summary.textContent =
+    `${displayName} — cumulative pitch positions: ${cents.join(", ")} cents from the selected tonic.` +
+    (notes.length ? ` Current displayed notes: ${notes.join(", ")}.` : "");
+}
+
 /* ---------- Rotate the Scale on Click ---------- */
 function rotateScale(evt) {
   const rect = circleContainer.getBoundingClientRect();
@@ -369,6 +394,7 @@ function rotateScale(evt) {
 
   diatonicScale.style.transform = `rotate(${rotation}deg)`;
   updateDynamicLabels();
+  updateScaleTextSummary();
   populateAvazhaDynamicColumn(); // Also update Avazha column
 
   if (navigator.vibrate) navigator.vibrate(50);
@@ -423,7 +449,12 @@ function updateUIControls() {
   playScaleBtn.textContent = playButton;
 
   // Update the page title
-  document.title = title;
+  document.title =
+    currentLanguage === "fa"
+      ? "گام‌های موسیقی ایرانی – دستگاه، ریزپرده و تحلیل تعاملی"
+      : currentLanguage === "fr"
+        ? "Échelles de musique persane – Dastgah, microtons et analyse interactive"
+        : "Persian Music Scales – Dastgah, Microtones & Interactive Scale Analyzer";
   pageTitle.textContent = title;
 
   // Update bottom navigation labels
@@ -478,6 +509,7 @@ languageSelector.addEventListener("change", () => {
   currentLanguage = languageSelector.value;
   updateStaticLabels();
   updateDynamicLabels();
+  updateScaleTextSummary();
   updateUIControls();
   populateAvazhaDynamicColumn();
 
@@ -493,6 +525,7 @@ languageSelector.addEventListener("change", () => {
 scaleSelector.addEventListener("change", () => {
   updateOuterScale(scaleSelector.value);
   updateDynamicLabels();
+  updateScaleTextSummary();
   updateUIControls();
   updateAvazhaVisibility();
   if (navigator.vibrate) navigator.vibrate(100);
@@ -532,6 +565,7 @@ window.addEventListener("appinstalled", () => {
 updateOuterScale("Shur");
 updateStaticLabels();
 updateDynamicLabels();
+updateScaleTextSummary();
 updateUIControls();
 updateAvazhaVisibility();
 toggleMyAppButton();

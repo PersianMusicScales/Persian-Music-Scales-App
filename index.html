@@ -23,16 +23,53 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Page Title -->
-  <title>Persian Music Scales</title>
+  <title>Persian Music Scales – Dastgah, Microtones & Interactive Scale Analyzer</title>
 
-  <!-- Description for SEO -->
-  <meta name="description" content="Explore Persian Music Scales with interactive features. Learn about microtones and traditional music scales." />
+  <meta name="description" content="Interactive educational reference for Persian music scales and modal pitch structures. Explore Shur, Nava, Segah, Homayoun, Esfahan, Chahargah, Mahur / Rast Panjgah, koron, sori, microtonal intervals, transposition, tuning and browser-based melody analysis." />
+  <meta name="author" content="Pouya Hosseini" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <meta name="keywords" content="Persian music, Iranian music, Persian music theory, dastgah, avaz, Shur, Nava, Segah, Chahargah, Homayoun, Esfahan, Mahur, Rast Panjgah, koron, sori, microtonal music, Persian scales, pitch analysis" />
+  <link rel="canonical" href="https://persianmusicscales.github.io/Persian-Music-Scales-App/" />
+  <link rel="describedby" href="https://persianmusicscales.github.io/Persian-Music-Scales-App/llms.txt" />
 
-  <!-- Open Graph Metadata for Link Sharing -->
-  <meta property="og:title" content="Persian Music Scale App" />
-  <meta property="og:description" content="Persian Music Education – Scales, Microtones, and Innovation at Your Fingertips" />
-  <meta property="og:url" content="https://persianmusicscales.github.io/Persian-Music-Scales-App/" />
   <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Persian Music Scales" />
+  <meta property="og:title" content="Persian Music Scales – Interactive Persian Music Theory" />
+  <meta property="og:description" content="Explore Persian scales, dastgah-related pitch structures, koron, sori, microtonal intervals, transposition, tuning and melody analysis." />
+  <meta property="og:url" content="https://persianmusicscales.github.io/Persian-Music-Scales-App/" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Persian Music Scales" />
+  <meta name="twitter:description" content="Interactive Persian music scale, microtone, tuning and melody-analysis reference." />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Persian Music Scales",
+    "alternateName": "Persian Music Scales App",
+    "url": "https://persianmusicscales.github.io/Persian-Music-Scales-App/",
+    "description": "Interactive educational web application for exploring Persian music scales, dastgah-related pitch structures, microtonal intervals, koron, sori, transposition, tuning, predominant-melody extraction and candidate scale recognition.",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "Web browser",
+    "isAccessibleForFree": true,
+    "inLanguage": ["en", "fa", "fr"],
+    "keywords": ["Persian music","Iranian music","Persian music theory","dastgah","avaz","microtonal music","koron","sori","Shur","Segah","Chahargah","Homayoun","Nava","Mahur","Rast Panjgah","Esfahan","pitch analysis","music information retrieval"],
+    "creator": {
+      "@type": "Person",
+      "name": "Pouya Hosseini",
+      "sameAs": [
+        "https://github.com/PersianMusicScales",
+        "https://www.youtube.com/@pouya-hosseini",
+        "https://www.linkedin.com/in/drpouyahosseini"
+      ]
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "EUR"
+    }
+  }
+  </script>
 
   <!-- Link to External CSS -->
   <link rel="stylesheet" href="csss/indexstyle.css" />
@@ -177,6 +214,11 @@
     <div class="play-button-container">
       <button id="playScale">► Play Scale</button>
     </div>
+    <section id="currentScaleSummary" class="visually-hidden" aria-live="polite" aria-atomic="true">
+      <h2>Current scale model</h2>
+      <p id="currentScaleSummaryText">Shur — cumulative pitch positions: 0, 150, 300, 500, 700, 800 and 1000 cents from the selected tonic.</p>
+    </section>
+
 
     <!-- Audio Track Analyzer entry point -->
     <div class="analyzer-launch-row">
@@ -245,6 +287,24 @@
       Pouya Hosseini
     </footer>
   </main>
+
+  <section class="project-introduction" aria-labelledby="projectIntroductionTitle">
+    <h2 id="projectIntroductionTitle">Persian music theory reference and interactive tools</h2>
+    <p>
+      Persian Music Scales is an educational web application for exploring pitch and interval relationships used in Persian classical music. It includes interactive models for Shur, Nava, Segah, Homayoun, Esfahan, Chahargah and Mahur / Rast Panjgah, together with transposition, scale playback, a chromatic tuner and browser-based melody analysis.
+    </p>
+    <p>
+      The numerical scale models describe pitch collections used by this application. They are not complete definitions of a dastgah or gusheh: modal identity can also depend on melodic hierarchy, finalis, shahed, characteristic phrases, variable tones, modulation, context and performance practice.
+    </p>
+    <nav class="project-reference-links" aria-label="Persian Music Scales reference">
+      <a href="reference/">Reference</a>
+      <a href="reference/methodology.html">Methodology</a>
+      <a href="reference/audio-analysis.html">Audio analysis</a>
+      <a href="reference/glossary.html">Glossary</a>
+      <a href="reference/dataset.html">Dataset</a>
+    </nav>
+  </section>
+
 
 
 

@@ -1,7 +1,7 @@
 /* Persian Music Scales PWA service worker — iOS playback + on-demand example audio v5.5 */
 "use strict";
 
-const CACHE_VERSION = "v15-ios-buffer-playback-example";
+const CACHE_VERSION = "v11-reference-library";
 const CACHE_NAME = `persian-music-scales-${CACHE_VERSION}`;
 
 /* These files are required for the main application and analyzer shell. */
@@ -19,19 +19,23 @@ const CORE_FILES = [
 
 /* Optional pages/assets should not make installation fail if one is renamed. */
 const OPTIONAL_FILES = [
-  "./htmls/about.html",
-  "./htmls/guide.html",
-  "./htmls/tuner.html",
-  "./csss/aboutstyle.css",
-  "./csss/guidestyle.css",
-  "./csss/tunerstyle.css",
-  "./src/frequency-bars.js",
-  "./src/meter.js",
-  "./src/tuner.js",
-  "./assets/icons/icon-192x192.png",
-  "./assets/icons/myapp_icon.svg",
-  "./assets/icons/share.svg",
-  "./assets/icons/add_home.svg",
+  "./reference/index.html",
+  "./reference/reference.css",
+  "./reference/shur.html",
+  "./reference/nava.html",
+  "./reference/segah.html",
+  "./reference/homayoun.html",
+  "./reference/esfahan.html",
+  "./reference/chahargah.html",
+  "./reference/mahur-rast-panjgah.html",
+  "./reference/dastgah-and-avaz.html",
+  "./reference/microtones-koron-sori.html",
+  "./reference/methodology.html",
+  "./reference/audio-analysis.html",
+  "./reference/glossary.html",
+  "./reference/dataset.html",
+  "./reference/sources.html",
+  "./data/persian-scales.json"
 ];
 
 self.addEventListener("install", (event) => {

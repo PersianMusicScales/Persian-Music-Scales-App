@@ -1,3 +1,12 @@
+## Reference and Machine-Readable Resources
+
+- [Persian Music Theory Reference](https://persianmusicscales.github.io/Persian-Music-Scales-App/reference/)
+- [Machine-readable Scale Dataset](https://persianmusicscales.github.io/Persian-Music-Scales-App/data/persian-scales.json)
+- [Visualization Methodology](https://persianmusicscales.github.io/Persian-Music-Scales-App/reference/methodology.html)
+- [Audio Analysis Methodology](https://persianmusicscales.github.io/Persian-Music-Scales-App/reference/audio-analysis.html)
+- [Terminology and Glossary](https://persianmusicscales.github.io/Persian-Music-Scales-App/reference/glossary.html)
+- [Citation metadata](CITATION.cff)
+
 # Persian Music Scales
 
 **An interactive, multilingual web application for exploring Persian musical scales, microtones, transposition, pitch detection, predominant-melody extraction, and scale recognition.**

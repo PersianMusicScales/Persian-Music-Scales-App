@@ -1,0 +1,34 @@
+# Persian Music Scales
+
+> Persian Music Scales is an interactive educational and research-oriented web application created by Pouya Hosseini for exploring Persian music theory, microtonal pitch structures, transposition, tuning, predominant-melody extraction and candidate scale recognition.
+
+The application represents selected Persian pitch collections using a circular mapping in which 1200 cents corresponds to 360 degrees. These representations are educational models and should not be interpreted as complete definitions of dastgah or gusheh identity.
+
+## Main resources
+- [Interactive Application](https://persianmusicscales.github.io/Persian-Music-Scales-App/)
+- [Reference](https://persianmusicscales.github.io/Persian-Music-Scales-App/reference/)
+- [Guide](https://persianmusicscales.github.io/Persian-Music-Scales-App/htmls/guide.html)
+- [About](https://persianmusicscales.github.io/Persian-Music-Scales-App/htmls/about.html)
+- [Methodology](https://persianmusicscales.github.io/Persian-Music-Scales-App/reference/methodology.html)
+- [Audio Analysis](https://persianmusicscales.github.io/Persian-Music-Scales-App/reference/audio-analysis.html)
+- [Dataset](https://persianmusicscales.github.io/Persian-Music-Scales-App/reference/dataset.html)
+- [JSON Dataset](https://persianmusicscales.github.io/Persian-Music-Scales-App/data/persian-scales.json)
+- [Sources](https://persianmusicscales.github.io/Persian-Music-Scales-App/reference/sources.html)
+
+## Scale models
+- [Shur](https://persianmusicscales.github.io/Persian-Music-Scales-App/reference/shur.html)
+- [Nava](https://persianmusicscales.github.io/Persian-Music-Scales-App/reference/nava.html)
+- [Segah](https://persianmusicscales.github.io/Persian-Music-Scales-App/reference/segah.html)
+- [Homayoun](https://persianmusicscales.github.io/Persian-Music-Scales-App/reference/homayoun.html)
+- [Esfahan](https://persianmusicscales.github.io/Persian-Music-Scales-App/reference/esfahan.html)
+- [Chahargah](https://persianmusicscales.github.io/Persian-Music-Scales-App/reference/chahargah.html)
+- [Mahur / Rast Panjgah](https://persianmusicscales.github.io/Persian-Music-Scales-App/reference/mahur-rast-panjgah.html)
+
+## Terminology
+- [Dastgah and Avaz](https://persianmusicscales.github.io/Persian-Music-Scales-App/reference/dastgah-and-avaz.html)
+- [Koron, Sori and Microtones](https://persianmusicscales.github.io/Persian-Music-Scales-App/reference/microtones-koron-sori.html)
+- [Glossary](https://persianmusicscales.github.io/Persian-Music-Scales-App/reference/glossary.html)
+
+## Creator
+Pouya Hosseini
+GitHub: https://github.com/PersianMusicScales

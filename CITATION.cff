@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use Persian Music Scales in research, teaching, or scholarly work, please cite the software and project."
+title: "Persian Music Scales"
+type: software
+authors:
+  - family-names: "Hosseini"
+    given-names: "Pouya"
+repository-code: "https://github.com/PersianMusicScales/Persian-Music-Scales-App"
+url: "https://persianmusicscales.github.io/Persian-Music-Scales-App/"
+license: "MIT"

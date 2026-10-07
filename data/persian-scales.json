@@ -1,0 +1,237 @@
+{
+  "name": "Persian Music Scales Dataset",
+  "schemaVersion": "1.0",
+  "creator": "Pouya Hosseini",
+  "projectUrl": "https://persianmusicscales.github.io/Persian-Music-Scales-App/",
+  "unit": "cents",
+  "octaveCents": 1200,
+  "angleConversion": "angleDegrees = cents * 360 / 1200",
+  "modelNote": "These are educational pitch-collection models used by the Persian Music Scales application. They should not be interpreted as complete definitions of dastgah or gusheh identity.",
+  "scales": [
+    {
+      "id": "shur",
+      "name": "Shur",
+      "persianName": "شور",
+      "anglesDegrees": [
+        0,
+        45,
+        90,
+        150,
+        210,
+        240,
+        300
+      ],
+      "cumulativeCents": [
+        0,
+        150,
+        300,
+        500,
+        700,
+        800,
+        1000
+      ],
+      "stepIntervalsCents": [
+        150,
+        150,
+        200,
+        200,
+        100,
+        200,
+        200
+      ]
+    },
+    {
+      "id": "nava",
+      "name": "Nava",
+      "persianName": "نوا",
+      "anglesDegrees": [
+        0,
+        60,
+        90,
+        150,
+        210,
+        255,
+        300
+      ],
+      "cumulativeCents": [
+        0,
+        200,
+        300,
+        500,
+        700,
+        850,
+        1000
+      ],
+      "stepIntervalsCents": [
+        200,
+        100,
+        200,
+        200,
+        150,
+        150,
+        200
+      ]
+    },
+    {
+      "id": "segah",
+      "name": "Segah",
+      "persianName": "سه‌گاه",
+      "anglesDegrees": [
+        0,
+        60,
+        105,
+        150,
+        210,
+        255,
+        300
+      ],
+      "cumulativeCents": [
+        0,
+        200,
+        350,
+        500,
+        700,
+        850,
+        1000
+      ],
+      "stepIntervalsCents": [
+        200,
+        150,
+        150,
+        200,
+        150,
+        150,
+        200
+      ]
+    },
+    {
+      "id": "homayoun",
+      "name": "Homayoun",
+      "persianName": "همایون",
+      "anglesDegrees": [
+        0,
+        45,
+        120,
+        150,
+        210,
+        240,
+        300
+      ],
+      "cumulativeCents": [
+        0,
+        150,
+        400,
+        500,
+        700,
+        800,
+        1000
+      ],
+      "stepIntervalsCents": [
+        150,
+        250,
+        100,
+        200,
+        100,
+        200,
+        200
+      ]
+    },
+    {
+      "id": "esfahan",
+      "name": "Esfahan",
+      "persianName": "اصفهان",
+      "anglesDegrees": [
+        0,
+        60,
+        90,
+        150,
+        210,
+        255,
+        330
+      ],
+      "cumulativeCents": [
+        0,
+        200,
+        300,
+        500,
+        700,
+        850,
+        1100
+      ],
+      "stepIntervalsCents": [
+        200,
+        100,
+        200,
+        200,
+        150,
+        250,
+        100
+      ]
+    },
+    {
+      "id": "chahargah",
+      "name": "Chahargah",
+      "persianName": "چهارگاه",
+      "anglesDegrees": [
+        0,
+        45,
+        120,
+        150,
+        210,
+        255,
+        330
+      ],
+      "cumulativeCents": [
+        0,
+        150,
+        400,
+        500,
+        700,
+        850,
+        1100
+      ],
+      "stepIntervalsCents": [
+        150,
+        250,
+        100,
+        200,
+        150,
+        250,
+        100
+      ]
+    },
+    {
+      "id": "mahur-rast-panjgah",
+      "name": "Mahur / Rast Panjgah",
+      "persianName": "ماهور / راست پنجگاه",
+      "anglesDegrees": [
+        0,
+        60,
+        120,
+        150,
+        210,
+        270,
+        330
+      ],
+      "cumulativeCents": [
+        0,
+        200,
+        400,
+        500,
+        700,
+        900,
+        1100
+      ],
+      "stepIntervalsCents": [
+        200,
+        200,
+        100,
+        200,
+        200,
+        200,
+        100
+      ],
+      "note": "The current application uses this shared pitch-collection representation. This does not imply that Mahur and Rast Panjgah are identical modal systems."
+    }
+  ]
+}

@@ -624,3 +624,43 @@ footer {
   left: 80px;
   right: auto;
 }
+
+
+/* Semantic project/reference section: improves discoverability without changing the app workflow. */
+.project-introduction {
+  box-sizing: border-box;
+  width: min(960px, calc(100% - 32px));
+  margin: 28px auto 110px;
+  padding: 18px 20px;
+  border: 1px solid rgba(75, 78, 109, 0.22);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+  line-height: 1.55;
+}
+.project-introduction h2 {
+  margin: 0 0 10px;
+  font-size: 1.15rem;
+}
+.project-introduction p {
+  margin: 8px 0;
+}
+.project-reference-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-top: 12px;
+}
+.project-reference-links a {
+  font-weight: 600;
+}
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}

@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-message: "If you use Persian Music Scales in research, teaching, or scholarly work, please cite the software and project."
+message: "Please cite Persian Music Scales when referring to this work. Reuse of source code or project components requires prior written permission from the author; see LICENSE."
 title: "Persian Music Scales"
 type: software
 authors:

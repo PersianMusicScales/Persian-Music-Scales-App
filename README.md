@@ -568,7 +568,7 @@ temporary Ist and Dashti variable notes are not silently inserted into scale
 playback or automatic analysis. Bayat-e Tork intentionally has no universal
 Finalis assignment in the current reference context.
 
-**Definitions, degree mappings, cautions, source bibliography and future
+**Languages:** the Shahed/Finalis legend and the entire “About these notes” reference panel — context, limitations, verification status, and bibliography labels — are available in English, French, and Persian for all nine scale selections and all four Shur-related āvāzha. Source links retain their original scholarly URLs.\n\n**Definitions, degree mappings, cautions, source bibliography and future
 verification requirements:** [Modal roles research](docs/modal-roles-research.md).
 Do not merge this draft before browser tests pass and the role defaults have
 been reviewed for source accuracy.

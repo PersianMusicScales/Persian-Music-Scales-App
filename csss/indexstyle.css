@@ -664,3 +664,56 @@ footer {
   white-space: nowrap !important;
   border: 0 !important;
 }
+
+/* Modal-function labels: additive styles, never replace the original pitch colors.
+ * A gold star = Shahed, a blue diamond = Finalis / Ist.
+ * One note may carry both roles.
+ */
+.dynamic-label.modal-shahed {
+  outline: 3px solid #d49a15;
+  outline-offset: 2px;
+  box-shadow: 0 0 9px rgba(244, 189, 45, .65);
+}
+.dynamic-label.modal-finalis {
+  border-bottom: 4px solid #397ac2;
+}
+.dynamic-label.modal-tonic {
+  outline: 3px solid #397ac2;
+  outline-offset: 2px;
+}
+.dynamic-label.modal-shahed::before {
+  content: "★";
+  color: #8e5900;
+  padding-inline-end: .2em;
+}
+.dynamic-label.modal-finalis::after {
+  content: " ◆";
+  color: #1453a0;
+}
+.dynamic-label.modal-tonic::before {
+  content: "● ";
+  color: #1453a0;
+}
+.modal-role-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .5rem 1rem;
+  width: min(95%, 720px);
+  padding: .65rem .8rem;
+  margin: .6rem auto 0;
+  background: rgba(255,255,255,.9);
+  border-radius: 10px;
+  color: #202a31;
+  font-size: .9rem;
+  text-align: center;
+  line-height: 1.5;
+}
+.modal-role-legend-item.modal-shahed { color: #815000; font-weight: 700; }
+.modal-role-legend-item.modal-finalis { color: #175492; font-weight: 700; }
+.modal-role-legend-item.modal-tonic { color: #175492; font-weight: 700; }
+.modal-role-pending { font-style: italic; }
+@media (max-width: 500px) {
+  .modal-role-legend { font-size: .78rem; padding: .4rem .5rem; }
+  .dynamic-label.modal-shahed { outline-width: 2px; }
+}

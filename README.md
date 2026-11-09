@@ -542,8 +542,9 @@ The Persian scale circle highlights **Shahed (شاهد)** with ★ and **Finalis
 (نت پایان / خاتمه)** with ◆, which may occur together on one note. A Western
 Natural Minor model shows a tonic instead. Note-degree assignments are
 preserved through transposition, and marker visibility can be toggled.
-Users may store private degree annotations in their browser without modifying
-the academically annotated defaults.
+Reference assignments are read-only in the public interface. The former
+manual marker editor has been removed; any legacy browser-local annotations
+are preserved in storage but no longer override the published reference roles.
 
 **Musicological scope:** our organizing reference is Mirza Abdollah's
 instrumental radif, complemented by published research. Each assignment is

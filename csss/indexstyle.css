@@ -1035,6 +1035,9 @@ footer {
   padding: 1px 2px;
   border-radius: 8px;
 }
+/* Expanded score must be above the higher Notes/Avazha stacking contexts
+   so its close control stays tappable after language changes. */
+.key-signature-widget.panel-open { z-index: 1750; }
 .key-signature-button[aria-expanded="true"] .key-signature-action {
   color: #16578d;
 }

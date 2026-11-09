@@ -534,3 +534,41 @@ THE SOFTWARE AND ASSOCIATED MATERIALS ARE PROVIDED “AS IS” AND “AS AVAILAB
 IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, LOSS, DAMAGE, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE, ITS OUTPUTS, OR THE USE OR INABILITY TO USE THE SOFTWARE.
 
 Automatic pitch, tonic, scale, and modal-analysis results are provided for educational and exploratory purposes and should not be treated as definitive musicological, academic, or professional determinations.
+
+
+### Shahed and Finalis (modal function annotations; draft PR)
+
+The Persian scale circle highlights **Shahed (شاهد)** with ★ and **Finalis
+(نت پایان / خاتمه)** with ◆, which may occur together on one note. A Western
+Natural Minor model shows a tonic instead. Note-degree assignments are
+preserved through transposition, and marker visibility can be toggled.
+Reference assignments are read-only in the public interface. The former
+manual marker editor has been removed; any legacy browser-local annotations
+are preserved in storage but no longer override the published reference roles.
+
+**Musicological scope:** our organizing reference is Mirza Abdollah's
+instrumental radif, complemented by published research. Each assignment is
+limited to a named introductory modal context (*darāmad* or an āvāz).
+A documented modal description is not itself a note-by-note critical edition
+of Mirza Abdollah's transcription. Provisional or partial assignments are
+explicitly marked, with a source list and explanation accessible in the
+"About these notes" panel.
+
+Nava, Chahargah, Mahur and Rast-Panjgah have labeled provisional default
+degrees. **Mahur and Rast-Panjgah are separate selectable modal identities**
+despite sharing the same interval sequence in the educational dataset.
+The audio analyzer does **not** claim to distinguish them automatically by
+pitch collection alone; Rast-Panjgah remains an explicitly manual option.
+This does not change the existing pitch-detection/audio-analysis algorithm.
+
+The Shur-related āvāzha (Abu Ata, Bayat-e Tork, Afshari and Dashti) have
+separate role contexts. The displayed Shur pitch collection remains a shared
+*scaffold*, not a complete model of each āvāz; for example Afshari's E-koron
+temporary Ist and Dashti variable notes are not silently inserted into scale
+playback or automatic analysis. Bayat-e Tork intentionally has no universal
+Finalis assignment in the current reference context.
+
+**Languages:** the Shahed/Finalis legend and the entire “About these notes” reference panel — context, limitations, verification status, and bibliography labels — are available in English, French, and Persian for all nine scale selections and all four Shur-related āvāzha. Source links retain their original scholarly URLs.\n\n**Definitions, degree mappings, cautions, source bibliography and future
+verification requirements:** [Modal roles research](docs/modal-roles-research.md).
+Do not merge this draft before browser tests pass and the role defaults have
+been reviewed for source accuracy.

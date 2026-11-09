@@ -78,7 +78,8 @@ const translations = {
       homayoun: "Homayoun",
       esfahan: "Esfahan",
       chahargah: "Chahargah",
-      mahur: "Mahur / Rast Panjgah",
+      mahur: "Mahur",
+      rastPanjgah: "Rast-Panjgah",
       minor: "Minor",
     },
     playButton: "► Jouer la Gamme",
@@ -116,7 +117,8 @@ const translations = {
       homayoun: "Homayoun",
       esfahan: "Esfahan",
       chahargah: "Chahargah",
-      mahur: "Mahur / Rast Panjgah",
+      mahur: "Mahur",
+      rastPanjgah: "Rast-Panjgah",
       minor: "Minor",
     },
     playButton: "► Play Scale",
@@ -154,7 +156,8 @@ const translations = {
       homayoun: "همایون",
       esfahan: "اصفهان",
       chahargah: "چهارگاه",
-      mahur: "ماهور / راست پنجگاه",
+      mahur: "ماهور",
+      rastPanjgah: "راست‌پنجگاه",
       minor: "مینور",
     },
     playButton: "► پخش گام",
@@ -220,6 +223,11 @@ const scaleData = {
     angles: [0, 60, 120, 150, 210, 270, 330],
     colors:
       "conic-gradient(#48625f 0deg 60deg, #48625f 60deg 120deg, black 120deg 150deg, #48625f 150deg 210deg, #48625f 210deg 270deg, #48625f 270deg 330deg, black 330deg 360deg)",
+  },
+  rastPanjgah: {
+    // Same seven-note pitch collection as Mahur, but a distinct modal identity.
+    angles: [0, 60, 120, 150, 210, 270, 330],
+    colors: "conic-gradient(#48625f 0deg 60deg, #48625f 60deg 120deg, black 120deg 150deg, #48625f 150deg 210deg, #48625f 210deg 270deg, #48625f 270deg 330deg, black 330deg 360deg)",
   },
   minor: {
     /* Natural minor: 0, 200, 300, 500, 700, 800, 1000 cents. */
@@ -329,6 +337,159 @@ function findClosestLabel(angle, displayLabels, koron, sori) {
   };
 }
 
+/* ---------- Educational modal-function markers ---------- */
+/* Distinguish scale anchor from Shahed / Finalis. Curated reference
+ * assignments are read-only; legacy browser annotations remain stored but
+ * no longer override public educational markers.
+ */
+const modalRolesByScale = window.PERSIAN_MODAL_ROLE_DEGREES || {};
+let activeAvazRole = null;
+const modalRoleTranslations = {
+  en: { shahed: "Shahed", finalis: "Finalis", tonic: "Tonic",
+    pending: "Shahed and Finalis: reference assignment pending.",
+    show: "Show markers", hide: "Hide markers", details: "About these notes",
+    status: "Reference status", documented: "Documented model",
+    provisional: "Provisional model", partial: "Partially established",
+    warning: "Model limitation", sources: "Research sources" },
+  fr: { shahed: "Shahed", finalis: "Note finale", tonic: "Tonique",
+    pending: "Shahed et finalis : attribution en cours de vérification.",
+    show: "Afficher les repères", hide: "Masquer les repères",
+    details: "À propos de ces notes", status: "Statut de référence",
+    documented: "Modèle documenté", provisional: "Modèle provisoire",
+    partial: "Modèle partiellement établi", warning: "Limites du modèle",
+    sources: "Sources scientifiques" },
+  fa: { shahed: "شاهد", finalis: "نت پایان", tonic: "نت پایه",
+    pending: "شاهد و نت پایان: تعیین نت‌ها در انتظار بررسی منابع است.",
+    show: "نمایش نشانگرها", hide: "پنهان‌کردن نشانگرها",
+    details: "دربارهٔ این نت‌ها", status: "وضعیت مستندات",
+    documented: "مدل مستند", provisional: "مدل پیشنهادی",
+    partial: "مدل نیمه‌مستند", warning: "محدودیت مدل",
+    sources: "منابع پژوهشی" }
+};
+/* The pre-existing personal modal-role storage key is intentionally not read,
+ * written, or deleted. A future optional personal-annotation feature can
+ * migrate it explicitly without affecting reference-only markers. */
+let modalRoleMarkersVisible = true;
+try {
+  modalRoleMarkersVisible = localStorage.getItem("persianMusicScales.showModalRoles.v1") !== "false";
+} catch (err) {
+  // Visibility defaults to on if local storage is unavailable.
+}
+
+function updateModalRoleMarkers() {
+  const legend = document.getElementById("modalRoleLegend");
+  if (!legend) return;
+  const selectedScale = scaleSelector.value;
+  const dictionary = modalRoleTranslations[currentLanguage] || modalRoleTranslations.en;
+  const noteLabels = Array.from(outerScale.querySelectorAll(".dynamic-label"));
+  noteLabels.forEach((label) => {
+    label.classList.remove("modal-shahed", "modal-finalis", "modal-tonic");
+    delete label.dataset.modalRoles;
+    label.removeAttribute("title");
+    if (label.getAttribute("role") === "img") label.removeAttribute("role");
+    if (label.hasAttribute("aria-label")) label.removeAttribute("aria-label");
+  });
+  const roleContext = selectedScale === "Shur" && activeAvazRole
+    ? "avaz." + activeAvazRole : selectedScale;
+  const roles = modalRolesByScale[roleContext] || {};
+  const base = roles;
+  legend.replaceChildren();
+  if (selectedScale === "Shur" && activeAvazRole) {
+    const context = document.createElement("strong");
+    context.className = "modal-role-context";
+    context.textContent = translations[currentLanguage].avazhaItems[activeAvazRole] || activeAvazRole;
+    legend.appendChild(context);
+  }
+
+  const markerDefinitions = selectedScale === "minor"
+    ? [["tonic", "modal-tonic", "●"]]
+    : [["shahed", "modal-shahed", "★"], ["finalis", "modal-finalis", "◆"]];
+  let assignedCount = 0;
+
+  if (modalRoleMarkersVisible) markerDefinitions.forEach(([role, className, symbol]) => {
+    const degree = roles[role];
+    if (!Number.isInteger(degree) || degree < 0 || degree >= noteLabels.length) return;
+    const noteLabel = noteLabels[degree];
+    noteLabel.classList.add(className);
+    const existingRoles = noteLabel.dataset.modalRoles
+      ? noteLabel.dataset.modalRoles.split(", ")
+      : [];
+    existingRoles.push(dictionary[role]);
+    noteLabel.dataset.modalRoles = existingRoles.join(", ");
+    const noteName = noteLabel.dataset.singleNote || noteLabel.textContent.trim();
+    noteLabel.title = noteName + " — " + existingRoles.join(", ");
+    noteLabel.setAttribute("role", "img");
+    noteLabel.setAttribute("aria-label", noteLabel.title);
+
+    const legendItem = document.createElement("span");
+    legendItem.className = "modal-role-legend-item " + className;
+    legendItem.textContent = symbol + " " + dictionary[role] + ": " + noteName;
+    legend.appendChild(legendItem);
+    assignedCount++;
+  });
+
+  if (!assignedCount && modalRoleMarkersVisible) {
+    const pending = document.createElement("span");
+    pending.className = "modal-role-pending";
+    pending.textContent = dictionary.pending;
+    legend.appendChild(pending);
+  }
+
+  const toggleButton = document.createElement("button");
+  toggleButton.type = "button";
+  toggleButton.className = "modal-role-visibility-button";
+  toggleButton.setAttribute("aria-pressed", String(modalRoleMarkersVisible));
+  toggleButton.textContent = modalRoleMarkersVisible ? dictionary.hide : dictionary.show;
+  toggleButton.addEventListener("click", () => {
+    modalRoleMarkersVisible = !modalRoleMarkersVisible;
+    try { localStorage.setItem("persianMusicScales.showModalRoles.v1", String(modalRoleMarkersVisible)); } catch (err) {}
+    updateModalRoleMarkers();
+  });
+  legend.appendChild(toggleButton);
+
+  const detail = document.createElement("details");
+  detail.className = "modal-role-details";
+  const heading = document.createElement("summary");
+  heading.textContent = dictionary.details;
+  detail.appendChild(heading);
+  // The model's musical explanations follow the selected UI language.
+  const translatedProfile = base.localized?.[currentLanguage] || {};
+  const localizedContext = translatedProfile.context || base.context || dictionary.pending;
+  const localizedWarning = translatedProfile.warning ?? base.warning;
+  const detailDirection = currentLanguage === "fa" ? "rtl" : "ltr";
+  detail.setAttribute("dir", detailDirection);
+  const status = document.createElement("p");
+  const confidence = base.confidence || "partial";
+  status.textContent = dictionary.status + ": " +
+    (dictionary[confidence] || confidence) + " — " + localizedContext;
+  detail.appendChild(status);
+  if (localizedWarning) {
+    const warning = document.createElement("p");
+    warning.textContent = dictionary.warning + ": " + localizedWarning;
+    detail.appendChild(warning);
+  }
+  if (Array.isArray(base.sources) && base.sources.length) {
+    const sources = document.createElement("div");
+    sources.className = "modal-role-sources";
+    const label = document.createElement("strong");
+    label.textContent = dictionary.sources + ": ";
+    sources.appendChild(label);
+    base.sources.forEach((item, index) => {
+      if (!item || typeof item.url !== "string" || !/^https:\/\//.test(item.url)) return;
+      const link = document.createElement("a");
+      link.href = item.url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.textContent = (currentLanguage === "fa" ? item.labelFa
+        : currentLanguage === "fr" ? item.labelFr : item.label) || item.label || ("Source " + (index + 1));
+      sources.appendChild(link);
+    });
+    detail.appendChild(sources);
+  }
+  legend.appendChild(detail);
+
+}
+
 /* ---------- Update Dynamic Labels for Chosen Scale ---------- */
 function updateDynamicLabels() {
   const scaleName = scaleSelector.value;
@@ -359,6 +520,7 @@ function updateDynamicLabels() {
   labelAtZeroAngle.innerHTML = zeroResult.displayText;
   labelAtZeroAngle.dataset.allNotes = zeroResult.parseableText;
   labelAtZeroAngle.dataset.singleNote = zeroResult.parseableText.split("/")[0].trim();
+  updateModalRoleMarkers();
 }
 
 function updateScaleTextSummary() {
@@ -382,7 +544,7 @@ function updateScaleTextSummary() {
     .filter(Boolean);
 
   summary.textContent =
-    `${displayName} — cumulative pitch positions: ${cents.join(", ")} cents from the selected tonic.` +
+    `${displayName} — cumulative pitch positions: ${cents.join(", ")} cents from the diagram's 12-o'clock reference pitch.` +
     (notes.length ? ` Current displayed notes: ${notes.join(", ")}.` : "");
 }
 
@@ -410,6 +572,31 @@ const avazhaDynamicColumn = document.getElementById("avazhaDynamicColumn");
 function toggleAvazhaColumns() {
   avazhaColumns.classList.toggle("hidden");
 }
+
+/* Each avaz is its own modal context, not Shur with a changed caption. */
+const avazItems = Array.from(avazhaColumns.querySelectorAll(".avazha-column:first-child .avazha-item[data-translate]"));
+avazItems.forEach((item) => {
+  const key = item.getAttribute("data-translate").split(".")[1];
+  item.setAttribute("role", "button");
+  item.setAttribute("tabindex", "0");
+  item.setAttribute("aria-pressed", "false");
+  const chooseAvaz = () => {
+    activeAvazRole = activeAvazRole === key ? null : key;
+    avazItems.forEach((other) => {
+      const isSelected = activeAvazRole === other.getAttribute("data-translate").split(".")[1];
+      other.classList.toggle("active-modal-avaz", isSelected);
+      other.setAttribute("aria-pressed", String(isSelected));
+    });
+    updateModalRoleMarkers();
+  };
+  item.addEventListener("click", chooseAvaz);
+  item.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      chooseAvaz();
+    }
+  });
+});
 avazhaButton.addEventListener("click", toggleAvazhaColumns);
 
 function updateAvazhaVisibility() {
@@ -418,6 +605,11 @@ function updateAvazhaVisibility() {
     avazhaContainer.style.display = "flex";
     populateAvazhaDynamicColumn();
   } else {
+    activeAvazRole = null;
+    avazItems.forEach((item) => {
+      item.classList.remove("active-modal-avaz");
+      item.setAttribute("aria-pressed", "false");
+    });
     avazhaContainer.style.display = "none";
     avazhaColumns.classList.add("hidden");
   }
@@ -672,6 +864,7 @@ function playOuterScale() {
   const noteDuration = 1.0;
   let lastFreq = 0;
   let firstNoteFrequency = null; // Store the first note's frequency
+  let firstNoteName = null;
 
   for (let i = 0; i < 7; i++) {
     const angle = angles[i % angles.length];
@@ -687,6 +880,7 @@ function playOuterScale() {
     if (freq) {
       if (i === 0) {
         firstNoteFrequency = freq;
+        firstNoteName = singleNote;
       }
       // Ensure ascending
       while (freq <= lastFreq) {
@@ -704,7 +898,7 @@ function playOuterScale() {
   if (firstNoteFrequency) {
     const freqNextOctave = firstNoteFrequency * 2;
     playNote(audioCtx, freqNextOctave, noteDuration, currentTime);
-    animateLabelDuringNote(parseableNotes[0], audioCtx, currentTime, 1.0);
+    animateLabelDuringNote(firstNoteName, audioCtx, currentTime, 1.0);
   }
 }
 

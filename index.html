@@ -174,7 +174,8 @@
       <option value="homayoun">Homayoun</option>
       <option value="esfahan">Esfahan</option>
       <option value="chahargah">Chahargah</option>
-      <option value="mahur">Mahur / Rast Panjgah</option>
+      <option value="mahur">Mahur</option>
+      <option value="rastPanjgah">Rast-Panjgah</option>
       <option value="minor">Minor</option>
     </select>
     
@@ -209,6 +210,9 @@
       <div class="diatonic-scale" id="diatonicScale"></div>
       <div class="outer-scale" id="outerScale"></div>
     </div>
+
+    <!-- Shahed / Finalis markers for the selected pitch collection -->
+    <div id="modalRoleLegend" class="modal-role-legend" aria-live="polite" aria-label="Modal note functions"></div>
 
     <!-- Play Scale Button Container -->
     <div class="play-button-container">
@@ -778,6 +782,7 @@
   </script>
 
   <!-- External Scripts -->
+  <script src="src/modal-roles.js"></script>
   <script src="src/index.js"></script>
   <script src="src/audio-analyzer.js"></script>
 </body>

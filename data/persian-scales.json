@@ -201,9 +201,9 @@
       ]
     },
     {
-      "id": "mahur-rast-panjgah",
-      "name": "Mahur / Rast Panjgah",
-      "persianName": "ماهور / راست پنجگاه",
+      "id": "mahur",
+      "name": "Mahur",
+      "persianName": "ماهور",
       "anglesDegrees": [
         0,
         60,
@@ -231,7 +231,40 @@
         200,
         100
       ],
-      "note": "The current application uses this shared pitch-collection representation. This does not imply that Mahur and Rast Panjgah are identical modal systems."
+      "note": "Mahur and Rast-Panjgah use the same educational pitch collection but not the same modal functions."
+    },
+    {
+      "id": "rast-panjgah",
+      "name": "Rast-Panjgah",
+      "persianName": "راست‌پنجگاه",
+      "anglesDegrees": [
+        0,
+        60,
+        120,
+        150,
+        210,
+        270,
+        330
+      ],
+      "cumulativeCents": [
+        0,
+        200,
+        400,
+        500,
+        700,
+        900,
+        1100
+      ],
+      "stepIntervalsCents": [
+        200,
+        200,
+        100,
+        200,
+        200,
+        200,
+        100
+      ],
+      "note": "Shares a seven-note collection with Mahur; modal identity and forud differ. The current pitch model is not a complete Rast-Panjgah radif transcription."
     }
   ]
 }

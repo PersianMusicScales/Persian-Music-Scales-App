@@ -273,7 +273,8 @@ main {
   justify-content: center;
   transition: background 0.3s;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  animation: bounce 2s infinite;
+  /* Stable target for keyboard, pointer, and automated accessibility interactions. */
+  animation: none;
 }
 
 .avazha-button:hover {
@@ -664,3 +665,118 @@ footer {
   white-space: nowrap !important;
   border: 0 !important;
 }
+
+/* Modal-function labels: additive styles, never replace the original pitch colors.
+ * A gold star = Shahed, a blue diamond = Finalis.
+ * One note may carry both roles.
+ */
+.dynamic-label.modal-shahed {
+  outline: 3px solid #d49a15 !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 9px rgba(244, 189, 45, .65);
+}
+.dynamic-label.modal-finalis {
+  border-bottom: 4px solid #397ac2;
+}
+.dynamic-label.modal-tonic {
+  outline: 3px solid #397ac2 !important;
+  outline-offset: 2px;
+}
+.dynamic-label.modal-shahed::before {
+  content: "★";
+  color: #8e5900;
+  padding-inline-end: .2em;
+}
+.dynamic-label.modal-finalis::after {
+  content: " ◆";
+  color: #1453a0;
+}
+.dynamic-label.modal-tonic::before {
+  content: "● ";
+  color: #1453a0;
+}
+.modal-role-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .5rem 1rem;
+  width: min(95%, 720px);
+  padding: .65rem .8rem;
+  margin: .6rem auto 0;
+  background: rgba(255,255,255,.9);
+  border-radius: 10px;
+  color: #202a31;
+  font-size: .9rem;
+  text-align: center;
+  line-height: 1.5;
+}
+.modal-role-legend-item.modal-shahed { color: #815000; font-weight: 700; }
+.modal-role-legend-item.modal-finalis { color: #175492; font-weight: 700; }
+.modal-role-legend-item.modal-tonic { color: #175492; font-weight: 700; }
+.modal-role-pending { font-style: italic; }
+@media (max-width: 500px) {
+  .modal-role-legend { font-size: .78rem; padding: .4rem .5rem; }
+  .dynamic-label.modal-shahed { outline-width: 2px; }
+}
+
+.modal-role-visibility-button {
+  border: 1px solid #526a76;
+  border-radius: 7px;
+  padding: .2rem .5rem;
+  background: #f6f9fa;
+  color: #263b45;
+  cursor: pointer;
+  font: inherit;
+}
+.modal-role-visibility-button:focus-visible {
+  outline: 2px solid #397ac2;
+  outline-offset: 2px;
+}
+
+/* Avaz names are keyboard-selectable modal contexts, not passive labels. */
+.avazha-item[data-translate] { cursor: pointer; border-radius: 4px; padding: 3px 5px; }
+.avazha-item[data-translate]:focus-visible {
+  outline: 2px solid #397ac2; outline-offset: 2px;
+}
+.avazha-item.active-modal-avaz {
+  background-color: #f7e7c6; font-weight: 700;
+  box-shadow: inset 0 0 0 1px #b57b1e;
+}
+.modal-role-context {
+  flex-basis: 100%;
+  color: #263b45;
+}
+
+
+/* References and user-controlled modal function visibility. */
+.modal-role-details {
+  flex: 1 0 100%;
+  border-top: 1px solid rgba(50,65,78,.18);
+  padding: .4rem .35rem 0;
+  text-align: start;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.modal-role-details summary {
+  cursor: pointer;
+  font-weight: 650;
+  padding: .2rem;
+}
+.modal-role-details summary:focus-visible {
+  outline: 2px solid #397ac2;
+  outline-offset: 2px;
+}
+.modal-role-details p {
+  font-size: .85rem;
+  line-height: 1.5;
+  margin: .4rem 0;
+}
+.modal-role-sources {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .35rem .8rem;
+  font-size: .8rem;
+}
+.modal-role-sources a { color: #19558d; text-decoration: underline; }
+.modal-role-sources a:focus-visible { outline: 2px solid #397ac2; }

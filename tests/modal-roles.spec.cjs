@@ -41,16 +41,26 @@ test("Segah role marks survive pitch transposition and all languages", async ({ 
   expect(errors).toEqual([]);
 });
 
-test("role editor saves and restores an assignment without touching the source data", async ({ page }) => {
+test("curated markers ignore preserved legacy browser overrides", async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem("persianMusicScales.modalRoles.v1", JSON.stringify({
+      Shur: { shahed: 1, finalis: 3 },
+      "avaz.afshari": { shahed: 4, finalis: 4 }
+    }));
+  });
   const errors = await ready(page);
-  await page.getByRole("button", { name: "Edit markers" }).click();
-  await page.locator(".modal-role-editor select").first().selectOption("1");
-  await page.locator(".modal-role-editor select").nth(1).selectOption("3");
-  await expect(page.locator("#outerScale .dynamic-label").nth(1)).toHaveClass(/modal-shahed/);
-  await expect(page.locator("#outerScale .dynamic-label").nth(3)).toHaveClass(/modal-finalis/);
+  const labels = page.locator("#outerScale .dynamic-label");
+  await expect(labels.nth(0)).toHaveClass(/modal-shahed/);
+  await expect(labels.nth(0)).toHaveClass(/modal-finalis/);
+  await expect(labels.nth(1)).not.toHaveClass(/modal-shahed/);
+  await expect(page.getByRole("button", { name: /Edit markers|Close editor/i })).toHaveCount(0);
+  await expect(page.locator(".modal-role-editor")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Hide markers" })).toBeVisible();
+  await expect(page.locator("#modalRoleLegend details")).toHaveCount(1);
+  const saved = await page.evaluate(() => localStorage.getItem("persianMusicScales.modalRoles.v1"));
+  expect(JSON.parse(saved).Shur.shahed).toBe(1);
   await page.reload({ waitUntil: "domcontentloaded" });
-  await expect(page.locator("#outerScale .dynamic-label").nth(1)).toHaveClass(/modal-shahed/);
-  await expect(page.locator("#outerScale .dynamic-label").nth(3)).toHaveClass(/modal-finalis/);
+  await expect(page.locator("#outerScale .dynamic-label").nth(0)).toHaveClass(/modal-shahed/);
   expect(errors).toEqual([]);
 });
 
@@ -105,23 +115,22 @@ test("short synthesized recording passes through analyzer and preserves modal ma
   expect(errors).toEqual([]);
 });
 
-test("Shur-related avaz modal contexts are separate and user-editable", async ({ page }) => {
+test("Shur-related avaz contexts switch curated markers without manual editing", async ({ page }) => {
   const errors = await ready(page);
   await page.locator("#avazhaButton").click();
   const afshari = page.locator('.avazha-item[data-translate="avazha.afshari"]');
   await afshari.click();
   await expect(afshari).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator("#modalRoleLegend")).toContainText("Afshari");
-  await expect(page.locator("#outerScale .dynamic-label.modal-shahed")).toHaveCount(1);
   await expect(page.locator("#outerScale .dynamic-label").nth(0)).toHaveClass(/modal-shahed/);
   await expect(page.locator("#outerScale .dynamic-label").nth(3)).toHaveClass(/modal-finalis/);
-  await page.getByRole("button", { name: "Edit markers" }).click();
-  await page.locator(".modal-role-editor select").first().selectOption("4");
-  await expect(page.locator("#outerScale .dynamic-label").nth(4)).toHaveClass(/modal-shahed/);
+  await expect(page.locator("#modalRoleLegend .modal-role-editor")).toHaveCount(0);
   await afshari.click();
+  await expect(afshari).toHaveAttribute("aria-pressed", "false");
   await expect(page.locator("#outerScale .dynamic-label").nth(0)).toHaveClass(/modal-shahed/);
+  await expect(page.locator("#outerScale .dynamic-label").nth(0)).toHaveClass(/modal-finalis/);
   await afshari.click();
-  await expect(page.locator("#outerScale .dynamic-label").nth(4)).toHaveClass(/modal-shahed/);
+  await expect(page.locator("#outerScale .dynamic-label").nth(3)).toHaveClass(/modal-finalis/);
   expect(errors).toEqual([]);
 });
 

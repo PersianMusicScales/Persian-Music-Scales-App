@@ -28,7 +28,7 @@
     segah: {
       shahed: 2, finalis: 2,
       context: "Segah daramad, C-referenced model; third note E-koron",
-      sources: ["https://www.iranicaonline.org/articles/shur-modal-system/"]
+      sources: ["https://openaccess.city.ac.uk/id/eprint/4149/2/Nooshin_PhD_thesis_volume_2.pdf", "https://tuning.ableton.com/persian-radif/dastgah-e-segah/"]
     },
     homayoun: {
       shahed: 1, finalis: 0,

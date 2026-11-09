@@ -367,6 +367,13 @@ function updateModalRoleMarkers() {
   const selectedScale = scaleSelector.value;
   const dictionary = modalRoleTranslations[currentLanguage] || modalRoleTranslations.en;
   const noteLabels = Array.from(outerScale.querySelectorAll(".dynamic-label"));
+  noteLabels.forEach((label) => {
+    label.classList.remove("modal-shahed", "modal-finalis", "modal-tonic");
+    delete label.dataset.modalRoles;
+    label.removeAttribute("title");
+    if (label.getAttribute("role") === "img") label.removeAttribute("role");
+    if (label.hasAttribute("aria-label")) label.removeAttribute("aria-label");
+  });
   const roleContext = selectedScale === "Shur" && activeAvazRole
     ? "avaz." + activeAvazRole : selectedScale;
   const saved = modalRoleOverrides[roleContext] || {};

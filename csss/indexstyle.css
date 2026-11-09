@@ -870,6 +870,10 @@ footer {
    Absolutely positioned: no added height to Play Scale or audio controls. */
 .play-button-container {
   position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .key-signature-widget {
   position: absolute;

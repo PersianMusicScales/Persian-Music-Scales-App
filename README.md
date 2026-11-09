@@ -556,7 +556,7 @@ and should not be interpreted as verified musicological claims.
 pitch-collection reference, not necessarily the modal Shahed or finalis.
 Modal functions are sensitive to dastgah, avaz, gusheh, daramad and melodic
 context; a seven-note collection by itself does not establish those roles.
-Reviewed daramad examples include Shur, Segah, and Homayoun; Chahargah has a finalis reference but no single verified Shahed assignment. Bayat-e Esfahan's published modal pitch collection differs from the app model, so its roles remain unset. The draft includes a Segah daramad example (third displayed degree,
+Reviewed daramad examples include Shur, Segah, and Homayoun; Chahargah has a finalis reference but no single verified Shahed assignment. Bayat-e Esfahan's published F-anchored pitch collection is a cyclic rotation of the app's C-anchored collection, so C is the Shahed (degree 1) and G the Finalis (degree 5) in this representation. The draft includes a Segah daramad example (third displayed degree,
 E-koron in the untransposed C-referenced representation). Other Persian
 scales deliberately have no authoritative default role assignments until
 their reference contexts and sources have been reviewed. The combined

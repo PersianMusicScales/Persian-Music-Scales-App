@@ -23,12 +23,12 @@
     nava: {
       shahed: null, finalis: null,
       context: "Nava needs review: the app's 200- and 850-cent degrees differ from some documented daramad tunings",
-      sources: ["https://fis-iran.org/ebook/persian-system-of-modes/"]
+      sources: ["https://www.iranicaonline.org/articles/shur-modal-system/"]
     },
     segah: {
       shahed: 2, finalis: 2,
       context: "Segah daramad, C-referenced model; third note E-koron",
-      sources: ["https://www.persianney.com/technique.html"]
+      sources: ["https://www.iranicaonline.org/articles/shur-modal-system/"]
     },
     homayoun: {
       shahed: 1, finalis: 0,
@@ -36,14 +36,14 @@
       sources: ["https://www.iranicaonline.org/articles/homayun/"]
     },
     esfahan: {
-      shahed: 0, finalis: 4,
-      context: "Bayat-e Esfahan daramad, C-referenced: C (shahed), G (finalis)",
+      shahed: null, finalis: null,
+      context: "Published Esfahan F G A-koron B C D E-flat (Shahed C, Finalis G) differs from this app's pitch collection; no reliable mapping.",
       sources: ["https://www.iranicaonline.org/articles/bayat-e-esfahan/"]
     },
     chahargah: {
-      shahed: 0, finalis: 0,
-      context: "Chahargah daramad, C-referenced first-degree center",
-      sources: ["https://www.iranicaonline.org/articles/cahargah/", "https://fis-iran.org/ebook/persian-system-of-modes/"]
+      shahed: null, finalis: 0,
+      context: "Chahargah daramad: first degree is a modal tonic/final reference; third and fifth are emphasized. Tonic is not automatically an exclusive Shahed.",
+      sources: ["https://www.iranicaonline.org/articles/cahargah/"]
     },
     mahur: {
       shahed: null, finalis: null,

@@ -78,7 +78,8 @@ const translations = {
       homayoun: "Homayoun",
       esfahan: "Esfahan",
       chahargah: "Chahargah",
-      mahur: "Mahur / Rast Panjgah",
+      mahur: "Mahur",
+      rastPanjgah: "Rast-Panjgah",
       minor: "Minor",
     },
     playButton: "► Jouer la Gamme",
@@ -116,7 +117,8 @@ const translations = {
       homayoun: "Homayoun",
       esfahan: "Esfahan",
       chahargah: "Chahargah",
-      mahur: "Mahur / Rast Panjgah",
+      mahur: "Mahur",
+      rastPanjgah: "Rast-Panjgah",
       minor: "Minor",
     },
     playButton: "► Play Scale",
@@ -154,7 +156,8 @@ const translations = {
       homayoun: "همایون",
       esfahan: "اصفهان",
       chahargah: "چهارگاه",
-      mahur: "ماهور / راست پنجگاه",
+      mahur: "ماهور",
+      rastPanjgah: "راست‌پنجگاه",
       minor: "مینور",
     },
     playButton: "► پخش گام",
@@ -220,6 +223,11 @@ const scaleData = {
     angles: [0, 60, 120, 150, 210, 270, 330],
     colors:
       "conic-gradient(#48625f 0deg 60deg, #48625f 60deg 120deg, black 120deg 150deg, #48625f 150deg 210deg, #48625f 210deg 270deg, #48625f 270deg 330deg, black 330deg 360deg)",
+  },
+  rastPanjgah: {
+    // Same seven-note pitch collection as Mahur, but a distinct modal identity.
+    angles: [0, 60, 120, 150, 210, 270, 330],
+    colors: "conic-gradient(#48625f 0deg 60deg, #48625f 60deg 120deg, black 120deg 150deg, #48625f 150deg 210deg, #48625f 210deg 270deg, #48625f 270deg 330deg, black 330deg 360deg)",
   },
   minor: {
     /* Natural minor: 0, 200, 300, 500, 700, 800, 1000 cents. */
@@ -339,19 +347,35 @@ const modalRoleTranslations = {
   en: { shahed: "Shahed", finalis: "Finalis", tonic: "Tonic",
     pending: "Shahed and Finalis: reference assignment pending.",
     edit: "Edit markers", done: "Close editor", none: "Not assigned",
-    custom: "Your saved musical annotations (not verified reference data)" },
+    custom: "Your saved musical annotations (not verified reference data)",
+    show: "Show markers", hide: "Hide markers", details: "About these notes",
+    status: "Reference status", documented: "Documented model",
+    provisional: "Provisional model", partial: "Partially established",
+    warning: "Model limitation", sources: "Research sources" },
   fr: { shahed: "Shahed", finalis: "Note finale", tonic: "Tonique",
     pending: "Shahed et finalis : attribution en cours de vérification.",
     edit: "Modifier les repères", done: "Fermer", none: "Non attribué",
-    custom: "Vos annotations enregistrées (non vérifiées)" },
+    custom: "Vos annotations enregistrées (non vérifiées)",
+    show: "Afficher les repères", hide: "Masquer les repères",
+    details: "À propos de ces notes", status: "Statut de référence",
+    documented: "Modèle documenté", provisional: "Modèle provisoire",
+    partial: "Modèle partiellement établi", warning: "Limites du modèle",
+    sources: "Sources scientifiques" },
   fa: { shahed: "شاهد", finalis: "نت پایان", tonic: "نت پایه",
     pending: "شاهد و نت پایان: تعیین نت‌ها در انتظار بررسی منابع است.",
     edit: "ویرایش نشانگرها", done: "بستن", none: "تعیین نشده",
-    custom: "یادداشت‌های ذخیره‌شدهٔ شما (تأیید علمی نشده)" }
+    custom: "یادداشت‌های ذخیره‌شدهٔ شما (تأیید علمی نشده)",
+    show: "نمایش نشانگرها", hide: "پنهان‌کردن نشانگرها",
+    details: "دربارهٔ این نت‌ها", status: "وضعیت مستندات",
+    documented: "مدل مستند", provisional: "مدل پیشنهادی",
+    partial: "مدل نیمه‌مستند", warning: "محدودیت مدل",
+    sources: "منابع پژوهشی" }
 };
 const MODAL_ROLE_STORAGE_KEY = "persianMusicScales.modalRoles.v1";
 let modalRoleOverrides = {};
 let modalRoleEditorOpen = false;
+let modalRoleMarkersVisible = true;
+try { modalRoleMarkersVisible = localStorage.getItem("persianMusicScales.showModalRoles.v1") !== "false"; } catch (err) {}
 try {
   const storedRoles = JSON.parse(localStorage.getItem(MODAL_ROLE_STORAGE_KEY) || "{}");
   if (storedRoles && typeof storedRoles === "object" && !Array.isArray(storedRoles)) {
@@ -392,7 +416,7 @@ function updateModalRoleMarkers() {
     : [["shahed", "modal-shahed", "★"], ["finalis", "modal-finalis", "◆"]];
   let assignedCount = 0;
 
-  markerDefinitions.forEach(([role, className, symbol]) => {
+  if (modalRoleMarkersVisible) markerDefinitions.forEach(([role, className, symbol]) => {
     const degree = roles[role];
     if (!Number.isInteger(degree) || degree < 0 || degree >= noteLabels.length) return;
     const noteLabel = noteLabels[degree];
@@ -414,13 +438,58 @@ function updateModalRoleMarkers() {
     assignedCount++;
   });
 
-  if (!assignedCount) {
+  if (!assignedCount && modalRoleMarkersVisible) {
     const pending = document.createElement("span");
     pending.className = "modal-role-pending";
     pending.textContent = dictionary.pending;
     legend.appendChild(pending);
   }
 
+  const toggleButton = document.createElement("button");
+  toggleButton.type = "button";
+  toggleButton.className = "modal-role-edit-button";
+  toggleButton.setAttribute("aria-pressed", String(modalRoleMarkersVisible));
+  toggleButton.textContent = modalRoleMarkersVisible ? dictionary.hide : dictionary.show;
+  toggleButton.addEventListener("click", () => {
+    modalRoleMarkersVisible = !modalRoleMarkersVisible;
+    try { localStorage.setItem("persianMusicScales.showModalRoles.v1", String(modalRoleMarkersVisible)); } catch (err) {}
+    updateModalRoleMarkers();
+  });
+  legend.appendChild(toggleButton);
+
+  const detail = document.createElement("details");
+  detail.className = "modal-role-details";
+  const heading = document.createElement("summary");
+  heading.textContent = dictionary.details;
+  detail.appendChild(heading);
+  const status = document.createElement("p");
+  const confidence = base.confidence || "partial";
+  status.textContent = dictionary.status + ": " +
+    (dictionary[confidence] || confidence) + " — " + (base.context || dictionary.pending);
+  detail.appendChild(status);
+  if (base.warning) {
+    const warning = document.createElement("p");
+    warning.textContent = dictionary.warning + ": " + base.warning;
+    detail.appendChild(warning);
+  }
+  if (Array.isArray(base.sources) && base.sources.length) {
+    const sources = document.createElement("div");
+    sources.className = "modal-role-sources";
+    const label = document.createElement("strong");
+    label.textContent = dictionary.sources + ": ";
+    sources.appendChild(label);
+    base.sources.forEach((item, index) => {
+      if (!item || typeof item.url !== "string" || !/^https:\/\//.test(item.url)) return;
+      const link = document.createElement("a");
+      link.href = item.url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.textContent = item.label || ("Source " + (index + 1));
+      sources.appendChild(link);
+    });
+    detail.appendChild(sources);
+  }
+  legend.appendChild(detail);
   if (selectedScale === "minor") return;
 
   const editorButton = document.createElement("button");

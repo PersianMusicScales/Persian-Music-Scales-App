@@ -39,6 +39,8 @@ The original authentic vector symbol paths were supplied by the app creator from
 
 The files are reproduced without shape modification in `assets/notation/sori.svg` and `assets/notation/koron.svg`. Their attribution and license should be preserved with redistributed copies; the application's code licensing is separate.
 
+**Engraving update:** to avoid staff-line misalignment due to mixed fonts and SVG viewBox centering, the exact Koron and Sori outlines are also embedded (without modifying their path data) in `src/key-signature.js`. The renderer places their musical focal points directly on the appropriate staff step. Standard flat, sharp, and natural glyph outlines are from Noto Music (SIL OFL 1.1), rather than platform-dependent Unicode text rendering; the treble clef already uses that music-font source. No font files are included.
+
 The treble clef is an embedded outline extracted from **Google Noto Music** (glyph U+1D11E), distributed under the **SIL Open Font License 1.1**. This is a vector path, not a redistributed font file. License: https://openfontlicense.org/open-font-license-official-text/ . Font source: https://github.com/notofonts/music .
 
 For key-signature conventions see [LilyPond, Persian classical music](https://lilypond.org/doc/v2.26/Documentation/notation/persian-classical-music.html), and the Sornaz examples provided by the app creator at https://sornaz.com/analytics/article-details?id=21 . Those sources inform the principles; the full conventional source-specific tables remain future work.

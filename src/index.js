@@ -737,6 +737,7 @@ function playOuterScale() {
   const noteDuration = 1.0;
   let lastFreq = 0;
   let firstNoteFrequency = null; // Store the first note's frequency
+  let firstNoteName = null;
 
   for (let i = 0; i < 7; i++) {
     const angle = angles[i % angles.length];
@@ -752,6 +753,7 @@ function playOuterScale() {
     if (freq) {
       if (i === 0) {
         firstNoteFrequency = freq;
+        firstNoteName = singleNote;
       }
       // Ensure ascending
       while (freq <= lastFreq) {
@@ -769,7 +771,7 @@ function playOuterScale() {
   if (firstNoteFrequency) {
     const freqNextOctave = firstNoteFrequency * 2;
     playNote(audioCtx, freqNextOctave, noteDuration, currentTime);
-    animateLabelDuringNote(parseableNotes[0], audioCtx, currentTime, 1.0);
+    animateLabelDuringNote(firstNoteName, audioCtx, currentTime, 1.0);
   }
 }
 

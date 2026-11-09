@@ -49,9 +49,9 @@ These assignments are educational crosswalks from cited modal examples, **not a 
 7. Laudan Nooshin, [doctoral thesis on Persian music, volume II](https://openaccess.city.ac.uk/id/eprint/4149/2/Nooshin_PhD_thesis_volume_2.pdf), Segah modal functions.
 8. Owen Wright, *The Peregrinations of panjgāh* (2019), for distinguishing the Panjgāh gusheh from the introductory Rast modal context.
 
-## User-defined annotations
+## Curated notes and preserved historical annotations
 
-Personal degree edits are stored in the browser's `localStorage`; they **never overwrite curated, publicly published notes**. The UI labels these edits as personal, not scholarly verified. The highlight visibility setting is also browser-local.
+The public interface is **reference-only**. The manual Shahed/Finalis editor has been removed. Historical edits saved under `persianMusicScales.modalRoles.v1` are **left untouched** in the browser but are neither read for display nor modified; the curated scholarly profile always determines the symbols and legend. The marker Show/Hide preference remains browser-local.
 
 ## Outstanding scholarship (do not invent answers)
 

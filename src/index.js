@@ -334,6 +334,7 @@ function findClosestLabel(angle, displayLabels, koron, sori) {
  * Users may save their own degree assignments for any displayed scale.
  */
 const modalRolesByScale = window.PERSIAN_MODAL_ROLE_DEGREES || {};
+let activeAvazRole = null;
 const modalRoleTranslations = {
   en: { shahed: "Shahed", finalis: "Finalis", tonic: "Tonic",
     pending: "Shahed and Finalis: reference assignment pending.",
@@ -366,10 +367,18 @@ function updateModalRoleMarkers() {
   const selectedScale = scaleSelector.value;
   const dictionary = modalRoleTranslations[currentLanguage] || modalRoleTranslations.en;
   const noteLabels = Array.from(outerScale.querySelectorAll(".dynamic-label"));
-  const saved = modalRoleOverrides[selectedScale] || {};
-  const base = modalRolesByScale[selectedScale] || {};
+  const roleContext = selectedScale === "Shur" && activeAvazRole
+    ? "avaz." + activeAvazRole : selectedScale;
+  const saved = modalRoleOverrides[roleContext] || {};
+  const base = modalRolesByScale[roleContext] || {};
   const roles = { ...base, ...saved };
   legend.replaceChildren();
+  if (selectedScale === "Shur" && activeAvazRole) {
+    const context = document.createElement("strong");
+    context.className = "modal-role-context";
+    context.textContent = translations[currentLanguage].avazhaItems[activeAvazRole] || activeAvazRole;
+    legend.appendChild(context);
+  }
 
   const markerDefinitions = selectedScale === "minor"
     ? [["tonic", "modal-tonic", "●"]]
@@ -441,8 +450,8 @@ function updateModalRoleMarkers() {
     select.value = Number.isInteger(roles[role]) ? String(roles[role]) : "";
     select.addEventListener("change", () => {
       const value = select.value === "" ? null : Number(select.value);
-      const existing = modalRoleOverrides[selectedScale] || {};
-      modalRoleOverrides[selectedScale] = { ...existing, [role]: value };
+      const existing = modalRoleOverrides[roleContext] || {};
+      modalRoleOverrides[roleContext] = { ...existing, [role]: value };
       try {
         localStorage.setItem(MODAL_ROLE_STORAGE_KEY, JSON.stringify(modalRoleOverrides));
       } catch (err) {
@@ -541,6 +550,32 @@ const avazhaDynamicColumn = document.getElementById("avazhaDynamicColumn");
 function toggleAvazhaColumns() {
   avazhaColumns.classList.toggle("hidden");
 }
+
+/* Each avaz is its own modal context, not Shur with a changed caption. */
+const avazItems = Array.from(avazhaColumns.querySelectorAll(".avazha-column:first-child .avazha-item[data-translate]"));
+avazItems.forEach((item) => {
+  const key = item.getAttribute("data-translate").split(".")[1];
+  item.setAttribute("role", "button");
+  item.setAttribute("tabindex", "0");
+  item.setAttribute("aria-pressed", "false");
+  const chooseAvaz = () => {
+    activeAvazRole = activeAvazRole === key ? null : key;
+    modalRoleEditorOpen = false;
+    avazItems.forEach((other) => {
+      const isSelected = activeAvazRole === other.getAttribute("data-translate").split(".")[1];
+      other.classList.toggle("active-modal-avaz", isSelected);
+      other.setAttribute("aria-pressed", String(isSelected));
+    });
+    updateModalRoleMarkers();
+  };
+  item.addEventListener("click", chooseAvaz);
+  item.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      chooseAvaz();
+    }
+  });
+});
 avazhaButton.addEventListener("click", toggleAvazhaColumns);
 
 function updateAvazhaVisibility() {
@@ -549,6 +584,11 @@ function updateAvazhaVisibility() {
     avazhaContainer.style.display = "flex";
     populateAvazhaDynamicColumn();
   } else {
+    activeAvazRole = null;
+    avazItems.forEach((item) => {
+      item.classList.remove("active-modal-avaz");
+      item.setAttribute("aria-pressed", "false");
+    });
     avazhaContainer.style.display = "none";
     avazhaColumns.classList.add("hidden");
   }

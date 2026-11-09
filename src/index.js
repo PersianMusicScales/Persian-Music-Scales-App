@@ -452,14 +452,20 @@ function updateModalRoleMarkers() {
   const heading = document.createElement("summary");
   heading.textContent = dictionary.details;
   detail.appendChild(heading);
+  // The model's musical explanations follow the selected UI language.
+  const translatedProfile = base.localized?.[currentLanguage] || {};
+  const localizedContext = translatedProfile.context || base.context || dictionary.pending;
+  const localizedWarning = translatedProfile.warning ?? base.warning;
+  const detailDirection = currentLanguage === "fa" ? "rtl" : "ltr";
+  detail.setAttribute("dir", detailDirection);
   const status = document.createElement("p");
   const confidence = base.confidence || "partial";
   status.textContent = dictionary.status + ": " +
-    (dictionary[confidence] || confidence) + " — " + (base.context || dictionary.pending);
+    (dictionary[confidence] || confidence) + " — " + localizedContext;
   detail.appendChild(status);
-  if (base.warning) {
+  if (localizedWarning) {
     const warning = document.createElement("p");
-    warning.textContent = dictionary.warning + ": " + base.warning;
+    warning.textContent = dictionary.warning + ": " + localizedWarning;
     detail.appendChild(warning);
   }
   if (Array.isArray(base.sources) && base.sources.length) {
@@ -474,7 +480,8 @@ function updateModalRoleMarkers() {
       link.href = item.url;
       link.target = "_blank";
       link.rel = "noopener noreferrer";
-      link.textContent = item.label || ("Source " + (index + 1));
+      link.textContent = (currentLanguage === "fa" ? item.labelFa
+        : currentLanguage === "fr" ? item.labelFr : item.label) || item.label || ("Source " + (index + 1));
       sources.appendChild(link);
     });
     detail.appendChild(sources);

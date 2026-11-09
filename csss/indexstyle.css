@@ -963,3 +963,95 @@ footer {
   }
   .key-signature-popover { bottom: calc(100% + 6px); }
 }
+
+
+/* Mobile control layout: reference pitch and Notes share one row. On RTL
+   pages the row follows the mirrored scale heading, without covering circle. */
+.scale-reference-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: clamp(10px, 2vw, 18px);
+  min-width: 0;
+}
+.scale-controls .scale-reference-row span#labelAtZeroAngle {
+  top: 0;
+  margin: 0;
+  line-height: 1;
+  flex-basis: auto;
+}
+.scale-reference-row .modal-role-float {
+  position: relative;
+  inset: auto;
+  z-index: 1102;
+  align-items: stretch;
+  flex-shrink: 0;
+}
+.scale-reference-row .modal-role-popover {
+  top: calc(100% + 8px);
+  right: 0;
+  left: auto;
+}
+.rtl .scale-reference-row .modal-role-popover {
+  right: auto;
+  left: 0;
+}
+/* The chevron signals interaction, and reflects the expanded state. */
+.modal-role-float-button .control-expand-cue {
+  font-size: 1.05em;
+  font-weight: 800;
+  line-height: 1;
+  transition: transform 160ms ease;
+}
+.modal-role-float-button[aria-expanded="true"] .control-expand-cue {
+  transform: rotate(180deg);
+}
+.modal-role-float-button:hover,
+.modal-role-float-button:active,
+.key-signature-button:hover,
+.key-signature-button:active {
+  border-color: #295c96;
+  box-shadow: 0 0 0 2px rgba(41, 92, 150, .2), 0 3px 8px rgba(0,0,0,.17);
+}
+.key-signature-action {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  font-size: clamp(.62rem, 2.4vw, .75rem);
+  font-weight: 700;
+  line-height: 1.4;
+  color: #172c49;
+  background: rgba(255, 255, 255, .6);
+  border-top: 1px solid rgba(67, 91, 109, .3);
+  border-radius: 0 0 6px 6px;
+}
+.key-signature-button[aria-expanded="true"] .key-signature-action {
+  color: #16578d;
+}
+@media (max-width: 700px) {
+  .scale-reference-row {
+    width: 100%;
+    justify-content: flex-end;
+    gap: clamp(9px, 3.2vw, 18px);
+    min-height: 54px;
+  }
+  .scale-controls .scale-reference-row span#labelAtZeroAngle {
+    flex-basis: auto;
+    font-size: clamp(2rem, 9vw, 3rem);
+    line-height: 1.08;
+  }
+  .scale-reference-row .modal-role-float-button {
+    min-height: 44px;
+    white-space: nowrap;
+  }
+}
+@media (max-width: 480px) {
+  .scale-reference-row { margin-top: 4px; }
+  .scale-reference-row .modal-role-float-button {
+    font-size: .78rem;
+    padding-inline: 8px;
+    min-width: 0;
+  }
+  .key-signature-action { font-size: .63rem; }
+}

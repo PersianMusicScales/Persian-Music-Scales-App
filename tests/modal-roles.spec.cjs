@@ -9,9 +9,9 @@ async function ready(page) {
   return errors;
 }
 
-test("all eight scale choices retain seven labeled pitches and role panel", async ({ page }) => {
+test("all nine scale choices retain seven labeled pitches and role panel", async ({ page }) => {
   const errors = await ready(page);
-  for (const name of ["Shur", "nava", "segah", "homayoun", "esfahan", "chahargah", "mahur", "minor"]) {
+  for (const name of ["Shur", "nava", "segah", "homayoun", "esfahan", "chahargah", "mahur", "rastPanjgah", "minor"]) {
     await page.locator("#scaleSelector").selectOption(name);
     await expect(page.locator("#outerScale .dynamic-label")).toHaveCount(7);
     await expect(page.locator("#modalRoleLegend")).toBeVisible();
@@ -112,7 +112,9 @@ test("Shur-related avaz modal contexts are separate and user-editable", async ({
   await afshari.click();
   await expect(afshari).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator("#modalRoleLegend")).toContainText("Afshari");
-  await expect(page.locator("#outerScale .dynamic-label.modal-shahed")).toHaveCount(0);
+  await expect(page.locator("#outerScale .dynamic-label.modal-shahed")).toHaveCount(1);
+  await expect(page.locator("#outerScale .dynamic-label").nth(0)).toHaveClass(/modal-shahed/);
+  await expect(page.locator("#outerScale .dynamic-label").nth(3)).toHaveClass(/modal-finalis/);
   await page.getByRole("button", { name: "Edit markers" }).click();
   await page.locator(".modal-role-editor select").first().selectOption("4");
   await expect(page.locator("#outerScale .dynamic-label").nth(4)).toHaveClass(/modal-shahed/);
@@ -120,5 +122,57 @@ test("Shur-related avaz modal contexts are separate and user-editable", async ({
   await expect(page.locator("#outerScale .dynamic-label").nth(0)).toHaveClass(/modal-shahed/);
   await afshari.click();
   await expect(page.locator("#outerScale .dynamic-label").nth(4)).toHaveClass(/modal-shahed/);
+  expect(errors).toEqual([]);
+});
+
+test("Mahur and Rast-Panjgah are distinct modal identities sharing one collection", async ({ page }) => {
+  const errors = await ready(page);
+  await page.locator("#scaleSelector").selectOption("mahur");
+  const mahur = await page.locator("#outerScale .dynamic-label").evaluateAll(
+    nodes => nodes.map(n => n.dataset.singleNote)
+  );
+  await expect(page.locator("#modalRoleLegend")).toContainText("Mahur darāmad");
+  await page.locator("#scaleSelector").selectOption("rastPanjgah");
+  const rast = await page.locator("#outerScale .dynamic-label").evaluateAll(
+    nodes => nodes.map(n => n.dataset.singleNote)
+  );
+  expect(rast).toEqual(mahur);
+  await expect(page.locator("#modalRoleLegend")).toContainText("Rast-Panjgah");
+  await expect(page.locator("#modalRoleLegend")).toContainText("Provisional model");
+  expect(errors).toEqual([]);
+});
+
+test("modal function markers may be hidden and restored, retaining preference", async ({ page }) => {
+  const errors = await ready(page);
+  await page.locator("#scaleSelector").selectOption("segah");
+  const legend = page.locator("#modalRoleLegend");
+  await expect(page.locator("#outerScale .modal-shahed")).toHaveCount(1);
+  await page.getByRole("button", { name: "Hide markers" }).click();
+  await expect(page.locator("#outerScale .modal-shahed")).toHaveCount(0);
+  await expect(legend).toContainText("Show markers");
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(page.locator("#outerScale .modal-shahed")).toHaveCount(0);
+  await page.getByRole("button", { name: "Show markers" }).click();
+  await expect(page.locator("#outerScale .modal-shahed")).toHaveCount(1);
+  expect(errors).toEqual([]);
+});
+
+test("modal citations and model limitations are accessible for provisional contexts", async ({ page }) => {
+  const errors = await ready(page);
+  await page.locator("#scaleSelector").selectOption("nava");
+  const d = page.locator("#modalRoleLegend details");
+  await d.locator("summary").click();
+  await expect(d).toContainText("Provisional model");
+  await expect(d).toContainText("Direct note-by-note verification");
+  await expect(d.locator("a[href^='https://']")).not.toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
+test("audio analyzer manual modes include Rast-Panjgah without false automatic certainty", async ({ page }) => {
+  const errors = await ready(page);
+  await page.locator("#openAudioAnalyzer").click();
+  await expect(page.locator("#manualScaleSelect")).toHaveCount(0);
+  const options = await page.locator("#manualScale").locator("option").allTextContents();
+  expect(options.some(name => name.includes("Rast"))).toBeTruthy();
   expect(errors).toEqual([]);
 });

@@ -1,9 +1,9 @@
 {
-  "id": "/",
+  "id": "./index.html",
   "name": "Persian Music Scales",
   "short_name": "Music Scales",
-  "start_url": "index.html",
-  "scope": "/",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#303130",
   "theme_color": "#303130",
@@ -75,7 +75,11 @@
   ],
   "lang": "en-US",
   "dir": "ltr",
-  "categories": ["education", "music", "entertainment"],
+  "categories": [
+    "education",
+    "music",
+    "entertainment"
+  ],
   "iarc_rating_id": "/",
   "prefer_related_applications": false,
   "related_applications": [],
@@ -91,11 +95,18 @@
       "scope": "/"
     }
   ],
-  "permissions": ["background-sync", "push-notifications"],
+  "permissions": [
+    "background-sync",
+    "push-notifications"
+  ],
   "push_notification": {
     "enabled": true,
     "options": {
-      "vibrate": [100, 50, 100],
+      "vibrate": [
+        100,
+        50,
+        100
+      ],
       "actions": [
         {
           "action": "explore",

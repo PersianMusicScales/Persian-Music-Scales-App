@@ -190,6 +190,8 @@
     const dictionary = TRANSLATIONS[lang] || TRANSLATIONS.en;
     const svg = document.getElementById("keySignatureStaff");
     drawStaff(svg, result, scaleId);
+    const largeStaff = document.getElementById("keySignatureLargeStaff");
+    if (largeStaff) drawStaff(largeStaff, result, scaleId);
     // Only Western major/minor with ordinary sharps/flats earns a
     // conventional label; Persian modes are conservative derived models.
     const standard = (scaleId === "minor" || scaleId === "mahur") &&
@@ -199,6 +201,7 @@
     const label = status + ". " + dictionary.notes + ": " + noteList;
     button.setAttribute("aria-label", dictionary.open + ". " + label);
     svg.setAttribute("aria-label", label);
+    if (largeStaff) largeStaff.setAttribute("aria-label", label);
     document.getElementById("keySignatureTitle").textContent = dictionary.title;
     document.getElementById("keySignatureStatus").textContent = status;
     document.getElementById("keySignatureNotes").textContent = dictionary.notes + ": " + noteList;

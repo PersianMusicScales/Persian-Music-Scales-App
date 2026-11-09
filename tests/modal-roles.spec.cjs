@@ -104,3 +104,21 @@ test("short synthesized recording passes through analyzer and preserves modal ma
   await expect(page.locator("#outerScale .dynamic-label").nth(2)).toHaveClass(/modal-shahed/);
   expect(errors).toEqual([]);
 });
+
+test("Shur-related avaz modal contexts are separate and user-editable", async ({ page }) => {
+  const errors = await ready(page);
+  await page.locator("#avazhaButton").click();
+  const afshari = page.locator('.avazha-item[data-translate="avazha.afshari"]');
+  await afshari.click();
+  await expect(afshari).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("#modalRoleLegend")).toContainText("Afshari");
+  await expect(page.locator("#outerScale .dynamic-label.modal-shahed")).toHaveCount(0);
+  await page.getByRole("button", { name: "Edit markers" }).click();
+  await page.locator(".modal-role-editor select").first().selectOption("4");
+  await expect(page.locator("#outerScale .dynamic-label").nth(4)).toHaveClass(/modal-shahed/);
+  await afshari.click();
+  await expect(page.locator("#outerScale .dynamic-label").nth(0)).toHaveClass(/modal-shahed/);
+  await afshari.click();
+  await expect(page.locator("#outerScale .dynamic-label").nth(4)).toHaveClass(/modal-shahed/);
+  expect(errors).toEqual([]);
+});

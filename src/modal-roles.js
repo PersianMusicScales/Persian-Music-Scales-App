@@ -36,8 +36,10 @@
       sources: ["https://www.iranicaonline.org/articles/homayun/"]
     },
     esfahan: {
-      shahed: null, finalis: null,
-      context: "Published Esfahan F G A-koron B C D E-flat (Shahed C, Finalis G) differs from this app's pitch collection; no reliable mapping.",
+      // Published F G A-koron B C D E-flat, cyclically re-anchored at C:
+      // C D E-flat F G A-koron B = angles [0,60,90,150,210,255,330].
+      shahed: 0, finalis: 4,
+      context: "Bayat-e Esfahan daramad; C is Shahed, G is Finalis. Published F-anchored collection is identical under cyclic re-anchoring to the app's C-anchored collection.",
       sources: ["https://www.iranicaonline.org/articles/bayat-e-esfahan/"]
     },
     chahargah: {

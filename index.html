@@ -202,8 +202,24 @@
       </div>
     </div>
     
-    <!-- Dynamic Label -->
-    <span id="labelAtZeroAngle" class="glow-sun"></span>
+    <!-- Reference pitch and note-role help share one horizontal row:
+         LTR: pitch on left / Notes on right; RTL: pitch on right / Notes on left. -->
+    <div class="scale-reference-row">
+      <span id="labelAtZeroAngle" class="glow-sun"></span>
+      <div class="modal-role-float" id="modalRoleFloat">
+        <button id="modalRoleButton" class="modal-role-float-button" type="button"
+                aria-expanded="false" aria-controls="modalRolePopover"
+                aria-label="Shahed and Finalis notes">
+          <span class="modal-role-button-symbols" aria-hidden="true">★ ◆</span>
+          <span id="modalRoleButtonLabel">Notes</span>
+          <span class="control-expand-cue" aria-hidden="true">⌄</span>
+        </button>
+        <div id="modalRolePopover" class="modal-role-popover" hidden>
+          <div id="modalRoleLegend" class="modal-role-legend" aria-live="polite"
+               aria-label="Modal note functions"></div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- MAIN: Center the circle, place legend/footer inside -->
@@ -214,19 +230,6 @@
       <div class="diatonic-scale" id="diatonicScale"></div>
       <div class="outer-scale" id="outerScale"></div>
 
-      <!-- Collapsed by default; opening overlays the circle without changing its layout. -->
-      <div class="modal-role-float" id="modalRoleFloat">
-        <button id="modalRoleButton" class="modal-role-float-button" type="button"
-                aria-expanded="false" aria-controls="modalRolePopover"
-                aria-label="Shahed and Finalis notes">
-          <span class="modal-role-button-symbols" aria-hidden="true">★ ◆</span>
-          <span id="modalRoleButtonLabel">Notes</span>
-        </button>
-        <div id="modalRolePopover" class="modal-role-popover" hidden>
-          <div id="modalRoleLegend" class="modal-role-legend" aria-live="polite"
-               aria-label="Modal note functions"></div>
-        </div>
-      </div>
     </div>
 
     <!-- The compact staff is anchored beside Play Scale, not inserted in
@@ -238,6 +241,7 @@
                 aria-label="Open scale notation">
           <svg id="keySignatureStaff" class="key-signature-staff" viewBox="0 0 282 94"
                role="img" aria-label="Treble staff with current scale accidentals"></svg>
+          <span id="keySignatureAction" class="key-signature-action" aria-hidden="true">Tap to enlarge <span aria-hidden="true">↗</span></span>
         </button>
         <div id="keySignaturePopover" class="key-signature-popover" hidden>
           <div class="key-signature-popover-header">
@@ -256,6 +260,45 @@
         </div>
       </aside>
       <button id="playScale">► Play Scale</button>
+      <!-- The existing microphone moves with the staff on narrow screens,
+           but retains fixed desktop positioning. No recorder logic changes. -->
+      <!-- Direct floating microphone recorder: hold, release, analyze, and loop. -->
+      <section id="quickScaleFinder" class="quick-scale-finder" aria-label="Find the scale">
+      <button
+      id="quickScaleFinderButton"
+      class="quick-scale-finder-button"
+      type="button"
+      aria-pressed="false"
+      aria-controls="quickScaleFinderPanel"
+      aria-describedby="quickScaleFinderHelp"
+      >
+      <span class="quick-finder-icon-ring" aria-hidden="true">
+      <span class="quick-finder-icon-core">🎙</span>
+      </span>
+      <span class="quick-finder-copy">
+      <strong id="quickScaleFinderLabel" data-analyzer-text="enableMicrophone">Enable microphone</strong>
+      <small id="quickScaleFinderHelp" data-analyzer-text="microphoneSetupHint">Tap once for microphone access</small>
+      </span>
+      </button>
+      
+      <div
+      id="quickScaleFinderPanel"
+      class="quick-recording-popover"
+      aria-live="polite"
+      hidden
+      >
+      <div id="quickRecordingFeedback" class="recording-feedback quick-recording-feedback" data-state="ready">
+      <span class="recording-dot" aria-hidden="true"></span>
+      <strong id="quickRecordingStatus" data-analyzer-text="enableMicrophone">Enable microphone</strong>
+      <time id="quickRecordingTimer" datetime="PT0S">0:00</time>
+      </div>
+      <div class="microphone-level-track" aria-hidden="true">
+      <div id="quickMicrophoneLevel" class="microphone-level-fill"></div>
+      </div>
+      <button id="quickCancelRecordingButton" class="cancel-recording-button" type="button" hidden data-analyzer-text="cancelRecording">Cancel recording</button>
+      <p class="quick-finder-privacy" data-analyzer-text="microphonePrivacy">The recording stays in this browser and is not uploaded.</p>
+      </div>
+      </section>
     </div>
     <section id="currentScaleSummary" class="visually-hidden" aria-live="polite" aria-atomic="true">
       <h2>Current scale model</h2>
@@ -351,45 +394,6 @@
 
 
 
-
-
-  <!-- Direct floating microphone recorder: hold, release, analyze, and loop. -->
-  <section id="quickScaleFinder" class="quick-scale-finder" aria-label="Find the scale">
-    <button
-      id="quickScaleFinderButton"
-      class="quick-scale-finder-button"
-      type="button"
-      aria-pressed="false"
-      aria-controls="quickScaleFinderPanel"
-      aria-describedby="quickScaleFinderHelp"
-    >
-      <span class="quick-finder-icon-ring" aria-hidden="true">
-        <span class="quick-finder-icon-core">🎙</span>
-      </span>
-      <span class="quick-finder-copy">
-        <strong id="quickScaleFinderLabel" data-analyzer-text="enableMicrophone">Enable microphone</strong>
-        <small id="quickScaleFinderHelp" data-analyzer-text="microphoneSetupHint">Tap once for microphone access</small>
-      </span>
-    </button>
-
-    <div
-      id="quickScaleFinderPanel"
-      class="quick-recording-popover"
-      aria-live="polite"
-      hidden
-    >
-      <div id="quickRecordingFeedback" class="recording-feedback quick-recording-feedback" data-state="ready">
-        <span class="recording-dot" aria-hidden="true"></span>
-        <strong id="quickRecordingStatus" data-analyzer-text="enableMicrophone">Enable microphone</strong>
-        <time id="quickRecordingTimer" datetime="PT0S">0:00</time>
-      </div>
-      <div class="microphone-level-track" aria-hidden="true">
-        <div id="quickMicrophoneLevel" class="microphone-level-fill"></div>
-      </div>
-      <button id="quickCancelRecordingButton" class="cancel-recording-button" type="button" hidden data-analyzer-text="cancelRecording">Cancel recording</button>
-      <p class="quick-finder-privacy" data-analyzer-text="microphonePrivacy">The recording stays in this browser and is not uploaded.</p>
-    </div>
-  </section>
 
 
   <!-- Audio Track Analyzer drawer -->

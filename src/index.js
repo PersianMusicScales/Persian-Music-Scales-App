@@ -52,6 +52,7 @@ const outerScale       = document.getElementById("outerScale");
 const diatonicScale    = document.getElementById("diatonicScale");
 const labelAtZeroAngle = document.getElementById("labelAtZeroAngle");
 const playScaleBtn     = document.getElementById("playScale");
+if (window.PERSIAN_KEY_SIGNATURE) window.PERSIAN_KEY_SIGNATURE.init();
 const pageTitle        = document.getElementById("pageTitle");
 const bottomNavLabels  = document.querySelectorAll('.bottom-nav span[data-translate]');
 
@@ -554,6 +555,17 @@ function updateDynamicLabels() {
   labelAtZeroAngle.dataset.allNotes = zeroResult.parseableText;
   labelAtZeroAngle.dataset.singleNote = zeroResult.parseableText.split("/")[0].trim();
   updateModalRoleMarkers();
+  // The notation engine is deliberately independent of the circle's
+  // enharmonic text labels and uses the same seven scale angles.
+  const notation = window.PERSIAN_KEY_SIGNATURE;
+  if (notation) {
+    notation.update({
+      scaleId: scaleName,
+      cents: angles.map(angle => Math.round(angle * 1200 / 360)),
+      rotationCents: rotation * 1200 / 360,
+      lang: currentLanguage
+    });
+  }
 }
 
 function updateScaleTextSummary() {

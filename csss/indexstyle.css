@@ -907,6 +907,14 @@ footer {
   display: block;
   pointer-events: none;
 }
+.key-signature-large-staff {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin: 6px 0;
+  border-radius: 7px;
+  background: #fffdf8;
+}
 .key-signature-popover {
   position: absolute;
   bottom: calc(100% + 7px);

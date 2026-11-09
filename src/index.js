@@ -348,12 +348,14 @@ const modalRoleTranslations = {
   en: { shahed: "Shahed", finalis: "Finalis", tonic: "Tonic",
     pending: "Shahed and Finalis: reference assignment pending.",
     show: "Show markers", hide: "Hide markers", details: "About these notes",
+    trigger: "Notes", triggerLabel: "Shahed and Finalis notes",
     status: "Reference status", documented: "Documented model",
     provisional: "Provisional model", partial: "Partially established",
     warning: "Model limitation", sources: "Research sources" },
   fr: { shahed: "Shahed", finalis: "Note finale", tonic: "Tonique",
     pending: "Shahed et finalis : attribution en cours de vérification.",
     show: "Afficher les repères", hide: "Masquer les repères",
+    trigger: "Notes", triggerLabel: "Notes Shahed et finale",
     details: "À propos de ces notes", status: "Statut de référence",
     documented: "Modèle documenté", provisional: "Modèle provisoire",
     partial: "Modèle partiellement établi", warning: "Limites du modèle",
@@ -361,6 +363,7 @@ const modalRoleTranslations = {
   fa: { shahed: "شاهد", finalis: "نت پایان", tonic: "نت پایه",
     pending: "شاهد و نت پایان: تعیین نت‌ها در انتظار بررسی منابع است.",
     show: "نمایش نشانگرها", hide: "پنهان‌کردن نشانگرها",
+    trigger: "نقش نت‌ها", triggerLabel: "اطلاعات شاهد و نت پایان",
     details: "دربارهٔ این نت‌ها", status: "وضعیت مستندات",
     documented: "مدل مستند", provisional: "مدل پیشنهادی",
     partial: "مدل نیمه‌مستند", warning: "محدودیت مدل",
@@ -376,11 +379,41 @@ try {
   // Visibility defaults to on if local storage is unavailable.
 }
 
+/* The popover is anchored to the circle, never in the document flow.
+ * Stop its clicks from rotating the circle underneath it. */
+const modalRoleFloat = document.getElementById("modalRoleFloat");
+const modalRoleButton = document.getElementById("modalRoleButton");
+const modalRolePopover = document.getElementById("modalRolePopover");
+const modalRoleButtonLabel = document.getElementById("modalRoleButtonLabel");
+
+function setModalRolePopoverOpen(open) {
+  if (!modalRolePopover || !modalRoleButton) return;
+  modalRolePopover.hidden = !open;
+  modalRoleButton.setAttribute("aria-expanded", String(open));
+}
+if (modalRoleFloat && modalRoleButton && modalRolePopover) {
+  modalRoleFloat.addEventListener("click", (event) => event.stopPropagation());
+  modalRoleButton.addEventListener("click", () => setModalRolePopoverOpen(modalRolePopover.hidden));
+  document.addEventListener("click", (event) => {
+    if (!modalRoleFloat.contains(event.target)) setModalRolePopoverOpen(false);
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !modalRolePopover.hidden) {
+      setModalRolePopoverOpen(false);
+      modalRoleButton.focus();
+    }
+  });
+}
+
 function updateModalRoleMarkers() {
   const legend = document.getElementById("modalRoleLegend");
   if (!legend) return;
   const selectedScale = scaleSelector.value;
   const dictionary = modalRoleTranslations[currentLanguage] || modalRoleTranslations.en;
+  if (modalRoleButton && modalRoleButtonLabel) {
+    modalRoleButtonLabel.textContent = dictionary.trigger;
+    modalRoleButton.setAttribute("aria-label", dictionary.triggerLabel);
+  }
   const noteLabels = Array.from(outerScale.querySelectorAll(".dynamic-label"));
   noteLabels.forEach((label) => {
     label.classList.remove("modal-shahed", "modal-finalis", "modal-tonic");
@@ -571,6 +604,7 @@ const avazhaDynamicColumn = document.getElementById("avazhaDynamicColumn");
 
 function toggleAvazhaColumns() {
   avazhaColumns.classList.toggle("hidden");
+  avazhaContainer.classList.toggle("menu-open", !avazhaColumns.classList.contains("hidden"));
 }
 
 /* Each avaz is its own modal context, not Shur with a changed caption. */
@@ -587,6 +621,10 @@ avazItems.forEach((item) => {
       other.classList.toggle("active-modal-avaz", isSelected);
       other.setAttribute("aria-pressed", String(isSelected));
     });
+    // Selection is complete; collapse the menu so its list no longer
+    // covers the circle's accessible modal-note help control on mobile.
+    avazhaColumns.classList.add("hidden");
+    avazhaContainer.classList.remove("menu-open");
     updateModalRoleMarkers();
   };
   item.addEventListener("click", chooseAvaz);
@@ -612,6 +650,7 @@ function updateAvazhaVisibility() {
     });
     avazhaContainer.style.display = "none";
     avazhaColumns.classList.add("hidden");
+    avazhaContainer.classList.remove("menu-open");
   }
 }
 

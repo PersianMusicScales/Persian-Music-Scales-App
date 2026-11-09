@@ -666,11 +666,11 @@ footer {
 }
 
 /* Modal-function labels: additive styles, never replace the original pitch colors.
- * A gold star = Shahed, a blue diamond = Finalis / Ist.
+ * A gold star = Shahed, a blue diamond = Finalis.
  * One note may carry both roles.
  */
 .dynamic-label.modal-shahed {
-  outline: 3px solid #d49a15;
+  outline: 3px solid #d49a15 !important;
   outline-offset: 2px;
   box-shadow: 0 0 9px rgba(244, 189, 45, .65);
 }
@@ -678,7 +678,7 @@ footer {
   border-bottom: 4px solid #397ac2;
 }
 .dynamic-label.modal-tonic {
-  outline: 3px solid #397ac2;
+  outline: 3px solid #397ac2 !important;
   outline-offset: 2px;
 }
 .dynamic-label.modal-shahed::before {

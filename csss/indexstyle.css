@@ -273,7 +273,8 @@ main {
   justify-content: center;
   transition: background 0.3s;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  animation: bounce 2s infinite;
+  /* Stable target for keyboard, pointer, and automated accessibility interactions. */
+  animation: none;
 }
 
 .avazha-button:hover {

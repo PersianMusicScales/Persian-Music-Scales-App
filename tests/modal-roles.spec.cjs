@@ -127,10 +127,13 @@ test("Shur-related avaz contexts switch curated markers without manual editing",
   await expect(page.locator("#outerScale .dynamic-label").nth(0)).toHaveClass(/modal-shahed/);
   await expect(page.locator("#outerScale .dynamic-label").nth(3)).toHaveClass(/modal-finalis/);
   await expect(page.locator("#modalRoleLegend .modal-role-editor")).toHaveCount(0);
+  await expect(page.locator("#avazhaColumns")).toHaveClass(/hidden/);
+  await page.locator("#avazhaButton").click();
   await afshari.click();
   await expect(afshari).toHaveAttribute("aria-pressed", "false");
   await expect(page.locator("#outerScale .dynamic-label").nth(0)).toHaveClass(/modal-shahed/);
   await expect(page.locator("#outerScale .dynamic-label").nth(0)).toHaveClass(/modal-finalis/);
+  await page.locator("#avazhaButton").click();
   await afshari.click();
   await expect(page.locator("#outerScale .dynamic-label").nth(3)).toHaveClass(/modal-finalis/);
   expect(errors).toEqual([]);
@@ -225,8 +228,13 @@ test("all dastgah, avaz and minor explanations and citations switch between EN, 
   await page.locator("#scaleSelector").selectOption("Shur");
   await page.locator("#avazhaButton").click();
   for (const avaz of ["abuAta", "bayatTork", "afshari", "dashti"]) {
+    if (await page.locator("#avazhaColumns").evaluate(el => el.classList.contains("hidden"))) {
+      await page.locator("#avazhaButton").click();
+    }
     await page.locator('.avazha-item[data-translate="avazha.' + avaz + '"]').click();
+    await expect(page.locator("#avazhaColumns")).toHaveClass(/hidden/);
     await verify("avaz." + avaz);
+    await page.locator("#avazhaButton").click();
     await page.locator('.avazha-item[data-translate="avazha.' + avaz + '"]').click();
   }
   expect(errors).toEqual([]);

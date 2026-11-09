@@ -229,8 +229,32 @@
       </div>
     </div>
 
-    <!-- Play Scale Button Container -->
+    <!-- The compact staff is anchored beside Play Scale, not inserted in
+         document flow. It follows the existing circle without moving it. -->
     <div class="play-button-container">
+      <aside id="keySignatureWidget" class="key-signature-widget" aria-label="Dynamic scale notation">
+        <button id="keySignatureButton" type="button" class="key-signature-button"
+                aria-expanded="false" aria-controls="keySignaturePopover"
+                aria-label="Open scale notation">
+          <svg id="keySignatureStaff" class="key-signature-staff" viewBox="0 0 282 94"
+               role="img" aria-label="Treble staff with current scale accidentals"></svg>
+        </button>
+        <div id="keySignaturePopover" class="key-signature-popover" hidden>
+          <div class="key-signature-popover-header">
+            <strong id="keySignatureTitle">Scale notation</strong>
+            <button id="keySignatureClose" type="button" aria-label="Close">×</button>
+          </div>
+          <p id="keySignatureStatus"></p>
+          <svg id="keySignatureLargeStaff" class="key-signature-large-staff"
+               viewBox="0 0 282 94" role="img"
+               aria-label="Expanded staff notation for the selected scale"></svg>
+          <p id="keySignatureRoot"></p>
+          <p id="keySignatureNotes"></p>
+          <p id="keySignatureCaveat"></p>
+          <p id="keySignatureCompound"></p>
+          <p id="keySignatureSources"></p>
+        </div>
+      </aside>
       <button id="playScale">► Play Scale</button>
     </div>
     <section id="currentScaleSummary" class="visually-hidden" aria-live="polite" aria-atomic="true">
@@ -797,6 +821,7 @@
   </script>
 
   <!-- External Scripts -->
+  <script src="src/key-signature.js"></script>
   <script src="src/modal-roles.js"></script>
   <script src="src/index.js"></script>
   <script src="src/audio-analyzer.js"></script>

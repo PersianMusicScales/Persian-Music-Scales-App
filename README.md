@@ -587,3 +587,16 @@ iOS Safari now explicitly points to the existing illustrated
 uses the repository-relative identity, scope and start URL appropriate to
 GitHub Pages. Existing Home Screen installations may need to be **removed and
 re-added from Safari** for the icon to refresh.
+
+### Dynamic Persian scale-notation preview (draft feature)
+
+A compact treble-clef staff, beside Play Scale, shows the current seven-degree
+pitch spelling with traditional Koron/Sori and Western accidentals. It updates
+as the circle rotates or the scale/language changes and does not change sound,
+model intervals or the Shahed/Finalis annotations.
+
+**Important:** Persian-mode output is labeled *Calculated scale alterations*.
+It is not presented as a historically verified standard key signature for
+all 24 theoretical quarter-tone transpositions. Uncommon rotations can require
+combined accidentals, explicitly marked as theoretical. See
+[Musical notation methodology, source limitations and SVG license credits](docs/dynamic-persian-notation.md).

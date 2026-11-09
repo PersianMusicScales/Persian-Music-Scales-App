@@ -1,7 +1,7 @@
 /* Persian Music Scales PWA service worker — iOS playback + on-demand example audio v5.5 */
 "use strict";
 
-const CACHE_VERSION = "v16-ios-icon-modal-popover";
+const CACHE_VERSION = "v17-dynamic-persian-signatures";
 const CACHE_NAME = `persian-music-scales-${CACHE_VERSION}`;
 
 /* These files are required for the main application and analyzer shell. */
@@ -12,6 +12,9 @@ const CORE_FILES = [
   "./csss/indexstyle.css",
   "./csss/audio-analyzer.css",
   "./src/modal-roles.js",
+  "./src/key-signature.js",
+  "./assets/notation/koron.svg",
+  "./assets/notation/sori.svg",
   "./src/index.js",
   "./assets/icons/icon-192x192.png",
   "./src/audio-analyzer.js",

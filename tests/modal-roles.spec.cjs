@@ -185,3 +185,43 @@ test("audio analyzer manual modes include Rast-Panjgah without false automatic c
   expect(options.some(name => name.includes("Rast"))).toBeTruthy();
   expect(errors).toEqual([]);
 });
+
+test("all dastgah, avaz and minor explanations and citations switch between EN, FA and FR", async ({ page }) => {
+  const errors = await ready(page);
+  const expected = require("../src/modal-roles.js");
+  const scales = ["Shur", "nava", "segah", "homayoun", "esfahan", "chahargah", "mahur", "rastPanjgah", "minor"];
+
+  async function verify(key) {
+    const item = expected[key];
+    const details = page.locator("#modalRoleLegend details");
+    for (const lang of ["en", "fa", "fr"]) {
+      await page.locator("#languageSelector").selectOption(lang);
+      const panel = page.locator("#modalRoleLegend details");
+      await panel.locator("summary").click();
+      await expect(panel).toHaveAttribute("open", "");
+      await expect(panel).toHaveAttribute("dir", lang === "fa" ? "rtl" : "ltr");
+      const context = lang === "en" ? item.context : item.localized[lang].context;
+      const warning = lang === "en" ? item.warning : item.localized[lang].warning;
+      await expect(panel).toContainText(context);
+      if (warning) await expect(panel).toContainText(warning);
+      const actualSources = await panel.locator("a").allTextContents();
+      const expectedSources = item.sources.map(s => lang === "fa" ? s.labelFa : lang === "fr" ? s.labelFr : s.label);
+      expect(actualSources).toEqual(expectedSources);
+    }
+    await page.locator("#languageSelector").selectOption("en");
+  }
+
+  for (const scale of scales) {
+    await page.locator("#scaleSelector").selectOption(scale);
+    await verify(scale);
+  }
+
+  await page.locator("#scaleSelector").selectOption("Shur");
+  await page.locator("#avazhaButton").click();
+  for (const avaz of ["abuAta", "bayatTork", "afshari", "dashti"]) {
+    await page.locator('.avazha-item[data-translate="avazha.' + avaz + '"]').click();
+    await verify("avaz." + avaz);
+    await page.locator('.avazha-item[data-translate="avazha.' + avaz + '"]').click();
+  }
+  expect(errors).toEqual([]);
+});

@@ -1,7 +1,7 @@
 /* Persian Music Scales PWA service worker — iOS playback + on-demand example audio v5.5 */
 "use strict";
 
-const CACHE_VERSION = "v13-modal-contexts-sources";
+const CACHE_VERSION = "v14-curated-modal-roles";
 const CACHE_NAME = `persian-music-scales-${CACHE_VERSION}`;
 
 /* These files are required for the main application and analyzer shell. */

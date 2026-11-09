@@ -144,19 +144,67 @@
   const POS_FLAT = { B: 46, E: 28, A: 52, D: 34, G: 58, C: 40, F: 64 };
   const POS_SHARP = { F: 22, C: 40, G: 16, D: 34, A: 52, E: 28, B: 46 };
 
-  function drawGlyph(svg, kind, x, y) {
-    if (kind === "koron" || kind === "sori") {
-      const asset = kind === "koron" ? "assets/notation/koron.svg" : "assets/notation/sori.svg";
-      svg.appendChild(element("image", { href: asset, x: x - 19, y: y - 22,
-        width: 38, height: 43, preserveAspectRatio: "xMidYMid meet" }));
-    } else if (kind === "flat" || kind === "sharp") {
-      drawText(svg, kind === "flat" ? "♭" : "♯", { x: x - 1, y: y + 10,
-        "font-family": "Arial, sans-serif", "font-size": 31, "font-weight": "normal",
-        "text-anchor": "middle", fill: "#111827" });
-    } else if (kind === "flatKoron" || kind === "sharpSori") {
-      drawGlyph(svg, kind === "flatKoron" ? "flat" : "sharp", x - 7, y);
-      drawGlyph(svg, kind === "flatKoron" ? "koron" : "sori", x + 9, y);
+  /* Use one SVG coordinate system for every accidental.
+   *
+   * Flats/sharps/naturals: outlined U+266D/U+266F/U+266E glyphs from
+   * Noto Music (SIL OFL 1.1). No browser text baseline or font dependency.
+   *
+   * Koron/Sori: ORIGINAL, UNMODIFIED source paths from the creator's
+   * Wikimedia Commons CC BY-SA 4.0 SVG examples. We change only their
+   * scale and translation, not their shapes.
+   *
+   * The second translate establishes each glyph's NOTE-LEVEL anchor:
+   * - flat: center of its bowl (not the vertical stem)
+   * - sharp: center between its paired cross strokes
+   * - koron: center of its small triangular flag
+   * - sori: center of the two diagonal arms.
+   */
+  const ACCIDENTAL_OUTLINES = Object.freeze({
+    flat: "M51 524H88V179Q117 220 148.0 243.5Q179 267 209 267Q250 267 273.0 242.0Q296 217 296 173Q296 115 263 70Q241 40 208.0 19.0Q175 -2 138.5 -13.5Q102 -25 69 -25H51ZM88 141V3Q115 3 153 25Q192 47 215.5 83.0Q239 119 239 162Q239 191 230.5 206.5Q222 222 199 222Q171 222 140.5 198.0Q110 174 88 141Z",
+    sharp: "M502 82 404 39V-135H357V20L196 -58V-233H149V-77L51 -124V-46L149 0V245L51 198V276L149 323V482H196V342L357 420V590H404V439L502 485V408L404 361V116L502 160ZM357 97V342L196 264V19Z",
+    natural: "M306 -213H259V-59L51 -156V404H98V264L306 361ZM259 19V261L98 186V-57Z",
+    koron: "M8.182 4.279a8.732 8.732 0 0 1-.175.567L4.402 6.188v5.627h-.584V2.74h.472l3.762 1.404zm-3.78-.775V5.51l2.685-1.005z",
+    sori: "M9.328 5.43a4.641 4.641 0 0 1-.085.298 4.308 4.308 0 0 1-.1.309L4.281 7.922l-.158-.157c.027-.071.057-.172.09-.303a3.45 3.45 0 0 1 .096-.303l3.8-1.499-3.872-1.525-.112-.225c.086-.071.174-.142.263-.213a7.45 7.45 0 0 1 .253-.203l4.54 1.768ZM5.476 1.022h.523v9.507h-.523V3.623ZM7.016.59h.509v9.506h-.51V3.189Z"
+  });
+
+  const GLYPH_METRICS = Object.freeze({
+    // "up" glyphs are in font (y-up) coordinates, other glyphs in SVG y-down.
+    flat:    { scale: 0.058, x: 174, y: 140, up: true },
+    sharp:   { scale: 0.047, x: 277, y: 155, up: true },
+    natural: { scale: 0.054, x: 180, y: 90, up: true },
+    koron:   { scale: 4,     x: 6,   y: 4.9, up: false },
+    sori:    { scale: 4,     x: 6,   y: 5.5, up: false }
+  });
+
+  function drawGlyph(svg, kind, x, y, noteLetter) {
+    const group = element("g", {
+      class: "key-signature-accidental",
+      transform: `translate(${x} ${y})`,
+      "data-staff-y": y,
+      "data-note": noteLetter,
+      "data-kind": kind
+    });
+    function addOutline(symbol, offset) {
+      const m = GLYPH_METRICS[symbol];
+      const vertical = m.up ? -m.scale : m.scale;
+      group.appendChild(element("path", {
+        "data-glyph": symbol,
+        d: ACCIDENTAL_OUTLINES[symbol],
+        fill: "#111827",
+        transform: `translate(${offset} 0) scale(${m.scale} ${vertical}) translate(${-m.x} ${-m.y})`
+      }));
     }
+    if (kind === "flatKoron") {
+      addOutline("flat", -8);
+      addOutline("koron", 9);
+    } else if (kind === "sharpSori") {
+      addOutline("sharp", -9);
+      addOutline("sori", 10);
+    } else {
+      addOutline(kind, 0);
+    }
+    svg.appendChild(group);
+    return group;
   }
 
   function drawStaff(svg, result, scaleId) {
@@ -177,7 +225,7 @@
     const list = result.ordered;
     list.forEach((n, index) => {
       const y = n.alterationCents < 0 ? POS_FLAT[n.letter] : POS_SHARP[n.letter];
-      drawGlyph(svg, n.kind, 88 + index * 26, y);
+      drawGlyph(svg, n.kind, 88 + index * 26, y, n.letter);
     });
     svg.dataset.scale = scaleId;
     svg.dataset.count = String(list.length);

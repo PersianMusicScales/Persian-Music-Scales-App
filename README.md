@@ -536,10 +536,10 @@ IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, LOSS, DAMAGE, OR
 Automatic pitch, tonic, scale, and modal-analysis results are provided for educational and exploratory purposes and should not be treated as definitive musicological, academic, or professional determinations.
 
 
-### Shahed and Finalis / Ist markers (draft feature)
+### Shahed and Finalis markers (draft feature)
 
 The main scale circle can annotate **Shahed (شاهد)** with a gold star (★) and
-**Finalis / Ist (ایست)** with a blue diamond (◆). If both functions belong
+**Finalis (نت پایان)** with a blue diamond (◆). If both functions belong
 to the same degree, both markers are shown. The labels change with the
 application language, and their scale-degree positions remain stable when
 the diatonic circle is transposed. Natural Minor uses a Western tonic marker

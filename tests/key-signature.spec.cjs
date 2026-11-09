@@ -70,6 +70,9 @@ test("notation popover is accessible and translated into three languages", async
   await expect(panel).toBeHidden();
   await button.click();
   await expect(panel).toBeVisible();
+  await expect(page.locator("#keySignatureLargeStaff")).toBeVisible();
+  await expect(page.locator("#keySignatureLargeStaff line")).toHaveCount(5);
+  await expect(page.locator("#keySignatureLargeStaff")).toHaveAttribute("data-scale", "Shur");
   await expect(button).toHaveAttribute("aria-expanded","true");
   await expect(page.locator("#keySignatureNotes")).toContainText("Koron");
   await page.locator("#languageSelector").selectOption("fa");

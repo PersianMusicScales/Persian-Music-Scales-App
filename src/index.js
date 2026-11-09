@@ -339,7 +339,7 @@ const modalRoleTranslations = {
     pending: "Shahed and Finalis: reference assignment pending.",
     edit: "Edit markers", done: "Close editor", none: "Not assigned",
     custom: "Your saved musical annotations (not verified reference data)" },
-  fr: { shahed: "Shahed", finalis: "Finalis", tonic: "Tonique",
+  fr: { shahed: "Shahed", finalis: "Note finale", tonic: "Tonique",
     pending: "Shahed et finalis : attribution en cours de vérification.",
     edit: "Modifier les repères", done: "Fermer", none: "Non attribué",
     custom: "Vos annotations enregistrées (non vérifiées)" },

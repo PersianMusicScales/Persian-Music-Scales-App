@@ -545,6 +545,8 @@ application language, and their scale-degree positions remain stable when
 the diatonic circle is transposed. Natural Minor uses a Western tonic marker
 rather than borrowing Persian modal terminology.
 
+On **Shur**, the Avazha menu can select a separate modal-role context for Abu Ata, Bayat-e Tork, Afshari, or Dashti. These share the currently displayed Shur pitch collection in this version, so no automatic authority is claimed for their modal degrees. They can each hold independent user annotations. In particular, a published Afshari daramad uses an E-koron temporary stopping tone that the current Shur model does not contain.
+
 The optional **Edit markers** control allows listeners and researchers to
 assign the two roles to any of the Persian scale models. Those user
 annotations are stored locally in that browser, not in the public dataset,
@@ -554,7 +556,7 @@ and should not be interpreted as verified musicological claims.
 pitch-collection reference, not necessarily the modal Shahed or finalis.
 Modal functions are sensitive to dastgah, avaz, gusheh, daramad and melodic
 context; a seven-note collection by itself does not establish those roles.
-The draft includes a Segah daramad example (third displayed degree,
+Reviewed daramad examples include Shur, Segah, and Homayoun; Chahargah has a finalis reference but no single verified Shahed assignment. Bayat-e Esfahan's published modal pitch collection differs from the app model, so its roles remain unset. The draft includes a Segah daramad example (third displayed degree,
 E-koron in the untransposed C-referenced representation). Other Persian
 scales deliberately have no authoritative default role assignments until
 their reference contexts and sources have been reviewed. The combined

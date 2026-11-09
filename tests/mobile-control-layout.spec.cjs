@@ -55,7 +55,7 @@ test("phone recorder shares staff level without covering analyzer or bottom navi
   expect(m.x).toBeGreaterThan(s.x+s.width+35);
   expect(m.y+m.height).toBeLessThan(a.y+a.height);
   expect(m.y+m.height).toBeLessThan(n.y-20);
-  expect(await mic.evaluate(el=>getComputedStyle(el.closest(".quick-scale-finder")).position)).toBe("absolute");
+  expect(await mic.evaluate(el=>getComputedStyle(el.closest(".quick-scale-finder")).position)).toBe("relative");
   await staff.click();
   await expect(page.locator("#keySignaturePopover")).toBeVisible();
   await expect(page.locator("#keySignatureAction")).toContainText("Tap to enlarge");
@@ -66,11 +66,20 @@ test("phone recorder shares staff level without covering analyzer or bottom navi
   expect(errors).toEqual([]);
 });
 
-test("desktop microphone stays fixed and panels still work",async ({page})=>{
+test("desktop microphone and notation share a balanced deck and panels still work",async ({page})=>{
   await page.setViewportSize({width:1280,height:850});
   await page.goto("/index.html", {waitUntil:"domcontentloaded"});
   const position=await page.locator("#quickScaleFinder").evaluate(el=>getComputedStyle(el).position);
-  expect(position).toBe("fixed");
+  expect(position).toBe("relative");
+  const staff=await page.locator("#keySignatureButton").boundingBox();
+  const mic=await page.locator("#quickScaleFinder").boundingBox();
+  const play=await page.locator("#playScale").boundingBox();
+  expect(Math.abs(staff.y-mic.y)).toBeLessThan(2);
+  expect(Math.abs(staff.height-mic.height)).toBeLessThan(2);
+  expect(staff.x+staff.width).toBeLessThan(play.x);
+  expect(play.x+play.width).toBeLessThan(mic.x);
+  expect(Math.abs((play.x+play.width/2)-640)).toBeLessThan(32);
+  expect(staff.height).toBeGreaterThanOrEqual(80);
   await page.locator("#modalRoleButton").click();
   await expect(page.locator("#modalRolePopover")).toBeVisible();
   await page.locator("#modalRoleButton").click();
@@ -79,4 +88,55 @@ test("desktop microphone stays fixed and panels still work",async ({page})=>{
   await expect(page.locator("#keySignaturePopover")).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(page.locator("#keySignaturePopover")).toBeHidden();
+});
+
+test("reference and notes use opposite ends of the responsive toolbar at multiple sizes", async ({page}) => {
+  const sizes=[{width:320,height:720},{width:390,height:844},{width:430,height:932},{width:768,height:950},{width:1280,height:850}];
+  for(const size of sizes){
+    await page.setViewportSize(size);
+    await page.goto("/index.html",{waitUntil:"domcontentloaded"});
+    for(const [language,ltr] of [["en",true],["fr",true],["fa",false]]){
+      await page.locator("#languageSelector").selectOption(language);
+      const row=await page.locator(".scale-reference-row").boundingBox();
+      const pitch=await page.locator("#labelAtZeroAngle").boundingBox();
+      const notes=await page.locator("#modalRoleButton").boundingBox();
+      const select=await page.locator("#scaleSelector").boundingBox();
+      const avazha=await page.locator("#avazhaButton").boundingBox();
+      expect(Math.abs(pitch.y+pitch.height/2-notes.y-notes.height/2)).toBeLessThan(18);
+      expect(notes.y).toBeGreaterThan(select.y);
+      expect(notes.y).toBeGreaterThan(avazha.y);
+      expect(row.width).toBeGreaterThanOrEqual(size.width < 700 ? size.width*.78 : 500);
+      if(ltr) {
+        expect(notes.x-notes.width*.05).toBeGreaterThan(pitch.x+pitch.width+15);
+        expect(pitch.x-row.x).toBeLessThan(26);
+        expect(row.x+row.width-(notes.x+notes.width)).toBeLessThan(26);
+      } else {
+        expect(pitch.x).toBeGreaterThan(notes.x+notes.width+15);
+        expect(row.x-notes.x).toBeLessThanOrEqual(0);
+        expect(notes.x-row.x).toBeLessThan(26);
+        expect(row.x+row.width-(pitch.x+pitch.width)).toBeLessThan(26);
+      }
+    }
+  }
+});
+
+test("score and recorder cards stay visually matched and above nav in narrow phones",async ({page})=>{
+  for(const width of [320,360,390,430]){
+    await page.setViewportSize({width,height:844});
+    await page.goto("/index.html",{waitUntil:"domcontentloaded"});
+    const staff=await page.locator("#keySignatureButton").boundingBox();
+    const mic=await page.locator("#quickScaleFinder").boundingBox();
+    const play=await page.locator("#playScale").boundingBox();
+    const nav=await page.locator(".bottom-nav").boundingBox();
+    expect(Math.abs(staff.height-mic.height)).toBeLessThan(2);
+    expect(Math.abs(staff.y-mic.y)).toBeLessThan(2);
+    expect(staff.x+staff.width).toBeLessThan(play.x+3);
+    expect(play.x+play.width).toBeLessThan(mic.x+3);
+    expect(mic.x+mic.width).toBeLessThanOrEqual(width+2);
+    expect(staff.y+staff.height).toBeLessThan(nav.y-12);
+    await page.locator("#keySignatureButton").click();
+    await expect(page.locator("#keySignaturePopover")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.locator("#keySignaturePopover")).toBeHidden();
+  }
 });

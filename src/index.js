@@ -329,6 +329,70 @@ function findClosestLabel(angle, displayLabels, koron, sori) {
   };
 }
 
+/* ---------- Educational modal-function markers ---------- */
+/* Never infer Shahed or Finalis from the circle's 12-o'clock anchor. */
+const modalRolesByScale = window.PERSIAN_MODAL_ROLE_DEGREES || {};
+const modalRoleTranslations = {
+  en: {
+    shahed: "Shahed", finalis: "Finalis / Ist", tonic: "Tonic",
+    pending: "Shahed and Finalis: reference assignment pending."
+  },
+  fr: {
+    shahed: "Shahed", finalis: "Finalis / Ist", tonic: "Tonique",
+    pending: "Shahed et finalis : attribution en cours de vérification."
+  },
+  fa: {
+    shahed: "شاهد", finalis: "ایست / نت فرود", tonic: "نت پایه",
+    pending: "شاهد و ایست: تعیین نت‌ها در انتظار بررسی منابع است."
+  }
+};
+
+function updateModalRoleMarkers() {
+  const legend = document.getElementById("modalRoleLegend");
+  if (!legend) return;
+  const modalRoles = modalRolesByScale[scaleSelector.value] || {};
+  const dictionary = modalRoleTranslations[currentLanguage] || modalRoleTranslations.en;
+  const noteLabels = Array.from(outerScale.querySelectorAll(".dynamic-label"));
+
+  legend.replaceChildren();
+  let assignedCount = 0;
+
+  [
+    ["shahed", "modal-shahed", "★"],
+    ["finalis", "modal-finalis", "◆"],
+    ["tonic", "modal-tonic", "●"]
+  ].forEach(([role, className, symbol]) => {
+    const degree = modalRoles[role];
+    if (!Number.isInteger(degree) || degree < 0 || degree >= noteLabels.length) return;
+
+    const noteLabel = noteLabels[degree];
+    noteLabel.classList.add(className);
+
+    const existingRoles = noteLabel.dataset.modalRoles
+      ? noteLabel.dataset.modalRoles.split(", ")
+      : [];
+    existingRoles.push(dictionary[role]);
+    noteLabel.dataset.modalRoles = existingRoles.join(", ");
+    const noteName = noteLabel.dataset.singleNote || noteLabel.textContent.trim();
+    noteLabel.title = noteName + " — " + existingRoles.join(", ");
+    noteLabel.setAttribute("role", "img");
+    noteLabel.setAttribute("aria-label", noteLabel.title);
+
+    const legendItem = document.createElement("span");
+    legendItem.className = "modal-role-legend-item " + className;
+    legendItem.textContent = symbol + " " + dictionary[role] + ": " + noteName;
+    legend.appendChild(legendItem);
+    assignedCount++;
+  });
+
+  if (!assignedCount) {
+    const pending = document.createElement("span");
+    pending.className = "modal-role-pending";
+    pending.textContent = dictionary.pending;
+    legend.appendChild(pending);
+  }
+}
+
 /* ---------- Update Dynamic Labels for Chosen Scale ---------- */
 function updateDynamicLabels() {
   const scaleName = scaleSelector.value;
@@ -359,6 +423,7 @@ function updateDynamicLabels() {
   labelAtZeroAngle.innerHTML = zeroResult.displayText;
   labelAtZeroAngle.dataset.allNotes = zeroResult.parseableText;
   labelAtZeroAngle.dataset.singleNote = zeroResult.parseableText.split("/")[0].trim();
+  updateModalRoleMarkers();
 }
 
 function updateScaleTextSummary() {
@@ -382,7 +447,7 @@ function updateScaleTextSummary() {
     .filter(Boolean);
 
   summary.textContent =
-    `${displayName} — cumulative pitch positions: ${cents.join(", ")} cents from the selected tonic.` +
+    `${displayName} — cumulative pitch positions: ${cents.join(", ")} cents from the diagram's 12-o'clock reference pitch.` +
     (notes.length ? ` Current displayed notes: ${notes.join(", ")}.` : "");
 }
 

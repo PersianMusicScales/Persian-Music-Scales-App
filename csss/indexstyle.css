@@ -717,3 +717,41 @@ footer {
   .modal-role-legend { font-size: .78rem; padding: .4rem .5rem; }
   .dynamic-label.modal-shahed { outline-width: 2px; }
 }
+
+.modal-role-edit-button {
+  border: 1px solid #526a76;
+  border-radius: 7px;
+  padding: .2rem .5rem;
+  background: #f6f9fa;
+  color: #263b45;
+  cursor: pointer;
+  font: inherit;
+}
+.modal-role-edit-button:focus-visible,
+.modal-role-editor select:focus-visible {
+  outline: 2px solid #397ac2;
+  outline-offset: 2px;
+}
+.modal-role-editor {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: .65rem;
+  border-top: 1px solid #bcc8cc;
+  padding-top: .5rem;
+}
+.modal-role-editor label {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+}
+.modal-role-editor select {
+  max-width: 150px;
+  padding: .2rem;
+  border: 1px solid #526a76;
+  border-radius: 5px;
+  background: white;
+}
+.modal-role-editor small { flex-basis: 100%; opacity: .78; }

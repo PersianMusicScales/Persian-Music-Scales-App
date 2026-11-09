@@ -1026,6 +1026,15 @@ footer {
   border-top: 1px solid rgba(67, 91, 109, .3);
   border-radius: 0 0 6px 6px;
 }
+/* The global play-button selector must not give the staff a maroon
+   background or oversized padding: present it as a separate tappable card. */
+.play-button-container .key-signature-button {
+  background: rgba(251,249,243,.97);
+  color: #1c252d;
+  border: 1px solid #435b6d;
+  padding: 1px 2px;
+  border-radius: 8px;
+}
 .key-signature-button[aria-expanded="true"] .key-signature-action {
   color: #16578d;
 }

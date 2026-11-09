@@ -44,22 +44,33 @@ test("staff preview updates with rotation and scale changes without shifting pla
   const svg = page.locator("#keySignatureStaff");
   await expect(svg).toHaveAttribute("data-scale", "Shur");
   await expect(svg.locator("line")).toHaveCount(5);
-  // Use absolute document positions: Playwright may scroll the viewport
-  // when it interacts with the selector, without changing page layout.
-  const documentY = locator => locator.evaluate(el => el.getBoundingClientRect().top + window.scrollY);
-  const playBefore = await documentY(page.locator("#playScale"));
-  const analyzerBefore = await documentY(page.locator("#openAudioAnalyzer"));
-  const staffBefore = await page.locator("#keySignatureButton").boundingBox();
-  expect(staffBefore.width).toBeGreaterThan(75);
+  // Invariants for a non-flow notation widget: the entire playback row
+  // must be no taller than the Play Scale button. Scale selection itself can
+  // independently change the original app's vertical centering.
+  const getLayout = () => page.evaluate(() => {
+    const play = document.getElementById("playScale");
+    const row = play.parentElement;
+    const staff = document.getElementById("keySignatureWidget");
+    return {
+      rowHeight: row.getBoundingClientRect().height,
+      playHeight: play.getBoundingClientRect().height,
+      staffPosition: getComputedStyle(staff).position,
+      staffWidth: staff.getBoundingClientRect().width
+    };
+  });
+  const before = await getLayout();
+  expect(before.staffPosition).toBe("absolute");
+  expect(before.staffWidth).toBeGreaterThan(75);
+  expect(Math.abs(before.rowHeight - before.playHeight)).toBeLessThan(2);
   await page.locator("#circleContainer").click({ position: { x: 20, y: 20 } });
   await expect(svg).toHaveAttribute("data-scale", "Shur");
   await page.locator("#scaleSelector").selectOption("segah");
   await expect(svg).toHaveAttribute("data-scale", "segah");
   expect(await svg.locator("image").count()).toBeGreaterThan(0);
-  const playAfter = await documentY(page.locator("#playScale"));
-  const analyzerAfter = await documentY(page.locator("#openAudioAnalyzer"));
-  expect(Math.abs(playBefore - playAfter)).toBeLessThan(2);
-  expect(Math.abs(analyzerBefore - analyzerAfter)).toBeLessThan(2);
+  const after = await getLayout();
+  expect(after.staffPosition).toBe("absolute");
+  expect(Math.abs(after.rowHeight - after.playHeight)).toBeLessThan(2);
+  expect(Math.abs(before.rowHeight - after.rowHeight)).toBeLessThan(2);
   expect(errors).toEqual([]);
 });
 

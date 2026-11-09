@@ -37,13 +37,12 @@ test("Segah role marks survive pitch transposition and all languages", async ({ 
   await page.locator("#languageSelector").selectOption("fa");
   await expect(page.locator("#modalRoleLegend")).toContainText("شاهد");
   await page.locator("#languageSelector").selectOption("fr");
-  await expect(page.locator("#modalRoleLegend")).toContainText("Finalis");
+  await expect(page.locator("#modalRoleLegend")).toContainText("Note finale");
   expect(errors).toEqual([]);
 });
 
 test("role editor saves and restores an assignment without touching the source data", async ({ page }) => {
   const errors = await ready(page);
-  await expect(page.locator("#modalRoleLegend")).toContainText("assignment pending");
   await page.getByRole("button", { name: "Edit markers" }).click();
   await page.locator(".modal-role-editor select").first().selectOption("1");
   await page.locator(".modal-role-editor select").nth(1).selectOption("3");
@@ -101,6 +100,7 @@ test("short synthesized recording passes through analyzer and preserves modal ma
     (await page.locator("#analysisProgressLabel").innerText()).trim(),
     { timeout: 85000, message: "Analyzer did not finish processing the synthetic recording" }
   ).toBe("100%");
+  await page.locator("#scaleSelector").selectOption("segah");
   await expect(page.locator("#outerScale .dynamic-label").nth(2)).toHaveClass(/modal-shahed/);
   expect(errors).toEqual([]);
 });

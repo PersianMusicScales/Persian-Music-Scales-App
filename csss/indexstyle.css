@@ -719,7 +719,7 @@ footer {
   .dynamic-label.modal-shahed { outline-width: 2px; }
 }
 
-.modal-role-edit-button {
+.modal-role-visibility-button {
   border: 1px solid #526a76;
   border-radius: 7px;
   padding: .2rem .5rem;
@@ -728,34 +728,10 @@ footer {
   cursor: pointer;
   font: inherit;
 }
-.modal-role-edit-button:focus-visible,
-.modal-role-editor select:focus-visible {
+.modal-role-visibility-button:focus-visible {
   outline: 2px solid #397ac2;
   outline-offset: 2px;
 }
-.modal-role-editor {
-  flex-basis: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: .65rem;
-  border-top: 1px solid #bcc8cc;
-  padding-top: .5rem;
-}
-.modal-role-editor label {
-  display: inline-flex;
-  align-items: center;
-  gap: .4rem;
-}
-.modal-role-editor select {
-  max-width: 150px;
-  padding: .2rem;
-  border: 1px solid #526a76;
-  border-radius: 5px;
-  background: white;
-}
-.modal-role-editor small { flex-basis: 100%; opacity: .78; }
 
 /* Avaz names are keyboard-selectable modal contexts, not passive labels. */
 .avazha-item[data-translate] { cursor: pointer; border-radius: 4px; padding: 3px 5px; }

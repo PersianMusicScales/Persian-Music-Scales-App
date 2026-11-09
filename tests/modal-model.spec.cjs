@@ -5,7 +5,7 @@ const model = require("../data/persian-scales.json");
 const keys = {
   Shur: "shur", nava: "nava", segah: "segah", homayoun: "homayoun",
   esfahan: "esfahan", chahargah: "chahargah",
-  mahur: "mahur-rast-panjgah"
+  mahur: "mahur", rastPanjgah: "rast-panjgah"
 };
 
 test("every role degree refers to an existing note in its pitch collection", () => {
@@ -37,7 +37,31 @@ test("Esfahan's F-referenced source and C-referenced app use the same cyclic pit
 test("each Shur-related avaz has a separate role context", () => {
   for (const id of ["abuAta","bayatTork","afshari","dashti"]) {
     expect(roles["avaz."+id]).toBeTruthy();
-    expect(roles["avaz."+id].shahed).toBeNull();
-    expect(roles["avaz."+id].finalis).toBeNull();
+    expect(["documented","partial","provisional"].includes(roles["avaz."+id].confidence)).toBe(true);
+    for (const role of ["shahed","finalis"]) {
+      const i = roles["avaz."+id][role];
+      expect(i === null || Number.isInteger(i) && i >= 0 && i < 7).toBe(true);
+    }
+  }
+});
+
+test("Mahur/Rast-Panjgah share pitch data but not modal profiles", () => {
+  const a = model.scales.find(x => x.id === "mahur");
+  const b = model.scales.find(x => x.id === "rast-panjgah");
+  expect(a.anglesDegrees).toEqual(b.anglesDegrees);
+  expect(a.stepIntervalsCents).toEqual(b.stepIntervalsCents);
+  expect(roles.mahur.context).not.toBe(roles.rastPanjgah.context);
+  expect(roles.rastPanjgah.confidence).toBe("provisional");
+});
+
+test("provisional assignments carry source provenance and caveats", () => {
+  for (const [id, role] of Object.entries(roles)) {
+    expect(role.context, id + ": context").toBeTruthy();
+    expect(["documented","partial","provisional"].includes(role.confidence)).toBeTruthy();
+    if (role.confidence !== "documented") expect(role.warning).toBeTruthy();
+    for (const source of role.sources) {
+      expect(source.url.startsWith("https://")).toBeTruthy();
+      expect(source.label).toBeTruthy();
+    }
   }
 });

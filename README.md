@@ -536,29 +536,38 @@ IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, LOSS, DAMAGE, OR
 Automatic pitch, tonic, scale, and modal-analysis results are provided for educational and exploratory purposes and should not be treated as definitive musicological, academic, or professional determinations.
 
 
-### Shahed and Finalis markers (draft feature)
+### Shahed and Finalis (modal function annotations; draft PR)
 
-The main scale circle can annotate **Shahed (شاهد)** with a gold star (★) and
-**Finalis (نت پایان)** with a blue diamond (◆). If both functions belong
-to the same degree, both markers are shown. The labels change with the
-application language, and their scale-degree positions remain stable when
-the diatonic circle is transposed. Natural Minor uses a Western tonic marker
-rather than borrowing Persian modal terminology.
+The Persian scale circle highlights **Shahed (شاهد)** with ★ and **Finalis
+(نت پایان / خاتمه)** with ◆, which may occur together on one note. A Western
+Natural Minor model shows a tonic instead. Note-degree assignments are
+preserved through transposition, and marker visibility can be toggled.
+Users may store private degree annotations in their browser without modifying
+the academically annotated defaults.
 
-On **Shur**, the Avazha menu can select a separate modal-role context for Abu Ata, Bayat-e Tork, Afshari, or Dashti. These share the currently displayed Shur pitch collection in this version, so no automatic authority is claimed for their modal degrees. They can each hold independent user annotations. In particular, a published Afshari daramad uses an E-koron temporary stopping tone that the current Shur model does not contain.
+**Musicological scope:** our organizing reference is Mirza Abdollah's
+instrumental radif, complemented by published research. Each assignment is
+limited to a named introductory modal context (*darāmad* or an āvāz).
+A documented modal description is not itself a note-by-note critical edition
+of Mirza Abdollah's transcription. Provisional or partial assignments are
+explicitly marked, with a source list and explanation accessible in the
+"About these notes" panel.
 
-The optional **Edit markers** control allows listeners and researchers to
-assign the two roles to any of the Persian scale models. Those user
-annotations are stored locally in that browser, not in the public dataset,
-and should not be interpreted as verified musicological claims.
+Nava, Chahargah, Mahur and Rast-Panjgah have labeled provisional default
+degrees. **Mahur and Rast-Panjgah are separate selectable modal identities**
+despite sharing the same interval sequence in the educational dataset.
+The audio analyzer does **not** claim to distinguish them automatically by
+pitch collection alone; Rast-Panjgah remains an explicitly manual option.
+This does not change the existing pitch-detection/audio-analysis algorithm.
 
-**Important modeling distinction:** the note at 12 o'clock is the circular
-pitch-collection reference, not necessarily the modal Shahed or finalis.
-Modal functions are sensitive to dastgah, avaz, gusheh, daramad and melodic
-context; a seven-note collection by itself does not establish those roles.
-Reviewed daramad examples include Shur, Segah, and Homayoun; Chahargah has a finalis reference but no single verified Shahed assignment. Bayat-e Esfahan's published F-anchored pitch collection is a cyclic rotation of the app's C-anchored collection, so C is the Shahed (degree 1) and G the Finalis (degree 5) in this representation. The draft includes a Segah daramad example (third displayed degree,
-E-koron in the untransposed C-referenced representation). Other Persian
-scales deliberately have no authoritative default role assignments until
-their reference contexts and sources have been reviewed. The combined
-Mahur/Rast Panjgah selector especially requires separate modal contexts.
+The Shur-related āvāzha (Abu Ata, Bayat-e Tork, Afshari and Dashti) have
+separate role contexts. The displayed Shur pitch collection remains a shared
+*scaffold*, not a complete model of each āvāz; for example Afshari's E-koron
+temporary Ist and Dashti variable notes are not silently inserted into scale
+playback or automatic analysis. Bayat-e Tork intentionally has no universal
+Finalis assignment in the current reference context.
 
+**Definitions, degree mappings, cautions, source bibliography and future
+verification requirements:** [Modal roles research](docs/modal-roles-research.md).
+Do not merge this draft before browser tests pass and the role defaults have
+been reviewed for source accuracy.

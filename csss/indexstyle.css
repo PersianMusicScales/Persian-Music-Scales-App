@@ -770,3 +770,37 @@ footer {
   flex-basis: 100%;
   color: #263b45;
 }
+
+
+/* References and user-controlled modal function visibility. */
+.modal-role-details {
+  flex: 1 0 100%;
+  border-top: 1px solid rgba(50,65,78,.18);
+  padding: .4rem .35rem 0;
+  text-align: start;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.modal-role-details summary {
+  cursor: pointer;
+  font-weight: 650;
+  padding: .2rem;
+}
+.modal-role-details summary:focus-visible {
+  outline: 2px solid #397ac2;
+  outline-offset: 2px;
+}
+.modal-role-details p {
+  font-size: .85rem;
+  line-height: 1.5;
+  margin: .4rem 0;
+}
+.modal-role-sources {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .35rem .8rem;
+  font-size: .8rem;
+}
+.modal-role-sources a { color: #19558d; text-decoration: underline; }
+.modal-role-sources a:focus-visible { outline: 2px solid #397ac2; }

@@ -5,7 +5,8 @@ async function ready(page) {
   page.on("pageerror", e => errors.push(e.message));
   await page.goto("/index.html", { waitUntil: "domcontentloaded" });
   await expect(page.locator("#outerScale .dynamic-label")).toHaveCount(7);
-  await expect(page.locator("#modalRoleLegend")).toBeVisible();
+  await expect(page.locator("#modalRoleButton")).toBeVisible();
+  await expect(page.locator("#modalRolePopover")).toBeHidden();
   return errors;
 }
 
@@ -14,7 +15,7 @@ test("all nine scale choices retain seven labeled pitches and role panel", async
   for (const name of ["Shur", "nava", "segah", "homayoun", "esfahan", "chahargah", "mahur", "rastPanjgah", "minor"]) {
     await page.locator("#scaleSelector").selectOption(name);
     await expect(page.locator("#outerScale .dynamic-label")).toHaveCount(7);
-    await expect(page.locator("#modalRoleLegend")).toBeVisible();
+    await expect(page.locator("#modalRoleButton")).toBeVisible();
   }
   await expect(page.locator("#outerScale .dynamic-label.modal-tonic")).toHaveCount(1);
   expect(errors).toEqual([]);
@@ -55,6 +56,7 @@ test("curated markers ignore preserved legacy browser overrides", async ({ page 
   await expect(labels.nth(1)).not.toHaveClass(/modal-shahed/);
   await expect(page.getByRole("button", { name: /Edit markers|Close editor/i })).toHaveCount(0);
   await expect(page.locator(".modal-role-editor")).toHaveCount(0);
+  await page.locator("#modalRoleButton").click();
   await expect(page.getByRole("button", { name: "Hide markers" })).toBeVisible();
   await expect(page.locator("#modalRoleLegend details")).toHaveCount(1);
   const saved = await page.evaluate(() => localStorage.getItem("persianMusicScales.modalRoles.v1"));
@@ -156,11 +158,13 @@ test("modal function markers may be hidden and restored, retaining preference", 
   await page.locator("#scaleSelector").selectOption("segah");
   const legend = page.locator("#modalRoleLegend");
   await expect(page.locator("#outerScale .modal-shahed")).toHaveCount(1);
+  await page.locator("#modalRoleButton").click();
   await page.getByRole("button", { name: "Hide markers" }).click();
   await expect(page.locator("#outerScale .modal-shahed")).toHaveCount(0);
   await expect(legend).toContainText("Show markers");
   await page.reload({ waitUntil: "domcontentloaded" });
   await expect(page.locator("#outerScale .modal-shahed")).toHaveCount(0);
+  await page.locator("#modalRoleButton").click();
   await page.getByRole("button", { name: "Show markers" }).click();
   await expect(page.locator("#outerScale .modal-shahed")).toHaveCount(1);
   expect(errors).toEqual([]);
@@ -170,6 +174,7 @@ test("modal citations and model limitations are accessible for provisional conte
   const errors = await ready(page);
   await page.locator("#scaleSelector").selectOption("nava");
   const d = page.locator("#modalRoleLegend details");
+  await page.locator("#modalRoleButton").click();
   await d.locator("summary").click();
   await expect(d).toContainText("Provisional model");
   await expect(d).toContainText("Direct note-by-note verification");
@@ -197,6 +202,7 @@ test("all dastgah, avaz and minor explanations and citations switch between EN, 
     for (const lang of ["en", "fa", "fr"]) {
       await page.locator("#languageSelector").selectOption(lang);
       const panel = page.locator("#modalRoleLegend details");
+      if (await page.locator("#modalRolePopover").isHidden()) await page.locator("#modalRoleButton").click();
       await panel.locator("summary").click();
       await expect(panel).toHaveAttribute("open", "");
       await expect(panel).toHaveAttribute("dir", lang === "fa" ? "rtl" : "ltr");
@@ -223,5 +229,52 @@ test("all dastgah, avaz and minor explanations and citations switch between EN, 
     await verify("avaz." + avaz);
     await page.locator('.avazha-item[data-translate="avazha.' + avaz + '"]').click();
   }
+  expect(errors).toEqual([]);
+});
+
+test("modal information popover stays out of layout and does not rotate the circle", async ({ page }) => {
+  const errors = await ready(page);
+  const circle = page.locator("#circleContainer");
+  const play = page.locator("#playScale");
+  const microphone = page.locator("#quickScaleFinderButton");
+  const labelBefore = await page.locator("#outerScale .dynamic-label").first().getAttribute("data-single-note");
+  const circleBox = await circle.boundingBox();
+  const playBefore = await play.boundingBox();
+  const microphoneBefore = await microphone.boundingBox();
+  const button = page.locator("#modalRoleButton");
+  await button.click();
+  await expect(page.locator("#modalRolePopover")).toBeVisible();
+  await expect(button).toHaveAttribute("aria-expanded", "true");
+  await expect(page.locator("#modalRoleLegend")).toContainText("Shahed");
+  expect(await page.locator("#outerScale .dynamic-label").first().getAttribute("data-single-note")).toBe(labelBefore);
+  const playAfter = await play.boundingBox();
+  const microphoneAfter = await microphone.boundingBox();
+  const circleAfter = await circle.boundingBox();
+  expect(Math.abs(playAfter.y - playBefore.y)).toBeLessThan(2);
+  expect(Math.abs(microphoneAfter.y - microphoneBefore.y)).toBeLessThan(2);
+  expect(Math.abs(circleAfter.y - circleBox.y)).toBeLessThan(2);
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#modalRolePopover")).toBeHidden();
+  await expect(button).toHaveAttribute("aria-expanded", "false");
+  await button.click();
+  await page.locator("header h1").click();
+  await expect(page.locator("#modalRolePopover")).toBeHidden();
+  expect(errors).toEqual([]);
+});
+
+test("iPhone Home Screen icon and project-scoped PWA manifest are configured", async ({ page }) => {
+  const errors = await ready(page);
+  const href = await page.locator('link[rel="apple-touch-icon"]').getAttribute("href");
+  expect(href).toBe("assets/icons/icon-192x192.png");
+  const png = await page.request.get("/assets/icons/icon-192x192.png");
+  expect(png.ok()).toBe(true);
+  expect(png.headers()["content-type"]).toContain("image/png");
+  const bytes = await png.body();
+  expect(bytes.subarray(0, 8).toString("hex")).toBe("89504e470d0a1a0a");
+  const manifestRes = await page.request.get("/manifest.json");
+  const manifest = await manifestRes.json();
+  expect(manifest.scope).toBe("./");
+  expect(manifest.start_url).toBe("./index.html");
+  expect(manifest.id).toBe("./index.html");
   expect(errors).toEqual([]);
 });

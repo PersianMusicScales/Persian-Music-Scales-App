@@ -50,6 +50,29 @@
       context: "One shared Mahur/Rast Panjgah pitch collection cannot support a single unambiguous modal-role pair",
       sources: ["https://www.iranicaonline.org/articles/dastgah/"]
     },
+    // Shur-associated avazha share some pitch material but have their own
+    // modal centers and cadences. Preserve their separate identities; do
+    // not copy the Shur daramad's marker defaults.
+    "avaz.abuAta": {
+      shahed: null, finalis: null,
+      context: "Abu Ata: a Shur-related avaz; requires its own verified daramad model and role assignment",
+      sources: ["https://www.iranicaonline.org/articles/shur-modal-system/"]
+    },
+    "avaz.bayatTork": {
+      shahed: null, finalis: null,
+      context: "Bayat-e Tork: distinct from Shur's primary daramad modal functions",
+      sources: ["https://www.iranicaonline.org/articles/shur-modal-system/"]
+    },
+    "avaz.afshari": {
+      shahed: null, finalis: null,
+      context: "Afshari: reference daramad uses E-koron as Ist, G as Shahed, C as Finalis, but the application's Shur collection lacks its required E-koron degree",
+      sources: ["https://www.iranicaonline.org/articles/afsari/"]
+    },
+    "avaz.dashti": {
+      shahed: null, finalis: null,
+      context: "Dashti: a Shur-related avaz with separate modal functions; model-to-role verification outstanding",
+      sources: ["https://www.iranicaonline.org/articles/shur-modal-system/"]
+    },
     // Natural minor is not a Persian modal system: annotate its Western tonic.
     minor: { tonic: 0, context: "Western natural-minor comparison" }
   };

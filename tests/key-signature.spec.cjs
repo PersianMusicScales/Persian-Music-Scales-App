@@ -66,7 +66,10 @@ test("staff preview updates with rotation and scale changes without shifting pla
   await expect(svg).toHaveAttribute("data-scale", "Shur");
   await page.locator("#scaleSelector").selectOption("segah");
   await expect(svg).toHaveAttribute("data-scale", "segah");
-  expect(await svg.locator("image").count()).toBeGreaterThan(0);
+  // Independent SVG paths eliminate browser text baseline/image box offsets.
+  await expect(svg.locator("image")).toHaveCount(0);
+  await expect(svg.locator("text")).toHaveCount(0);
+  expect(await svg.locator('g.key-signature-accidental path[data-glyph]').count()).toBeGreaterThan(0);
   const after = await getLayout();
   expect(after.staffPosition).toBe("absolute");
   expect(Math.abs(after.rowHeight - after.playHeight)).toBeLessThan(2);
@@ -105,5 +108,59 @@ test("exact Koron/Sori SVG assets load from the same site", async ({ page }) => 
     expect(xml).toContain("<svg");
     expect(xml).toContain("<path");
     expect(xml).toContain('viewBox="0 0 12 12"');
+  }
+});
+
+test("accidentals are aligned to their correct treble-clef staff positions", async ({ page }) => {
+  await page.goto("/index.html", {waitUntil: "domcontentloaded"});
+  const svg = page.locator("#keySignatureLargeStaff");
+  const preview = page.locator("#keySignatureStaff");
+  const expectedY = {
+    B: 46, E: 28, A: 52, D: 34, G: 58, C: 40, F: 64
+  };
+  // Select C-referenced Shur (C, D-koron, E-flat, F, G, A-flat, B-flat).
+  // Every accidental's anchor coincides with the correct staff step.
+  for (const staff of [svg, preview]) {
+    const pairs = await staff.locator("g.key-signature-accidental").evaluateAll(nodes =>
+      nodes.map(n => ({
+        note: n.getAttribute("data-note"),
+        y: Number(n.getAttribute("data-staff-y")),
+        glyphs: Array.from(n.querySelectorAll("path")).map(p => p.getAttribute("data-glyph"))
+      }))
+    );
+    expect(pairs).toHaveLength(4);
+    expect(pairs.map(n=>n.note).sort()).toEqual(["A","B","D","E"]);
+    for (const p of pairs) {
+      expect(p.y).toBe(expectedY[p.note]);
+      expect(p.glyphs).toHaveLength(1);
+    }
+  }
+});
+
+test("G minor and F minor use proper flat sequence and staff step anchors", async ({page}) => {
+  await page.goto("/index.html", {waitUntil:"domcontentloaded"});
+  await page.locator("#scaleSelector").selectOption("minor");
+  const profiles = [
+    { root: "G", positions: [46,28], notes: ["B", "E"] },
+    { root: "F", positions: [46,28,52,34], notes: ["B", "E", "A", "D"] }
+  ];
+  for (const profile of profiles) {
+    // The 12-o'clock label shows the actual reference pitch after rotation.
+    for (let attempt=0; attempt<24; attempt++) {
+      const current = await page.locator("#keySignatureRoot").textContent();
+      if (current.trim().endsWith(profile.root)) break;
+      await page.locator("#circleContainer").click({ position: { x: 20, y: 20 } });
+    }
+    await expect(page.locator("#keySignatureRoot")).toContainText(profile.root);
+    const items = await page.locator("#keySignatureStaff g.key-signature-accidental").evaluateAll(nodes =>
+      nodes.map(n => ({
+        note:n.getAttribute("data-note"),
+        y:Number(n.getAttribute("data-staff-y")),
+        kind:n.getAttribute("data-kind")
+      }))
+    );
+    expect(items.map(n=>n.note)).toEqual(profile.notes);
+    expect(items.map(n=>n.y)).toEqual(profile.positions);
+    expect(items.every(n => n.kind === "flat")).toBe(true);
   }
 });

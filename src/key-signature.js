@@ -279,6 +279,9 @@
     const setOpen = open => {
       panel.hidden = !open;
       button.setAttribute("aria-expanded", String(open));
+      // Raise the entire staff stacking context while its expanded panel is
+      // open, so the Notes pill cannot intercept the close button on phones.
+      rootEl.classList.toggle("panel-open", open);
     };
     button.addEventListener("click", () => setOpen(panel.hidden));
     close.addEventListener("click", () => { setOpen(false); button.focus(); });

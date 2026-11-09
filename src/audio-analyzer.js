@@ -477,6 +477,9 @@
     esfahan: { emphasis: [[4, 0.82], [6, 0.9], [17, 0.62], [22, 0.45]], cadences: [[4, 0, 0.78], [6, 4, 0.62], [22, 17, 0.42]] },
     chahargah: { emphasis: [[3, 0.86], [8, 1], [17, 0.7], [22, 0.58]], cadences: [[3, 0, 0.8], [8, 3, 0.72], [22, 17, 0.5]] },
     mahur: { emphasis: [[4, 0.72], [8, 0.86], [18, 0.62], [22, 0.54]], cadences: [[4, 0, 0.68], [8, 4, 0.58], [22, 18, 0.46]] },
+    // No independently calibrated Rast-Panjgah signature: leave manual interpretation available,
+    // but do not claim the analyzer can distinguish it from Mahur on pitch collection alone.
+    rastPanjgah: { emphasis: [], cadences: [] },
     minor: { emphasis: [[6, 0.9], [10, 0.72], [16, 0.56], [20, 0.68]], cadences: [[2, 0, 0.82], [20, 0, 0.72], [10, 6, 0.48]] },
   };
   const ANALYZER_DEFAULTS = Object.freeze({
@@ -1963,6 +1966,10 @@
 
     const diverse = [];
     for (const candidate of candidates) {
+      // Mahur and Rast-Panjgah have an identical pitch collection here.
+      // Preserve Rast-Panjgah for MANUAL interpretation; exclude it from
+      // automatic ranking until a validated discriminative melodic model exists.
+      if (candidate.scaleName === "rastPanjgah") continue;
       const nearDuplicate = diverse.some((existing) =>
         existing.scaleName === candidate.scaleName &&
         circularDistance(existing.tonicBin, candidate.tonicBin, 24) <= 1
@@ -3421,7 +3428,8 @@
       homayoun: "Homayoun",
       esfahan: "Esfahan",
       chahargah: "Chahargah",
-      mahur: "Mahur / Rast Panjgah",
+      mahur: "Mahur",
+      rastPanjgah: "Rast-Panjgah",
       minor: "Minor",
     };
     return fallback[scaleName] || scaleName;

@@ -23,6 +23,7 @@
   const TRANSLATIONS = {
     en: {
       open: "Open scale notation", close: "Close scale notation",
+      action: "Tap to enlarge ↗",
       title: "Scale notation", derived: "Calculated scale alterations",
       western: "Standard Western key signature", noAccidentals: "No accidentals",
       root: "Reference spelling", notes: "Seven displayed degrees",
@@ -32,6 +33,7 @@
     },
     fr: {
       open: "Afficher la notation de la gamme", close: "Fermer la notation",
+      action: "Touchez pour agrandir ↗",
       title: "Notation de la gamme", derived: "Altérations calculées de la gamme",
       western: "Armure occidentale usuelle", noAccidentals: "Aucune altération",
       root: "Écriture de référence", notes: "Sept degrés affichés",
@@ -41,6 +43,7 @@
     },
     fa: {
       open: "نمایش نت‌نویسی گام", close: "بستن نت‌نویسی",
+      action: "برای بزرگ‌نمایی بزنید ↗",
       title: "نت‌نویسی گام", derived: "علامت‌های تغییرِ محاسبه‌شده",
       western: "سرکلید متعارف غربی", noAccidentals: "بدون علامت تغییر",
       root: "نگارش نت مرجع", notes: "هفت درجهٔ نمایش‌داده‌شده",
@@ -248,6 +251,9 @@
     const noteList = result.notes.map(n => noteName(n, lang)).join(" · ");
     const label = status + ". " + dictionary.notes + ": " + noteList;
     button.setAttribute("aria-label", dictionary.open + ". " + label);
+    button.title = dictionary.open;
+    const actionLabel = document.getElementById("keySignatureAction");
+    if (actionLabel) actionLabel.textContent = dictionary.action;
     svg.setAttribute("aria-label", label);
     if (largeStaff) largeStaff.setAttribute("aria-label", label);
     document.getElementById("keySignatureTitle").textContent = dictionary.title;

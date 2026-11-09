@@ -330,44 +330,57 @@ function findClosestLabel(angle, displayLabels, koron, sori) {
 }
 
 /* ---------- Educational modal-function markers ---------- */
-/* Never infer Shahed or Finalis from the circle's 12-o'clock anchor. */
+/* Distinguish scale anchor from Shahed / Finalis. Unverified roles are not guessed.
+ * Users may save their own degree assignments for any displayed scale.
+ */
 const modalRolesByScale = window.PERSIAN_MODAL_ROLE_DEGREES || {};
 const modalRoleTranslations = {
-  en: {
-    shahed: "Shahed", finalis: "Finalis / Ist", tonic: "Tonic",
-    pending: "Shahed and Finalis: reference assignment pending."
-  },
-  fr: {
-    shahed: "Shahed", finalis: "Finalis / Ist", tonic: "Tonique",
-    pending: "Shahed et finalis : attribution en cours de vérification."
-  },
-  fa: {
-    shahed: "شاهد", finalis: "ایست / نت فرود", tonic: "نت پایه",
-    pending: "شاهد و ایست: تعیین نت‌ها در انتظار بررسی منابع است."
-  }
+  en: { shahed: "Shahed", finalis: "Finalis / Ist", tonic: "Tonic",
+    pending: "Shahed and Finalis: reference assignment pending.",
+    edit: "Edit markers", done: "Close editor", none: "Not assigned",
+    custom: "Your saved musical annotations (not verified reference data)" },
+  fr: { shahed: "Shahed", finalis: "Finalis / Ist", tonic: "Tonique",
+    pending: "Shahed et finalis : attribution en cours de vérification.",
+    edit: "Modifier les repères", done: "Fermer", none: "Non attribué",
+    custom: "Vos annotations enregistrées (non vérifiées)" },
+  fa: { shahed: "شاهد", finalis: "ایست / نت فرود", tonic: "نت پایه",
+    pending: "شاهد و ایست: تعیین نت‌ها در انتظار بررسی منابع است.",
+    edit: "ویرایش نشانگرها", done: "بستن", none: "تعیین نشده",
+    custom: "یادداشت‌های ذخیره‌شدهٔ شما (تأیید علمی نشده)" }
 };
+const MODAL_ROLE_STORAGE_KEY = "persianMusicScales.modalRoles.v1";
+let modalRoleOverrides = {};
+let modalRoleEditorOpen = false;
+try {
+  const storedRoles = JSON.parse(localStorage.getItem(MODAL_ROLE_STORAGE_KEY) || "{}");
+  if (storedRoles && typeof storedRoles === "object" && !Array.isArray(storedRoles)) {
+    modalRoleOverrides = storedRoles;
+  }
+} catch (err) {
+  // Private browsing or blocked storage must not prevent drawing scales.
+}
 
 function updateModalRoleMarkers() {
   const legend = document.getElementById("modalRoleLegend");
   if (!legend) return;
-  const modalRoles = modalRolesByScale[scaleSelector.value] || {};
+  const selectedScale = scaleSelector.value;
   const dictionary = modalRoleTranslations[currentLanguage] || modalRoleTranslations.en;
   const noteLabels = Array.from(outerScale.querySelectorAll(".dynamic-label"));
-
+  const saved = modalRoleOverrides[selectedScale] || {};
+  const base = modalRolesByScale[selectedScale] || {};
+  const roles = { ...base, ...saved };
   legend.replaceChildren();
+
+  const markerDefinitions = selectedScale === "minor"
+    ? [["tonic", "modal-tonic", "●"]]
+    : [["shahed", "modal-shahed", "★"], ["finalis", "modal-finalis", "◆"]];
   let assignedCount = 0;
 
-  [
-    ["shahed", "modal-shahed", "★"],
-    ["finalis", "modal-finalis", "◆"],
-    ["tonic", "modal-tonic", "●"]
-  ].forEach(([role, className, symbol]) => {
-    const degree = modalRoles[role];
+  markerDefinitions.forEach(([role, className, symbol]) => {
+    const degree = roles[role];
     if (!Number.isInteger(degree) || degree < 0 || degree >= noteLabels.length) return;
-
     const noteLabel = noteLabels[degree];
     noteLabel.classList.add(className);
-
     const existingRoles = noteLabel.dataset.modalRoles
       ? noteLabel.dataset.modalRoles.split(", ")
       : [];
@@ -391,6 +404,59 @@ function updateModalRoleMarkers() {
     pending.textContent = dictionary.pending;
     legend.appendChild(pending);
   }
+
+  if (selectedScale === "minor") return;
+
+  const editorButton = document.createElement("button");
+  editorButton.type = "button";
+  editorButton.className = "modal-role-edit-button";
+  editorButton.textContent = modalRoleEditorOpen ? dictionary.done : dictionary.edit;
+  editorButton.setAttribute("aria-expanded", String(modalRoleEditorOpen));
+  editorButton.addEventListener("click", () => {
+    modalRoleEditorOpen = !modalRoleEditorOpen;
+    updateModalRoleMarkers();
+  });
+  legend.appendChild(editorButton);
+  if (!modalRoleEditorOpen) return;
+
+  const form = document.createElement("div");
+  form.className = "modal-role-editor";
+  form.setAttribute("role", "group");
+  form.setAttribute("aria-label", dictionary.edit);
+  [["shahed"], ["finalis"]].forEach(([role]) => {
+    const label = document.createElement("label");
+    label.textContent = dictionary[role] + ": ";
+    const select = document.createElement("select");
+    select.setAttribute("aria-label", dictionary[role]);
+    const none = document.createElement("option");
+    none.value = "";
+    none.textContent = dictionary.none;
+    select.appendChild(none);
+    noteLabels.forEach((noteLabel, degree) => {
+      const opt = document.createElement("option");
+      opt.value = String(degree);
+      opt.textContent = (degree + 1) + ". " + (noteLabel.dataset.singleNote || noteLabel.textContent);
+      select.appendChild(opt);
+    });
+    select.value = Number.isInteger(roles[role]) ? String(roles[role]) : "";
+    select.addEventListener("change", () => {
+      const value = select.value === "" ? null : Number(select.value);
+      const existing = modalRoleOverrides[selectedScale] || {};
+      modalRoleOverrides[selectedScale] = { ...existing, [role]: value };
+      try {
+        localStorage.setItem(MODAL_ROLE_STORAGE_KEY, JSON.stringify(modalRoleOverrides));
+      } catch (err) {
+        // Still apply the annotation in memory if storage is unavailable.
+      }
+      updateDynamicLabels();
+    });
+    label.appendChild(select);
+    form.appendChild(label);
+  });
+  const note = document.createElement("small");
+  note.textContent = dictionary.custom;
+  form.appendChild(note);
+  legend.appendChild(form);
 }
 
 /* ---------- Update Dynamic Labels for Chosen Scale ---------- */

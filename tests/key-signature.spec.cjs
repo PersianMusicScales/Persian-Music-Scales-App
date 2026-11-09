@@ -44,8 +44,11 @@ test("staff preview updates with rotation and scale changes without shifting pla
   const svg = page.locator("#keySignatureStaff");
   await expect(svg).toHaveAttribute("data-scale", "Shur");
   await expect(svg.locator("line")).toHaveCount(5);
-  const playBefore = await page.locator("#playScale").boundingBox();
-  const analyzerBefore = await page.locator("#openAudioAnalyzer").boundingBox();
+  // Use absolute document positions: Playwright may scroll the viewport
+  // when it interacts with the selector, without changing page layout.
+  const documentY = locator => locator.evaluate(el => el.getBoundingClientRect().top + window.scrollY);
+  const playBefore = await documentY(page.locator("#playScale"));
+  const analyzerBefore = await documentY(page.locator("#openAudioAnalyzer"));
   const staffBefore = await page.locator("#keySignatureButton").boundingBox();
   expect(staffBefore.width).toBeGreaterThan(75);
   await page.locator("#circleContainer").click({ position: { x: 20, y: 20 } });
@@ -53,10 +56,10 @@ test("staff preview updates with rotation and scale changes without shifting pla
   await page.locator("#scaleSelector").selectOption("segah");
   await expect(svg).toHaveAttribute("data-scale", "segah");
   expect(await svg.locator("image").count()).toBeGreaterThan(0);
-  const playAfter = await page.locator("#playScale").boundingBox();
-  const analyzerAfter = await page.locator("#openAudioAnalyzer").boundingBox();
-  expect(Math.abs(playBefore.y - playAfter.y)).toBeLessThan(2);
-  expect(Math.abs(analyzerBefore.y - analyzerAfter.y)).toBeLessThan(2);
+  const playAfter = await documentY(page.locator("#playScale"));
+  const analyzerAfter = await documentY(page.locator("#openAudioAnalyzer"));
+  expect(Math.abs(playBefore - playAfter)).toBeLessThan(2);
+  expect(Math.abs(analyzerBefore - analyzerAfter)).toBeLessThan(2);
   expect(errors).toEqual([]);
 });
 

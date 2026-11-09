@@ -788,7 +788,9 @@ footer {
   position: absolute;
   top: 0;
   right: 0;
-  z-index: 90;
+  /* Above the scale header and Avazha menu: the button stays tappable
+     on iPhones even when those controls overlap the circle boundary. */
+  z-index: 1102;
   display: flex;
   align-items: flex-end;
   flex-direction: column;

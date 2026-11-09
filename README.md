@@ -534,3 +534,29 @@ THE SOFTWARE AND ASSOCIATED MATERIALS ARE PROVIDED “AS IS” AND “AS AVAILAB
 IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, LOSS, DAMAGE, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE, ITS OUTPUTS, OR THE USE OR INABILITY TO USE THE SOFTWARE.
 
 Automatic pitch, tonic, scale, and modal-analysis results are provided for educational and exploratory purposes and should not be treated as definitive musicological, academic, or professional determinations.
+
+
+### Shahed and Finalis / Ist markers (draft feature)
+
+The main scale circle can annotate **Shahed (شاهد)** with a gold star (★) and
+**Finalis / Ist (ایست)** with a blue diamond (◆). If both functions belong
+to the same degree, both markers are shown. The labels change with the
+application language, and their scale-degree positions remain stable when
+the diatonic circle is transposed. Natural Minor uses a Western tonic marker
+rather than borrowing Persian modal terminology.
+
+The optional **Edit markers** control allows listeners and researchers to
+assign the two roles to any of the Persian scale models. Those user
+annotations are stored locally in that browser, not in the public dataset,
+and should not be interpreted as verified musicological claims.
+
+**Important modeling distinction:** the note at 12 o'clock is the circular
+pitch-collection reference, not necessarily the modal Shahed or finalis.
+Modal functions are sensitive to dastgah, avaz, gusheh, daramad and melodic
+context; a seven-note collection by itself does not establish those roles.
+The draft includes a Segah daramad example (third displayed degree,
+E-koron in the untransposed C-referenced representation). Other Persian
+scales deliberately have no authoritative default role assignments until
+their reference contexts and sources have been reviewed. The combined
+Mahur/Rast Panjgah selector especially requires separate modal contexts.
+

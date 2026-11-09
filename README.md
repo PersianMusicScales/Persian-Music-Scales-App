@@ -572,3 +572,18 @@ Finalis assignment in the current reference context.
 verification requirements:** [Modal roles research](docs/modal-roles-research.md).
 Do not merge this draft before browser tests pass and the role defaults have
 been reviewed for source accuracy.
+
+### Compact modal information and iOS installation
+
+The ★/◆ symbols remain directly on the note circle. Their reference
+explanations are now behind a **Notes / نقش نت‌ها / Notes** button anchored to
+the circle's upper-right, with a scrollable popover that does not increase the
+main page's height or displace playback/microphone controls. The panel can be
+closed by its button, an outside click, or Escape. Role information and sources
+remain in English, Persian and French.
+
+iOS Safari now explicitly points to the existing illustrated
+`assets/icons/icon-192x192.png` as `apple-touch-icon`. The PWA manifest
+uses the repository-relative identity, scope and start URL appropriate to
+GitHub Pages. Existing Home Screen installations may need to be **removed and
+re-added from Safari** for the icon to refresh.

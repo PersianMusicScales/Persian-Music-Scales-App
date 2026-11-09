@@ -262,6 +262,9 @@ main {
   z-index: 1001;
 }
 
+/* While the Avazha chooser is open, allow every menu entry to be tapped. */
+.avazha-container.menu-open { z-index: 1110; }
+
 .avazha-button {
   background: rgba(230, 230, 250, 0.5);
   border: none;

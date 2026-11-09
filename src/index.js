@@ -620,6 +620,9 @@ avazItems.forEach((item) => {
       other.classList.toggle("active-modal-avaz", isSelected);
       other.setAttribute("aria-pressed", String(isSelected));
     });
+    // Selection is complete; collapse the menu so its list no longer
+    // covers the circle's accessible modal-note help control on mobile.
+    avazhaColumns.classList.add("hidden");
     updateModalRoleMarkers();
   };
   item.addEventListener("click", chooseAvaz);

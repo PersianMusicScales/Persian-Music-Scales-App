@@ -335,16 +335,16 @@ function findClosestLabel(angle, displayLabels, koron, sori) {
  */
 const modalRolesByScale = window.PERSIAN_MODAL_ROLE_DEGREES || {};
 const modalRoleTranslations = {
-  en: { shahed: "Shahed", finalis: "Finalis / Ist", tonic: "Tonic",
+  en: { shahed: "Shahed", finalis: "Finalis", tonic: "Tonic",
     pending: "Shahed and Finalis: reference assignment pending.",
     edit: "Edit markers", done: "Close editor", none: "Not assigned",
     custom: "Your saved musical annotations (not verified reference data)" },
-  fr: { shahed: "Shahed", finalis: "Finalis / Ist", tonic: "Tonique",
+  fr: { shahed: "Shahed", finalis: "Finalis", tonic: "Tonique",
     pending: "Shahed et finalis : attribution en cours de vérification.",
     edit: "Modifier les repères", done: "Fermer", none: "Non attribué",
     custom: "Vos annotations enregistrées (non vérifiées)" },
-  fa: { shahed: "شاهد", finalis: "ایست / نت فرود", tonic: "نت پایه",
-    pending: "شاهد و ایست: تعیین نت‌ها در انتظار بررسی منابع است.",
+  fa: { shahed: "شاهد", finalis: "نت پایان", tonic: "نت پایه",
+    pending: "شاهد و نت پایان: تعیین نت‌ها در انتظار بررسی منابع است.",
     edit: "ویرایش نشانگرها", done: "بستن", none: "تعیین نشده",
     custom: "یادداشت‌های ذخیره‌شدهٔ شما (تأیید علمی نشده)" }
 };

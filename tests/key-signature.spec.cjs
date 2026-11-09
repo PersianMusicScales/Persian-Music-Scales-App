@@ -44,24 +44,29 @@ test("staff preview updates with rotation and scale changes without shifting pla
   const svg = page.locator("#keySignatureStaff");
   await expect(svg).toHaveAttribute("data-scale", "Shur");
   await expect(svg.locator("line")).toHaveCount(5);
-  // Invariants for a non-flow notation widget: the entire playback row
-  // must be no taller than the Play Scale button. Scale selection itself can
-  // independently change the original app's vertical centering.
+  // The harmonized control deck intentionally uses normal-flow grid cards,
+  // rather than absolutely positioned floating controls.
   const getLayout = () => page.evaluate(() => {
     const play = document.getElementById("playScale");
     const row = play.parentElement;
     const staff = document.getElementById("keySignatureWidget");
+    const mic = document.getElementById("quickScaleFinder");
     return {
       rowHeight: row.getBoundingClientRect().height,
-      playHeight: play.getBoundingClientRect().height,
+      staffHeight: staff.getBoundingClientRect().height,
+      micHeight: mic.getBoundingClientRect().height,
       staffPosition: getComputedStyle(staff).position,
-      staffWidth: staff.getBoundingClientRect().width
+      staffWidth: staff.getBoundingClientRect().width,
+      micPosition: getComputedStyle(mic).position
     };
   });
   const before = await getLayout();
-  expect(before.staffPosition).toBe("absolute");
+  expect(before.staffPosition).toBe("relative");
+  expect(before.micPosition).toBe("relative");
   expect(before.staffWidth).toBeGreaterThan(75);
-  expect(Math.abs(before.rowHeight - before.playHeight)).toBeLessThan(2);
+  expect(Math.abs(before.staffHeight - before.micHeight)).toBeLessThan(2);
+  expect(before.rowHeight).toBeGreaterThanOrEqual(before.staffHeight);
+  expect(before.rowHeight - before.staffHeight).toBeLessThan(12);
   await page.locator("#circleContainer").click({ position: { x: 20, y: 20 } });
   await expect(svg).toHaveAttribute("data-scale", "Shur");
   await page.locator("#scaleSelector").selectOption("segah");
@@ -71,8 +76,9 @@ test("staff preview updates with rotation and scale changes without shifting pla
   await expect(svg.locator("text")).toHaveCount(0);
   expect(await svg.locator('g.key-signature-accidental path[data-glyph]').count()).toBeGreaterThan(0);
   const after = await getLayout();
-  expect(after.staffPosition).toBe("absolute");
-  expect(Math.abs(after.rowHeight - after.playHeight)).toBeLessThan(2);
+  expect(after.staffPosition).toBe("relative");
+  expect(after.micPosition).toBe("relative");
+  expect(Math.abs(after.staffHeight - after.micHeight)).toBeLessThan(2);
   expect(Math.abs(before.rowHeight - after.rowHeight)).toBeLessThan(2);
   expect(errors).toEqual([]);
 });

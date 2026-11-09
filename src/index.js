@@ -604,6 +604,7 @@ const avazhaDynamicColumn = document.getElementById("avazhaDynamicColumn");
 
 function toggleAvazhaColumns() {
   avazhaColumns.classList.toggle("hidden");
+  avazhaContainer.classList.toggle("menu-open", !avazhaColumns.classList.contains("hidden"));
 }
 
 /* Each avaz is its own modal context, not Shur with a changed caption. */
@@ -623,6 +624,7 @@ avazItems.forEach((item) => {
     // Selection is complete; collapse the menu so its list no longer
     // covers the circle's accessible modal-note help control on mobile.
     avazhaColumns.classList.add("hidden");
+    avazhaContainer.classList.remove("menu-open");
     updateModalRoleMarkers();
   };
   item.addEventListener("click", chooseAvaz);
@@ -648,6 +650,7 @@ function updateAvazhaVisibility() {
     });
     avazhaContainer.style.display = "none";
     avazhaColumns.classList.add("hidden");
+    avazhaContainer.classList.remove("menu-open");
   }
 }
 

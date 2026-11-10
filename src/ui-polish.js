@@ -136,16 +136,6 @@
   }
   new MutationObserver(scheduleClamp).observe(circle, { childList: true });
 
-  // Label geometry also changes when a font finishes loading or the wheel
-  // resizes. Re-clamp after either event so long Persian note names cannot
-  // extend into the surrounding controls.
-  if (typeof ResizeObserver !== "undefined") {
-    new ResizeObserver(scheduleClamp).observe(circle);
-  }
-  if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(scheduleClamp).catch(() => {});
-  }
-
   function syncLanguage() {
     const lang = labels[selector.value] ? selector.value : "en";
     const t = labels[lang];

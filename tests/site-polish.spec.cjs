@@ -120,3 +120,16 @@ test("About keeps the selected language and full page stays readable", async ({ 
   await expect(page.locator("#languageSelector")).toHaveValue("fa");
   await expect(page.locator("#modalRoleButtonLabel")).toHaveText("شاهد و نت فرود");
 });
+
+test("active āvāz is named beside its parent Shur selection", async ({ page }) => {
+  await visit(page, "/index.html");
+  await page.locator("#avazhaButton").click();
+  await page.locator('.avazha-item[data-translate="avazha.abuAta"]').click();
+  await expect(page.locator("#scaleSelector")).toHaveValue("Shur");
+  await expect(page.locator("#avazhaLabel")).toContainText("Abu Ata");
+  await page.locator("#languageSelector").selectOption("fa");
+  await expect(page.locator("#avazhaLabel")).toContainText("ابوعطا");
+  await page.locator("#avazhaButton").click();
+  await page.locator('.avazha-item[data-translate="avazha.abuAta"]').click();
+  await expect(page.locator("#avazhaLabel")).toHaveText("آوازها");
+});

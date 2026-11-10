@@ -43,7 +43,7 @@
     },
     fa: {
       open: "نمایش نت‌نویسی گام", close: "بستن نت‌نویسی",
-      action: "برای بزرگ‌نمایی بزنید ↗",
+      action: "برای بزرگ‌نمایی لمس کنید ↗",
       title: "نت‌نویسی گام", derived: "علامت‌های تغییرِ محاسبه‌شده",
       western: "سرکلید متعارف غربی", noAccidentals: "بدون علامت تغییر",
       root: "نگارش نت مرجع", notes: "هفت درجهٔ نمایش‌داده‌شده",
@@ -124,11 +124,13 @@
 
   function noteName(note, lang) {
     const name = (SOLFEGE[lang] || SOLFEGE.en)[LETTERS.indexOf(note.letter)];
-    const signs = {
-      "-150": "♭+Koron", "-100": "♭", "-50": "Koron",
-      "0": "", "50": "Sori", "100": "♯", "150": "♯+Sori"
+    const accidentals = {
+      en: { "-150": "flat + Koron", "-100": "♭", "-50": "Koron", "0": "", "50": "Sori", "100": "♯", "150": "sharp + Sori" },
+      fr: { "-150": "bémol + koron", "-100": "♭", "-50": "koron", "0": "", "50": "sori", "100": "♯", "150": "dièse + sori" },
+      fa: { "-150": "بمل و کرن", "-100": "بمل", "-50": "کرن", "0": "", "50": "سری", "100": "دیز", "150": "دیز و سری" }
     };
-    return name + (note.alterationCents === 0 ? "" : " " + signs[String(note.alterationCents)]);
+    const sign = (accidentals[lang] || accidentals.en)[String(note.alterationCents)];
+    return sign ? name + " " + sign : name;
   }
 
   function element(tag, attrs) {

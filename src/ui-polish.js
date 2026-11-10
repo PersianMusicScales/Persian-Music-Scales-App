@@ -16,15 +16,15 @@
   const labels = {
     en: {
       role: "Shahed & finalis", select: "Select scale", avazha: "Related āvāz modes",
-      analyze: "Analyze audio", nav: "Scales", mic: "Identify the scale"
+      analyze: "Analyze audio", mic: "Identify the scale"
     },
     fr: {
       role: "Shahed et note finale", select: "Choisir une gamme", avazha: "Āvāz apparentés",
-      analyze: "Analyser un enregistrement", nav: "Gammes", mic: "Identifier la gamme"
+      analyze: "Analyser un enregistrement", mic: "Identifier la gamme"
     },
     fa: {
       role: "شاهد و نت فرود", select: "انتخاب دستگاه یا گام", avazha: "آوازهای وابسته",
-      analyze: "تحلیل فایل صوتی", nav: "گام‌ها", mic: "شناسایی گام"
+      analyze: "تحلیل فایل صوتی", mic: "شناسایی گام"
     }
   };
   const key = "persianMusicScalesLanguage";
@@ -100,6 +100,12 @@
     if (mic) mic.setAttribute("aria-label", t.mic);
     const analyze = document.getElementById("openAudioAnalyzer");
     if (analyze) analyze.setAttribute("aria-label", t.analyze);
+    const formatter = new Intl.NumberFormat(lang === "fa" ? "fa-IR" : lang === "fr" ? "fr-FR" : "en-US");
+    document.querySelectorAll("[data-interval-cents]").forEach((item) => {
+      const cents = Number(item.dataset.intervalCents);
+      item.textContent = lang === "fa" ? formatter.format(cents) + " سنت" :
+        formatter.format(cents) + " cents";
+    });
     try { localStorage.setItem(key, lang); } catch (_) { /* Storage is optional. */ }
     scheduleClamp();
     if (isOpen()) placeMenu();

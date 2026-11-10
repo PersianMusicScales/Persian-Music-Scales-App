@@ -66,7 +66,7 @@ The changes target 27 items discussed with the project creator:
 26. Use the same background treatment on Scales, Guide and About
 27. Favor small, testable UI modules and idiomatic translations over repeated overrides
 
-Items 23–25 depend partly on musicological source data already documented in the repository. The interface can explain uncertainty, but it cannot turn provisional assignments into authoritative statements without source review. For item 24, the active āvāz remains highlighted in its menu, and the Notes panel identifies its modal context.
+Items 23–25 depend partly on musicological source data already documented in the repository. The interface can explain uncertainty, but it cannot turn provisional assignments into authoritative statements without source review. For item 24, the active āvāz is named next to the āvāz selector, highlighted in its menu, and identified in the Notes panel.
 
 ## Validation
 

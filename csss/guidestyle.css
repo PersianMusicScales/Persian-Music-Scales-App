@@ -131,10 +131,6 @@ footer {
     font-family: Tahoma, Arial, sans-serif;
 }
 
-section {
-    display: none;
-}
-
-section.active {
-    display: block;
-}
+main > section[lang] { display: none; }
+main > section[lang].active { display: block; }
+main > section.guide-reference-links { display: block; }

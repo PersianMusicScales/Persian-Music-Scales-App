@@ -8,7 +8,8 @@
   --app-shadow: 0 6px 20px rgba(34, 34, 34, .13);
   --app-nav-clearance: calc(104px + env(safe-area-inset-bottom, 0px));
 }
-html { background: #d5cdc0; scroll-padding-bottom: var(--app-nav-clearance); }
+html { background: #d5cdc0; scroll-padding-bottom: var(--app-nav-clearance); overflow-x: clip; }
+body { overflow-x: clip; }
 body {
   isolation: isolate;
   background: transparent !important;

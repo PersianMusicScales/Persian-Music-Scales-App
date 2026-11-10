@@ -69,8 +69,20 @@
     avazhaButton.setAttribute("aria-expanded", "false");
   }
 
+  function updateActiveAvaz() {
+    const selected = menu.querySelector('.avazha-item[aria-pressed="true"]');
+    const lang = selector.value;
+    const base = lang === "fa" ? "آوازها" : lang === "fr" ? "Āvāz" : "Avazha";
+    const suffix = selected ? selected.textContent.trim() : "";
+    const label = document.getElementById("avazhaLabel");
+    label.textContent = suffix ? base + " · " + suffix : base;
+    avazhaButton.title = suffix || labels[lang]?.avazha || base;
+    avazhaButton.classList.toggle("has-selection", Boolean(suffix));
+  }
+
   function syncMenuState() {
     avazhaButton.setAttribute("aria-expanded", String(isOpen()));
+    updateActiveAvaz();
     if (isOpen()) {
       if (scorePopover && !scorePopover.hidden) scoreButton.click();
       if (notesPopover && !notesPopover.hidden) notesButton.click();
@@ -108,6 +120,7 @@
   function syncLanguage() {
     const lang = labels[selector.value] ? selector.value : "en";
     const t = labels[lang];
+    updateActiveAvaz();
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === "fa" ? "rtl" : "ltr";
     document.body.classList.toggle("rtl", lang === "fa");
@@ -145,6 +158,9 @@
   avazhaButton.setAttribute("aria-expanded", String(isOpen()));
   avazhaButton.addEventListener("click", () => requestAnimationFrame(syncMenuState));
   menu.addEventListener("click", () => requestAnimationFrame(syncMenuState));
+  document.getElementById("scaleSelector").addEventListener("change", () => {
+    requestAnimationFrame(updateActiveAvaz);
+  });
   notesButton.addEventListener("click", () => { if (isOpen()) dismissMenu(); });
   scoreButton.addEventListener("click", () => { if (isOpen()) dismissMenu(); });
   document.addEventListener("click", (event) => {

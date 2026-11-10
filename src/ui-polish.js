@@ -27,6 +27,26 @@
       analyze: "تحلیل فایل صوتی", mic: "شناسایی گام"
     }
   };
+  const pageCopy = {
+    en: {
+      title: "Persian scale models and interactive tools",
+      summary: "Explore Persian pitch collections, microtonal intervals and transpositions with interactive circles, listening tools, a tuner and local audio analysis.",
+      scope: "These numerical models describe pitch collections, not entire dastgāhs or gushehs. Modal identity also depends on melodic movement, Shahed, finalis, variable notes and performance context.",
+      links: { reference: "References", methodology: "Methodology", analysis: "Audio analysis", glossary: "Glossary", dataset: "Pitch data" }
+    },
+    fr: {
+      title: "Modèles de gammes persanes et outils interactifs",
+      summary: "Explorez les collections de hauteurs de la musique persane, les intervalles microtonaux et la transposition grâce aux cercles interactifs, à l’écoute, à l’accordeur et à l’analyse audio locale.",
+      scope: "Ces modèles numériques décrivent des collections de hauteurs, et non l’intégralité des dastgāhs ou des gushehs. L’identité modale dépend aussi du mouvement mélodique, du Shahed, de la note finale, des notes variables et du contexte d’interprétation.",
+      links: { reference: "Références", methodology: "Méthode", analysis: "Analyse audio", glossary: "Glossaire", dataset: "Données de hauteurs" }
+    },
+    fa: {
+      title: "مدل‌های صوتی موسیقی ایرانی و ابزارهای تعاملی",
+      summary: "مجموعه‌نغمه‌ها، فواصل ریزپرده‌ای و انتقال گام‌ها را با دایره‌های تعاملی، ابزارهای شنیداری، کوک‌سنج و تحلیل فایل صوتی بررسی کنید.",
+      scope: "مدل‌های عددیِ این برنامه ساختار صوتیِ انتخاب‌شده را نشان می‌دهند، نه تمام ویژگی‌های دستگاه یا گوشه را. هویت مدال به حرکت ملودی، شاهد، نت فرود، نغمه‌های متغیر و شیوهٔ اجرا نیز وابسته است.",
+      links: { reference: "منابع", methodology: "روش کار", analysis: "تحلیل صوت", glossary: "واژه‌نامه", dataset: "داده‌های صوتی" }
+    }
+  };
   const key = "persianMusicScalesLanguage";
   const isOpen = () => !menu.classList.contains("hidden");
 
@@ -100,6 +120,15 @@
     if (mic) mic.setAttribute("aria-label", t.mic);
     const analyze = document.getElementById("openAudioAnalyzer");
     if (analyze) analyze.setAttribute("aria-label", t.analyze);
+    const content = pageCopy[lang];
+    document.querySelectorAll("[data-page-copy]").forEach(el => {
+      const value = content[el.dataset.pageCopy];
+      if (value) el.textContent = value;
+    });
+    document.querySelectorAll("[data-reference-label]").forEach(el => {
+      const value = content.links[el.dataset.referenceLabel];
+      if (value) el.textContent = value;
+    });
     const formatter = new Intl.NumberFormat(lang === "fa" ? "fa-IR" : lang === "fr" ? "fr-FR" : "en-US");
     document.querySelectorAll("[data-interval-cents]").forEach((item) => {
       const cents = Number(item.dataset.intervalCents);

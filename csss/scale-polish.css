@@ -155,9 +155,9 @@ body.scale-page :is(#modalRoleButton,#keySignatureButton,#avazhaButton)[aria-exp
   body.scale-page .modal-role-popover {
     position: fixed;
     inset: min(200px, 23dvh) 12px calc(94px + env(safe-area-inset-bottom,0px)) 12px !important;
-    width: auto;
+    width: min(88vw, 540px) !important;
     min-width: 0;
-    max-width: none;
+    max-width: min(88vw, 540px) !important;
     max-height: none;
     overflow-y: auto;
     overscroll-behavior: contain;
@@ -166,8 +166,8 @@ body.scale-page :is(#modalRoleButton,#keySignatureButton,#avazhaButton)[aria-exp
   body.scale-page .key-signature-popover {
     position: fixed;
     inset: min(140px, 15dvh) 12px calc(94px + env(safe-area-inset-bottom,0px)) 12px !important;
-    width: auto !important;
-    max-width: none !important;
+    width: min(88vw, 540px) !important;
+    max-width: min(88vw, 540px) !important;
     min-width: 0;
     max-height: none !important;
     padding: 14px;
@@ -184,4 +184,15 @@ body.scale-page :is(#modalRoleButton,#keySignatureButton,#avazhaButton)[aria-exp
 @media (max-width: 390px) {
   body.scale-page .avazha-columns:not(.hidden) { gap: 4px; }
   body.scale-page .avazha-item { padding-inline: 6px; font-size: .8rem; }
+}
+
+@media (max-width: 760px) {
+  body.scale-page .modal-role-popover,
+  body.scale-page .key-signature-popover {
+    left: 6vw !important;
+    right: auto !important;
+    width: min(88vw, 540px) !important;
+    max-width: min(88vw, 540px) !important;
+    box-sizing: border-box;
+  }
 }

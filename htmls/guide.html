@@ -22,142 +22,114 @@
 
   <!-- Link to External CSS -->
   <link rel="stylesheet" href="../csss/guidestyle.css" />
+  <link rel="stylesheet" href="../csss/shared-shell.css" />
 
   <script>
     function switchLanguage() {
-      const lang = document.getElementById("languageSelector").value;
-      document.querySelectorAll("section").forEach(section => {
-        section.classList.toggle("active", section.lang === lang);
+      const selector = document.getElementById("languageSelector");
+      const lang = ["en", "fr", "fa"].includes(selector.value) ? selector.value : "en";
+      const navigation = {
+        en: ["Scales", "Tuner", "Guide", "About"],
+        fr: ["Gammes", "Accordeur", "Guide", "À propos"],
+        fa: ["گام‌ها", "کوک‌سنج", "راهنما", "درباره"]
+      };
+      document.querySelectorAll("main > section[lang]").forEach(panel => {
+        panel.classList.toggle("active", panel.lang === lang);
       });
-
-      // Update the document title based on the selected language
-      if (lang === "fa") {
-          document.title = "گام‌های موسیقی ایرانی";
-          document.getElementById("pageTitle").textContent = "گام‌های موسیقی ایرانی";
-      } else {
-          document.title = "Persian Music Scales";
-          document.getElementById("pageTitle").textContent = "Persian Music Scales";
-      }
-
-      // Update Bottom Menu Labels
-      const bottomNavLinks = document.querySelectorAll(".bottom-nav a");
-      bottomNavLinks.forEach(link => {
-        const enText = link.getAttribute("data-en");
-        const faText = link.getAttribute("data-fa");
-        if (lang === "fa") {
-          // Replace English text with Persian
-          link.querySelector(".menu-text").textContent = faText;
-        } else {
-          // Replace Persian text with English
-          link.querySelector(".menu-text").textContent = enText;
-        }
+      document.documentElement.lang = lang;
+      document.documentElement.dir = lang === "fa" ? "rtl" : "ltr";
+      document.getElementById("pageTitle").textContent =
+        lang === "fa" ? "گام‌های موسیقی ایرانی" : "Persian Music Scales";
+      document.title = lang === "fa" ? "راهنمای گام‌های موسیقی ایرانی" :
+        lang === "fr" ? "Guide de Persian Music Scales" : "Persian Music Scales — Guide";
+      document.querySelectorAll(".bottom-nav .menu-text").forEach((el, i) => {
+        el.textContent = navigation[lang][i];
       });
+      const reference = document.getElementById("guideTheoryHeading");
+      if (reference) reference.textContent =
+        lang === "fa" ? "منابع و مبانی موسیقی‌شناختی" :
+        lang === "fr" ? "Références musicologiques" : "Music theory references";
+      try { localStorage.setItem("persianMusicScalesLanguage", lang); } catch (_) {}
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-      // Detect the user's language
-      const userLang = navigator.language || navigator.languages[0];
-      const langSelector = document.getElementById("languageSelector");
-      
-      // Check if the language is Farsi (Persian)
-      if (userLang.includes("fa")) {
-          langSelector.value = "fa"; // Set to Farsi
-      } else {
-          langSelector.value = "en"; // Default to English
-      }
-
-      // Trigger language switch
+      const selector = document.getElementById("languageSelector");
+      let stored = "";
+      try { stored = localStorage.getItem("persianMusicScalesLanguage") || ""; } catch (_) {}
+      const detected = (navigator.language || "en").toLowerCase().split("-")[0];
+      selector.value = ["en", "fr", "fa"].includes(stored) ? stored :
+        ["en", "fr", "fa"].includes(detected) ? detected : "en";
       switchLanguage();
     });
   </script>
   <meta name="description" content="Guide to using the Persian Music Scales interactive circle, transposition controls, scale playback, tuner and melody-analysis tools." />
   <link rel="canonical" href="https://persianmusicscales.github.io/Persian-Music-Scales-App/htmls/guide.html" />
 </head>
-<body>
+<body class="guide-page">
   <header>
     <h1 id="pageTitle">Persian Music Scales</h1> <!-- Original H1 -->
     <select id="languageSelector" class="language-selector" aria-label="Select Language" onchange="switchLanguage()">
       <option value="en" selected>EN</option>
+      <option value="fr">FR</option>
       <option value="fa">فا</option>
     </select>
   </header>
 
   <main class="container">
-    <!-- English Section -->
     <section lang="en" class="active">
-      <h1>Persian Music Scales App</h1>
-      <p>Explore the beauty of Persian music through interactive tools. This app helps you visualize traditional Persian scales, their microtones, and their connections to Western diatonic scales. Perfect for musicians, students, and anyone curious about Persian music.</p>
-
-      <h2>How It Works</h2>
-      <p>The app features two interactive circles:</p>
-      <ul>
-        <li>
-          <strong>Diatonic Circle:</strong> Represents the Western reference notes. Rotate it to transpose the reference pitch collection and compare its note relationships.
-        </li>
-        <img src="../assets/images/diatonic-circle.png" alt="Diatonic Circle" style="width:35%; max-width:600px; margin-top:20px;">
-        <li>
-          <strong>Persian Scales Circle:</strong> Aligns with the Diatonic Circle to show the pitch collection and intervals. The diagram anchor is not necessarily the Shahed or finalis of the modal system.
-        </li>
-        <img src="../assets/images/persian-scale.png" alt="Persian Scale" style="width:35%; max-width:600px; margin-top:20px;">
-      </ul>
-
-      <h3>Finding the Reference Pitch and Modal Notes</h3>
-      <p>The <strong>12 o’clock position</strong> is the model's reference pitch. It is not necessarily the modal center, Shahed or concluding note. To interpret the circle:</p>
-      <ul>
-        <li>Look at the note at the top of the Persian Scales Circle (12 o’clock).</li>
-        <li>This note identifies the current reference pitch used to position the scale model.</li>
-        <li>Rotate the Diatonic Circle to explore transpositions. When musicologically validated modal roles are available, ★ marks Shahed and ◆ marks Finalis (the concluding pitch). Use the Show/Hide control to toggle markers, and open "About these notes" for source references, provisional status and modal limitations. An unassigned role means that a source-specific assignment remains unresolved, not that the note does not exist.</li>
-      </ul>
-
-      <h2>Example</h2>
-      <p>If the model's reference pitch is "Do" at 12 o’clock, rotating the Diatonic Circle by 60° transposes that reference to "Re" without changing the relative interval structure or the scale degrees used by validated Shahed/Finalis markers.</p>
-      <img src="../assets/images/example.png" alt="Persian Music Scales Visualization" style="width:100%; max-width:600px; margin-top:20px;">
-
-      <h2>Read More</h2>
-      <p>We invite you to explore the full article for more details:</p>
-      <p><a href="https://sites.google.com/view/persianmusicscales/article">Full Article</a></p>
+      <h1>How to use the scale circles</h1>
+      <p>The circles offer a visual and audible way to explore the pitch collections used in this application. They are educational models, not complete descriptions of a dastgāh or its gushehs.</p>
+      <h2>The two circles</h2>
+      <p><strong>Diatonic circle.</strong> The inner circle shows reference note names. Rotate it to transpose the pitch relationships.</p>
+      <a href="../assets/images/diatonic-circle.png" target="_blank" rel="noopener"><img class="guide-figure" src="../assets/images/diatonic-circle.png" alt="Diatonic reference circle; tap to inspect full size" loading="lazy"></a>
+      <p><strong>Persian scale circle.</strong> The outer circle shows the selected seven-note collection and its intervals. The note at 12 o’clock is a reference pitch, not necessarily the modal center.</p>
+      <a href="../assets/images/persian-scale.png" target="_blank" rel="noopener"><img class="guide-figure" src="../assets/images/persian-scale.png" alt="Persian scale circle; tap to inspect full size" loading="lazy"></a>
+      <h2>Shahed, finalis and the staff</h2>
+      <p>The star (★) indicates Shahed, the characteristic focal note; the diamond (◆) indicates the concluding note (finalis). These roles depend on the dastgāh, āvāz and melodic context. Open <strong>Shahed &amp; finalis</strong> to read the sources and the status of each assignment.</p>
+      <p>Tap the small musical staff to enlarge the notation. Its accidentals describe the application's calculated pitch collection. A calculated set of alterations should not automatically be understood as a historically documented Persian key signature.</p>
+      <h2>Transposition example</h2>
+      <p>Rotating the inner circle by 60° changes the reference pitch from Do to Re in this example, without changing the modeled interval sequence. Tap the illustration to inspect it at full size.</p>
+      <a href="../assets/images/example.png" target="_blank" rel="noopener"><img class="guide-figure" src="../assets/images/example.png" alt="Two circle positions, 60 degrees apart, with their notation" loading="lazy"></a>
+      <h2>Further reading</h2>
+      <p><a href="https://sites.google.com/view/persianmusicscales/article">Read the full article about Persian Music Scales</a>.</p>
+    </section>
+    <section lang="fr">
+      <h1>Utiliser les cercles de gammes</h1>
+      <p>Les cercles permettent d'explorer visuellement et à l'écoute les collections de hauteurs représentées dans l'application. Il s'agit de modèles pédagogiques, et non de descriptions exhaustives des dastgāhs ou de leurs gushehs.</p>
+      <h2>Les deux cercles</h2>
+      <p><strong>Cercle diatonique.</strong> Le cercle intérieur affiche les noms des notes de référence. Faites-le tourner pour transposer les rapports entre les hauteurs.</p>
+      <a href="../assets/images/diatonic-circle.png" target="_blank" rel="noopener"><img class="guide-figure" src="../assets/images/diatonic-circle.png" alt="Cercle diatonique de référence, agrandissable" loading="lazy"></a>
+      <p><strong>Cercle des gammes persanes.</strong> Le cercle extérieur montre les sept hauteurs du modèle choisi et leurs intervalles. La note située à midi est un repère de transposition, pas nécessairement le centre modal.</p>
+      <a href="../assets/images/persian-scale.png" target="_blank" rel="noopener"><img class="guide-figure" src="../assets/images/persian-scale.png" alt="Cercle des gammes persanes, agrandissable" loading="lazy"></a>
+      <h2>Shahed, note finale et portée</h2>
+      <p>L'étoile (★) indique le Shahed, note caractéristique du mode ; le losange (◆) indique la note conclusive. Leur rôle dépend du dastgāh, de l’āvāz et du contexte mélodique. Ouvrez <strong>Shahed et note finale</strong> pour consulter les sources et le degré de vérification.</p>
+      <p>Touchez la petite portée pour agrandir la notation. Les altérations sont calculées à partir des hauteurs du modèle : elles ne constituent pas nécessairement une armure traditionnelle attestée.</p>
+      <h2>Exemple de transposition</h2>
+      <p>Dans cet exemple, une rotation de 60° fait passer la note de référence de Do à Ré, sans modifier la suite d'intervalles du modèle. Touchez l'image pour l'agrandir.</p>
+      <a href="../assets/images/example.png" target="_blank" rel="noopener"><img class="guide-figure" src="../assets/images/example.png" alt="Exemple de transposition de 60 degrés et de notation" loading="lazy"></a>
+      <h2>Pour approfondir</h2>
+      <p><a href="https://sites.google.com/view/persianmusicscales/article">Lire l'article complet sur Persian Music Scales</a>.</p>
+    </section>
+    <section lang="fa" dir="rtl">
+      <h1>راهنمای دایره‌های موسیقی ایرانی</h1>
+      <p>این دایره‌ها برای بررسی دیداری و شنیداریِ مجموعه‌نغمه‌ها و فواصل به کار می‌روند. نمایش هر دستگاه در برنامه، مدلی آموزشی از ساختار صوتی آن است و همهٔ ویژگی‌های ملودیک دستگاه و گوشه‌هایش را در بر نمی‌گیرد.</p>
+      <h2>آشنایی با دو دایره</h2>
+      <p><strong>دایرهٔ دیاتونیک:</strong> نام نت‌های مرجع را نشان می‌دهد. با چرخاندن آن، می‌توانید مجموعه‌نغمه‌ها را انتقال دهید و نسبت فواصل را بررسی کنید.</p>
+      <a href="../assets/images/diatonic-circle.png" target="_blank" rel="noopener"><img class="guide-figure" src="../assets/images/diatonic-circle.png" alt="دایرهٔ دیاتونیک؛ برای دیدن تصویر بزرگ‌تر لمس کنید" loading="lazy"></a>
+      <p><strong>دایرهٔ گام‌های ایرانی:</strong> هفت نغمهٔ مدل انتخاب‌شده و فواصل میان آن‌ها را نمایش می‌دهد. نتِ جایگاه ساعت ۱۲ صرفاً مرجعِ انتقال است و لزوماً شاهد یا نت فرود دستگاه نیست.</p>
+      <a href="../assets/images/persian-scale.png" target="_blank" rel="noopener"><img class="guide-figure" src="../assets/images/persian-scale.png" alt="دایرهٔ گام‌های ایرانی؛ برای دیدن تصویر بزرگ‌تر لمس کنید" loading="lazy"></a>
+      <h2>شاهد، نت فرود و سرکلید</h2>
+      <p>ستارهٔ (★) نشان‌دهندهٔ <strong>شاهد</strong> و لوزیِ (◆) نشان‌دهندهٔ <strong>نت فرود</strong> است. این نقش‌ها با توجه به دستگاه، آواز و بافت ملودیک تعیین می‌شوند. برای دیدن منابع و میزان قطعیت هر انتساب، بخش <strong>«شاهد و نت فرود»</strong> را باز کنید.</p>
+      <p>برای دیدن نت‌نویسی در اندازهٔ بزرگ‌تر، روی حامل کوچک لمس کنید. علامت‌های تغییرِ نمایش‌داده‌شده بر اساس مدل صوتی برنامه محاسبه می‌شوند و در همهٔ موارد به معنای سرکلید مستندِ رایج در ردیف نیستند.</p>
+      <h2>نمونهٔ انتقال</h2>
+      <p>در این نمونه، چرخش ۶۰ درجه‌ای دایرهٔ درونی، نت مرجع را از «دو» به «ر» منتقل می‌کند، بی‌آنکه ترتیب نسبی فواصل تغییر کند. برای دیدن جزئیات، تصویر را لمس کنید.</p>
+      <a href="../assets/images/example.png" target="_blank" rel="noopener"><img class="guide-figure" src="../assets/images/example.png" alt="نمونهٔ انتقال ۶۰ درجه‌ای و نت‌نویسی مرتبط" loading="lazy"></a>
+      <h2>مطالعهٔ بیشتر</h2>
+      <p><a href="https://sites.google.com/view/persianmusicscales/article">مقالهٔ کامل «گام‌های موسیقی ایرانی» را بخوانید</a>.</p>
     </section>
 
-    <!-- Farsi Section -->
-    <section lang="fa">
-      <h1>اپلیکیشن گام‌های موسیقی ایرانی</h1>
-      <p>زیبایی موسیقی ایرانی را از طریق ابزارهای تعاملی کشف کنید. این اپلیکیشن به شما کمک می‌کند گام‌های سنتی ایرانی، فواصل ریزپرده‌ای و ارتباط آنها با گام‌های دیاتونیک غربی را مشاهده کنید. مناسب برای نوازندگان، دانشجویان و علاقه‌مندان به موسیقی ایرانی.</p>
-
-      <h2>نحوه کار</h2>
-      <p>این اپلیکیشن شامل دو دایره تعاملی است:</p>
-      <ul>
-        <li>
-          <strong>دایره دیاتونیک:</strong> نت‌های مرجع غربی را نشان می‌دهد. با چرخاندن آن می‌توان نمایش مجموعهٔ نغمه‌ها را انتقال داد و ارتباط آن‌ها را با گام‌های ایرانی بررسی کرد.
-        </li>
-        <img src="../assets/images/diatonic-circle.png" alt="دایره دیاتونیک" style="width:50%; max-width:600px; margin-top:20px;">
-
-        <li>
-          <strong>دایره گام‌های ایرانی:</strong> مجموعهٔ نغمه‌ها و فواصل مدل را نمایش می‌دهد. نتِ موقعیت ساعت ۱۲ لزوماً شاهد یا نت پایان دستگاه نیست.
-        </li>
-        <img src="../assets/images/persian-scale.png" alt="گام ایرانی" style="width:50%; max-width:600px; margin-top:20px;">
-      </ul>
-
-      <h3>نت مرجع، شاهد و نت پایان</h3>
-      <p>
-        نتِ <strong>موقعیت ساعت ۱۲</strong>، نت مرجع مدل برای نمایش فواصل است و لزوماً شاهد یا نت پایان دستگاه نیست. برای خواندن نمایش:
-      </p>
-      <ul>
-        <li>به نتی که در بالای دایره گام‌های ایرانی (موقعیت ساعت ۱۲) قرار دارد نگاه کنید.</li>
-        <li>این نت مرجع مجموعهٔ نغمه‌ها در نمایش فعلی است.</li>
-        <li>دایره دیاتونیک را برای بررسی انتقال‌ها بچرخانید. در صورت وجود دادهٔ مستند، ★ نت شاهد و ◆ نت پایان را نشان می‌دهد. با کنترل نمایش/پنهان‌کردن می‌توانید علامت‌ها را روشن یا خاموش کنید و در بخش «دربارهٔ این نت‌ها» منابع، میزان قطعیت و محدودیت‌های مدل را ببینید. نبودن نشانگر به معنی تعیین‌نشدن نقش در مدل فعلی است.</li>
-      </ul>
-
-      <h2>مثال</h2>
-      <p>اگر نت مرجع مدل «دو» در موقعیت ساعت ۱۲ باشد، با چرخاندن دایره دیاتونیک به اندازهٔ ۶۰ درجه، این نت مرجع به «رِ» منتقل می‌شود؛ ساختار نسبی فواصل و درجات نقش‌دار ثابت می‌ماند.</p>
-      <img src="../assets/images/example.png" alt="نمونه دایره گام‌های ایرانی" style="width:100%; max-width:600px; margin-top:20px;">
-
-      <h2>بیشتر بخوانید<br></h2>
-      <p>من شما را دعوت می‌کنم تا برای جزئیات کامل به مقاله کامل نگاهی بیندازید:</p>
-      <p><a href="https://sites.google.com/view/persianmusicscales/article">مقاله</a></p>
-    </section>
-  
 <section class="guide-reference-links">
-  <h2>Learn the music theory behind the application</h2>
+  <h2 id="guideTheoryHeading">Music theory references</h2>
   <ul>
     <li><a href="../reference/">Persian Music Theory Reference</a></li>
     <li><a href="../reference/dastgah-and-avaz.html">Dastgah and Avaz</a></li>
@@ -175,7 +147,7 @@
       <div class="nav-icon">🎼</div>
       <span class="menu-text">Scales</span>
     </a>
-    <a href="tuner.html" data-en="Tuner" data-fa="تیونر">
+    <a href="tuner.html" data-en="Tuner" data-fa="کوک‌سنج">
       <div class="nav-icon">🎹</div>
       <span class="menu-text">Tuner</span>
     </a>
@@ -190,7 +162,7 @@
   </nav>
 
   <footer>
-    <p>&copy; 2024 Pouya Hosseini. All rights reserved.</p>
+    <p>&copy; 2024–2026 Pouya Hosseini</p>
   </footer>
 </body>
 </html>

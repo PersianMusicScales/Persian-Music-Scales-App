@@ -165,7 +165,7 @@ const translations = {
     title: "گام‌های موسیقی ایرانی",
     bottomNav: {
       scales: "گام‌ها",
-      tuner: "تیونر",
+      tuner: "کوک‌سنج",
       guide: "راهنما",
       about: "درباره",
     },
@@ -361,13 +361,13 @@ const modalRoleTranslations = {
     documented: "Modèle documenté", provisional: "Modèle provisoire",
     partial: "Modèle partiellement établi", warning: "Limites du modèle",
     sources: "Sources scientifiques" },
-  fa: { shahed: "شاهد", finalis: "نت پایان", tonic: "نت پایه",
-    pending: "شاهد و نت پایان: تعیین نت‌ها در انتظار بررسی منابع است.",
+  fa: { shahed: "شاهد", finalis: "نت فرود", tonic: "نت پایه",
+    pending: "انتساب شاهد و نت فرود هنوز به بررسی منابع نیاز دارد.",
     show: "نمایش نشانگرها", hide: "پنهان‌کردن نشانگرها",
-    trigger: "نقش نت‌ها", triggerLabel: "اطلاعات شاهد و نت پایان",
-    details: "دربارهٔ این نت‌ها", status: "وضعیت مستندات",
+    trigger: "شاهد و نت فرود", triggerLabel: "اطلاعات شاهد و نت فرود",
+    details: "دربارهٔ شاهد و نت فرود", status: "وضعیت استناد",
     documented: "مدل مستند", provisional: "مدل پیشنهادی",
-    partial: "مدل نیمه‌مستند", warning: "محدودیت مدل",
+    partial: "مدل با استناد ناقص", warning: "محدودیت‌های مدل",
     sources: "منابع پژوهشی" }
 };
 /* The pre-existing personal modal-role storage key is intentionally not read,
@@ -541,6 +541,7 @@ function updateDynamicLabels() {
     labelDiv.dataset.singleNote = parseableText.split("/")[0].trim();
 
     labelDiv.innerHTML = displayText;
+    labelDiv.dir = currentLanguage === "fa" ? "rtl" : "ltr";
 
     const radians = (angle - 90) * (Math.PI / 180);
     labelDiv.style.top = `${50 + 45 * Math.sin(radians)}%`;

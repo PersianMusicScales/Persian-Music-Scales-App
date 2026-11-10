@@ -140,3 +140,36 @@ test("active āvāz is named beside its parent Shur selection", async ({ page })
   await page.locator('.avazha-item[data-translate="avazha.abuAta"]').click();
   await expect(page.locator("#avazhaLabel")).toHaveText("آوازها");
 });
+
+test("Persian outer labels retain readable chip widths on desktop and phone", async ({ page }) => {
+  for (const width of [390, 1280, 1580]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+    await page.locator("#languageSelector").selectOption("fa");
+    for (const scale of ["Shur", "segah", "chahargah"]) {
+      await page.locator("#scaleSelector").selectOption(scale);
+      const chips = await page.locator("#outerScale .dynamic-label").evaluateAll(nodes =>
+        nodes.map(node => {
+          const box = node.getBoundingClientRect();
+          const css = getComputedStyle(node);
+          return {
+            width: box.width,
+            left: box.left,
+            right: box.right,
+            wordBreak: css.wordBreak,
+            fontSize: parseFloat(css.fontSize)
+          };
+        }));
+      expect(chips).toHaveLength(7);
+      for (const chip of chips) {
+        // Prevent the one-character-wide Persian vertical label regression.
+        expect(chip.width).toBeGreaterThanOrEqual(35);
+        expect(chip.wordBreak).not.toBe("break-all");
+        expect(chip.left).toBeGreaterThanOrEqual(-1);
+        expect(chip.right).toBeLessThanOrEqual(width + 1);
+      }
+    }
+    const nav = await page.locator(".bottom-nav").boundingBox();
+    expect(nav.y + nav.height).toBeLessThanOrEqual(902);
+  }
+});

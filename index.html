@@ -78,6 +78,8 @@
   <!-- Link to External CSS -->
   <link rel="stylesheet" href="csss/indexstyle.css" />
   <link rel="stylesheet" href="csss/audio-analyzer.css" />
+  <link rel="stylesheet" href="csss/shared-shell.css" />
+  <link rel="stylesheet" href="csss/scale-polish.css" />
 
   <!-- Tap Overlay CSS -->
   <style>
@@ -147,7 +149,7 @@
     }
   </style>
 </head>
-<body>
+<body class="scale-page">
   <!-- Tap Overlay (visible on top but allows underlying interactions) -->
   <div id="tapOverlay">
     <div class="tap-container">
@@ -185,11 +187,11 @@
     
     <!-- Avazha Floating Icon -->
     <div id="avazhaContainer" class="avazha-container">
-      <button id="avazhaButton" class="avazha-button">
+      <button id="avazhaButton" class="avazha-button" type="button" aria-expanded="false" aria-controls="avazhaColumns">
         <span id="avazhaLabel">Avazha</span>
       </button>
       <!-- Expandable Columns -->
-      <div id="avazhaColumns" class="avazha-columns hidden">
+      <div id="avazhaColumns" class="avazha-columns hidden" role="group" aria-label="Related āvāz modes">
         <div class="avazha-column">
           <div class="avazha-item" data-translate="avazha.abuAta">Abu Ata</div>
           <div class="avazha-item" data-translate="avazha.bayatTork">Bayat Tork</div>
@@ -337,41 +339,38 @@
     </div>
 
 
-    <!-- Legend at bottom-left, above bottom nav -->
+    <div class="scale-meta-row">
+  <!-- Interval colors belong to the content flow, above the bottom navigation. -->
 <div class="legend">
 
   <div class="legend-row">
     <div class="legend-item">
       <span class="color-box" style="background: #48625f;"></span>
-      <span class="glow-sun">200 cents</span>
+      <span class="glow-sun" data-interval-cents="200">200 cents</span>
     </div>
 
     <div class="legend-item">
       <span class="color-box" style="background: black;"></span>
-      <span class="glow-sun">100 cents</span>
+      <span class="glow-sun" data-interval-cents="100">100 cents</span>
     </div>
   </div>
 
   <div class="legend-row">
     <div class="legend-item">
       <span class="color-box" style="background: #F7E7C6;"></span>
-      <span class="glow-sun">150 cents</span>
+      <span class="glow-sun" data-interval-cents="150">150 cents</span>
     </div>
 
     <div class="legend-item">
       <span class="color-box" style="background: #1A3B66;"></span>
-      <span class="glow-sun">250 cents</span>
+      <span class="glow-sun" data-interval-cents="250">250 cents</span>
     </div>
   </div>
 
 </div>
 
-    <!-- Footer at bottom-right, above bottom nav -->
-    <footer>
-      Copyright © 2024
-      <br/>
-      Pouya Hosseini
-    </footer>
+    <footer aria-label="Copyright">© 2024–2026 Pouya Hosseini</footer>
+    </div>
   </main>
 
   <section class="project-introduction" aria-labelledby="projectIntroductionTitle">
@@ -829,6 +828,7 @@
   <script src="src/modal-roles.js"></script>
   <script src="src/index.js"></script>
   <script src="src/audio-analyzer.js"></script>
+  <script src="src/ui-polish.js"></script>
 </body>
 </html>
 

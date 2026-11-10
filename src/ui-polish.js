@@ -106,6 +106,25 @@
     }
   }
 
+  function constrainPopover(panel) {
+    if (!panel || panel.hidden || window.innerWidth > 760) return;
+    const rect = panel.getBoundingClientRect();
+    const padding = 12;
+    let displacement = 0;
+    if (rect.left < padding) displacement = padding - rect.left;
+    else if (rect.right > window.innerWidth - padding)
+      displacement = window.innerWidth - padding - rect.right;
+    if (Math.abs(displacement) < 1) return;
+    const current = parseFloat(getComputedStyle(panel).left);
+    if (Number.isFinite(current))
+      panel.style.setProperty("left", (current + displacement) + "px", "important");
+  }
+
+  function constrainOpenPanels() {
+    constrainPopover(notesPopover);
+    constrainPopover(scorePopover);
+  }
+
   let updateScheduled = false;
   function scheduleClamp() {
     if (updateScheduled) return;
@@ -151,6 +170,7 @@
     try { localStorage.setItem(key, lang); } catch (_) { /* Storage is optional. */ }
     scheduleClamp();
     if (isOpen()) placeMenu();
+    requestAnimationFrame(constrainOpenPanels);
   }
 
   selector.addEventListener("change", syncLanguage);
@@ -161,8 +181,14 @@
   document.getElementById("scaleSelector").addEventListener("change", () => {
     requestAnimationFrame(updateActiveAvaz);
   });
-  notesButton.addEventListener("click", () => { if (isOpen()) dismissMenu(); });
-  scoreButton.addEventListener("click", () => { if (isOpen()) dismissMenu(); });
+  notesButton.addEventListener("click", () => {
+    if (isOpen()) dismissMenu();
+    requestAnimationFrame(constrainOpenPanels);
+  });
+  scoreButton.addEventListener("click", () => {
+    if (isOpen()) dismissMenu();
+    requestAnimationFrame(constrainOpenPanels);
+  });
   document.addEventListener("click", (event) => {
     if (isOpen() && !avazha.contains(event.target)) dismissMenu();
   });
@@ -172,7 +198,11 @@
       avazhaButton.focus();
     }
   });
-  window.addEventListener("resize", () => { scheduleClamp(); placeMenu(); }, { passive: true });
+  window.addEventListener("resize", () => {
+    scheduleClamp();
+    placeMenu();
+    requestAnimationFrame(constrainOpenPanels);
+  }, { passive: true });
   window.addEventListener("scroll", placeMenu, { passive: true });
 
   try {

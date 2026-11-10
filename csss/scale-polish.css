@@ -227,3 +227,124 @@ body.scale-page .my-app-label {
   font-weight: 600;
   color: var(--app-ink);
 }
+
+
+/* === Visual readability and compact desktop composition (2026-11-10) === */
+/* Keep the traditional pattern, but let the pitch diagram—not the tiles—lead. */
+body.scale-page::before {
+  background:
+    linear-gradient(rgba(248, 246, 240, .77), rgba(248, 246, 240, .83)),
+    url("../assets/images/indexBackground.png") center center / cover no-repeat;
+}
+
+body.scale-page .scale-controls {
+  background: rgba(255, 253, 249, .88);
+  border: 1px solid rgba(60, 78, 87, .18);
+  box-shadow: 0 5px 20px rgba(43, 48, 52, .10);
+  padding: 8px 14px 7px;
+  row-gap: 6px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+/* The wheel gets a quiet presentation surface; its sectors and interactions
+   remain untouched. The inset stays within the viewport on narrow phones. */
+body.scale-page #circleContainer {
+  isolation: isolate;
+}
+body.scale-page #circleContainer::before {
+  content: "";
+  position: absolute;
+  inset: -13px;
+  border: 1px solid rgba(60, 78, 87, .14);
+  border-radius: 23px;
+  background: rgba(255, 253, 249, .83);
+  box-shadow: 0 9px 26px rgba(43, 48, 52, .11);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Critical: absolutely positioned labels otherwise shrink to the narrow
+   remaining space at 3 o'clock and Persian text stacks character by character.
+   Give them an intrinsic width *before* ui-polish.js clamps their positions. */
+body.scale-page .outer-scale .dynamic-label {
+  box-sizing: border-box;
+  width: max-content;
+  min-width: 0;
+  max-width: clamp(86px, 11vw, 154px);
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: none;
+  line-height: 1.3;
+  padding: 4px 7px;
+  border: 1px solid rgba(52, 76, 91, .33);
+  border-radius: 7px;
+  color: #1b3545;
+  background: #e4eff3;
+  box-shadow: 0 2px 5px rgba(17, 39, 47, .12);
+  text-align: center;
+  unicode-bidi: isolate;
+}
+body.scale-page .diatonic-scale .label {
+  color: #152b35;
+  border: 1px solid rgba(45, 66, 75, .12);
+  box-shadow: 0 1px 4px rgba(16, 35, 42, .13);
+}
+body.scale-page .scale-reference-row #labelAtZeroAngle {
+  color: #293b43;
+  text-shadow: none;
+  border-radius: 10px;
+  padding: 2px 9px;
+  background: rgba(255, 253, 249, .58);
+}
+
+/* On wide screens, center the selected reference pitch over the wheel;
+   keep the Notes button on the outside edge. Phone/tablet controls retain
+   their two-ended layout so the full Persian label stays tappable. */
+@media (min-width: 1100px) {
+  body.scale-page {
+    --chart-size: clamp(230px, min(19vw, 30dvh), 295px);
+  }
+  body.scale-page .scale-controls > .scale-reference-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    justify-items: stretch;
+  }
+  body.scale-page .scale-reference-row #labelAtZeroAngle {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: center;
+    max-width: min(44vw, 320px);
+    text-align: center;
+  }
+  body.scale-page .scale-reference-row > .modal-role-float {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+  }
+}
+@media (max-width: 480px) {
+  body.scale-page .scale-controls {
+    padding-inline: 8px;
+  }
+  body.scale-page #circleContainer::before {
+    inset: -8px;
+    border-radius: 17px;
+  }
+  body.scale-page .outer-scale .dynamic-label {
+    max-width: clamp(80px, 27vw, 100px);
+    font-size: clamp(.62rem, 2.7vw, .76rem);
+    padding: 3px 5px;
+  }
+}
+
+/* The fixed navigation must never be the final resting position of content:
+   make room to scroll the player, legend and footnotes fully into view. */
+body.scale-page {
+  --app-nav-clearance: calc(116px + env(safe-area-inset-bottom, 0px));
+}
+body.scale-page :is(.play-button-container, .scale-meta-row, .project-introduction) {
+  scroll-margin-bottom: var(--app-nav-clearance);
+}

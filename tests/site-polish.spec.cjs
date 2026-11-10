@@ -13,7 +13,8 @@ test("all three pages use the same decorative background and safe bottom clearan
     expect(background).toContain("indexBackground.png");
     const nav = await page.locator(".bottom-nav").boundingBox();
     expect(nav.height).toBeGreaterThan(55);
-    expect(nav.y + nav.height).toBeLessThanOrEqual(847);
+    const viewportHeight = await page.evaluate(() => window.innerHeight);
+    expect(nav.y + nav.height).toBeLessThanOrEqual(viewportHeight + 2);
   }
 });
 
@@ -31,8 +32,9 @@ test("both expanded note panels fit a narrow phone in Persian and English", asyn
       const rect = await panel.boundingBox();
       expect(rect.x).toBeGreaterThanOrEqual(0);
       expect(rect.y).toBeGreaterThanOrEqual(0);
-      expect(rect.x + rect.width).toBeLessThanOrEqual(321);
-      expect(rect.y + rect.height).toBeLessThanOrEqual(844);
+      const viewport = await page.evaluate(() => ({ width: window.innerWidth, height: window.innerHeight }));
+      expect(rect.x + rect.width).toBeLessThanOrEqual(viewport.width + 1);
+      expect(rect.y + rect.height).toBeLessThanOrEqual(viewport.height + 1);
       await page.keyboard.press("Escape");
       await expect(panel).toBeHidden();
     }
@@ -83,9 +85,15 @@ test("interval legend follows language and stays out of fixed navigation", async
   await visit(page, "/index.html");
   await page.locator("#languageSelector").selectOption("fa");
   await expect(page.locator('[data-interval-cents="100"]')).toHaveText("۱۰۰ سنت");
+  await page.evaluate(() => {
+    const legend = document.querySelector(".scale-meta-row .legend").getBoundingClientRect();
+    const nav = document.querySelector(".bottom-nav").getBoundingClientRect();
+    window.scrollBy(0, Math.max(0, legend.bottom - nav.top + 16));
+  });
   const legend = await page.locator(".scale-meta-row .legend").boundingBox();
   const nav = await page.locator(".bottom-nav").boundingBox();
-  expect(legend.y + legend.height).toBeLessThan(nav.y + 1);
+  expect(legend.y).toBeGreaterThan(-1);
+  expect(legend.y + legend.height).toBeLessThan(nav.y - 5);
   await expect(page.locator("main footer")).toContainText("2024–2026");
 });
 

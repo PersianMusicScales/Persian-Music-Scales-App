@@ -196,3 +196,34 @@ body.scale-page :is(#modalRoleButton,#keySignatureButton,#avazhaButton)[aria-exp
     box-sizing: border-box;
   }
 }
+
+
+/* The install affordance remains available but never floats across the staff. */
+body.scale-page .my-app-container {
+  position: static;
+  inset: auto;
+  z-index: auto;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  margin: 4px auto 0;
+  padding: 5px 12px;
+  border: 1px solid var(--app-border);
+  border-radius: 999px;
+  background: rgba(253,251,248,.95);
+  animation: none;
+}
+body.scale-page .my-app-button {
+  padding: 7px;
+  background: rgba(229, 196, 107, .32);
+  box-shadow: none;
+}
+body.scale-page .my-app-label {
+  margin: 0;
+  font-size: .79rem;
+  font-weight: 600;
+  color: var(--app-ink);
+}

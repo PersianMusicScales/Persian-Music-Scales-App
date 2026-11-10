@@ -30,6 +30,13 @@ test("both expanded note panels fit a narrow phone in Persian and English", asyn
       const panel = page.locator(panelId);
       await expect(panel).toBeVisible();
       const rect = await panel.boundingBox();
+      if (rect.x < 0) {
+        console.log("PANEL_GEOMETRY", JSON.stringify(await page.evaluate(id => {
+          const el = document.querySelector(id);
+          const style = getComputedStyle(el);
+          return { id, lang: document.documentElement.lang, viewport: innerWidth, scrollX, documentWidth: document.documentElement.scrollWidth, bounds: el.getBoundingClientRect().toJSON(), position: style.position, left: style.left, right: style.right, transform: style.transform, offsetParent: el.offsetParent?.id || el.offsetParent?.tagName };
+        }, panelId)));
+      }
       expect(rect.x).toBeGreaterThanOrEqual(0);
       expect(rect.y).toBeGreaterThanOrEqual(0);
       const viewport = await page.evaluate(() => ({ width: window.innerWidth, height: window.innerHeight }));

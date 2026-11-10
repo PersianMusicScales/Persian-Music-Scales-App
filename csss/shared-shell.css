@@ -1,0 +1,159 @@
+/* Shared presentation for Scales, Guide and About.
+   Page-specific rules belong in their own stylesheets. */
+:root {
+  --app-ink: #25313d;
+  --app-muted: #536273;
+  --app-surface: rgba(253, 251, 247, .95);
+  --app-border: rgba(55, 72, 85, .24);
+  --app-shadow: 0 6px 20px rgba(34, 34, 34, .13);
+  --app-nav-clearance: calc(104px + env(safe-area-inset-bottom, 0px));
+}
+html { background: #d5cdc0; scroll-padding-bottom: var(--app-nav-clearance); }
+body {
+  isolation: isolate;
+  background: transparent !important;
+  background-image: none !important;
+  color: var(--app-ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  min-height: 100svh;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(rgba(255,255,255,.10),rgba(255,255,255,.10)),
+              url("../assets/images/indexBackground.png") center center / cover no-repeat;
+  pointer-events: none;
+}
+body.scale-page, body.guide-page, body.about-page { padding-bottom: var(--app-nav-clearance); }
+body[dir="rtl"], html[dir="rtl"] body, .rtl {
+  font-family: "Noto Naskh Arabic", "Noto Sans Arabic", Tahoma, -apple-system, Arial, sans-serif;
+}
+header, .about-header {
+  background: rgba(246, 245, 244, .88) !important;
+  background-image: none !important;
+  box-shadow: 0 1px 9px rgba(37, 49, 61, .1);
+  color: var(--app-ink) !important;
+}
+header h1, .about-header h1 {
+  color: var(--app-ink) !important;
+  text-shadow: none !important;
+}
+.language-selector {
+  min-width: 54px;
+  min-height: 38px;
+  border-radius: 10px;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  font-size: clamp(.82rem, 2.6vw, 1rem);
+  color: var(--app-ink);
+}
+.bottom-nav {
+  position: fixed !important;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 1500;
+  min-height: 76px;
+  padding: 9px 6px calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+  background: rgba(248, 248, 247, .96) !important;
+  border-top: 1px solid rgba(53, 62, 73, .14);
+  box-shadow: 0 -4px 13px rgba(24, 28, 34, .09);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.bottom-nav a { min-width: 0; min-height: 54px; justify-content: center; }
+.bottom-nav a:focus-visible,
+a:focus-visible,
+button:focus-visible,
+select:focus-visible {
+  outline: 3px solid #316a9b;
+  outline-offset: 2px;
+}
+body.guide-page .container,
+body.about-page .hero-card,
+body.about-page .projects-section,
+body.about-page .info-card,
+body.about-page .support-card {
+  background: var(--app-surface) !important;
+  border: 1px solid var(--app-border);
+  box-shadow: var(--app-shadow);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+}
+body.guide-page .container { margin-bottom: 22px; }
+body.guide-page .container section { line-height: 1.7; }
+body.guide-page .container section h1,
+body.guide-page .container section h2,
+body.guide-page .container section h3 { margin: 1.1em 0 .45em; line-height: 1.35; }
+body.guide-page .container section p,
+body.guide-page .container section ul { margin: .55em 0; }
+body.guide-page .container section li { margin: .35em 0; }
+body.guide-page .container section ul { padding-inline-start: 1.5em; }
+body.guide-page img.guide-figure {
+  display: block;
+  width: 100% !important;
+  max-width: min(680px, 100%);
+  height: auto;
+  object-fit: contain;
+  margin: 18px auto;
+  border-radius: 9px;
+  background: rgba(255,255,255,.9);
+}
+body.guide-page .guide-figure-wide {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+}
+body.guide-page .guide-figure-wide img { max-width: 100%; }
+body.guide-page .guide-reference-links {
+  margin-top: 22px;
+  padding-top: 12px;
+  border-top: 1px solid var(--app-border);
+}
+body.about-page .about-shell { margin-top: 16px; margin-bottom: 14px; }
+body.about-page .hero-card { padding: clamp(18px, 3vw, 30px); }
+body.about-page .projects-section { padding: clamp(18px, 3vw, 28px); margin-top: 14px; }
+body.about-page .project-card { padding: clamp(14px, 2vw, 20px); gap: 12px; }
+body.about-page .project-actions { margin-top: 10px; }
+body.about-page .link-grid a {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  background: rgba(231, 231, 227, .58);
+}
+body.about-page .info-grid { margin-top: 14px; }
+body.about-page .support-card { margin-top: 14px; }
+body.guide-page footer, body.about-page .about-footer {
+  position: relative;
+  bottom: auto;
+  margin: 18px auto 8px;
+  padding: 12px 16px;
+  max-width: 1120px;
+  border-radius: 10px;
+  text-align: center;
+  color: var(--app-ink);
+  background: rgba(252,250,246,.93);
+}
+[lang="fa"] { text-align: start; }
+.bidi-isolate, .note-token { unicode-bidi: isolate; }
+@media (max-width: 700px) {
+  header, .about-header { padding: 9px 12px; }
+  header h1, .about-header h1 { font-size: clamp(1.25rem, 5vw, 1.9rem); }
+  body.guide-page .container { width: calc(100% - 22px); margin: 12px auto 18px; padding: 17px; }
+  body.guide-page .container section { font-size: .98rem; }
+  body.guide-page .guide-figure-wide {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+  }
+  body.about-page .hero-card h1 { font-size: clamp(1.6rem, 6.6vw, 2.35rem); }
+  body.about-page .project-card { grid-template-columns: 1fr; }
+  body.about-page .link-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body.about-page .link-grid a { padding: 10px; font-size: .9rem; }
+}
+@media (max-width: 360px) {
+  body.about-page .link-grid { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; }
+}

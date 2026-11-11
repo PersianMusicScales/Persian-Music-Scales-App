@@ -2072,3 +2072,171 @@ body.analyzer-lock-scroll {
     flex-basis: 47px;
   }
 }
+
+
+/* Stationary combined microphone and track analyzer.
+ * The row has a constant height. Its options replace the trigger in an
+ * absolute layer; the circles and nearby controls never participate in
+ * expansion or collapse. */
+.analyzer-launch-row {
+  position: relative;
+  align-self: center;
+  flex: 0 0 46px;
+  width: min(352px, calc(100% - 22px));
+  height: 46px;
+  min-height: 46px;
+  margin: 10px auto 0;
+  display: block;
+  overflow: visible;
+  z-index: 1450;
+}
+.analysis-combo {
+  position: relative;
+  width: 100%;
+  height: 46px;
+  isolation: isolate;
+}
+.analysis-combo-toggle,
+.analysis-combo-option {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  width: 100%;
+  height: 46px;
+  padding: 7px 12px;
+  border: 1px solid rgba(255,255,255,.6);
+  border-radius: 999px;
+  background: linear-gradient(135deg,#1a3b66,#774953);
+  color: white;
+  font: 700 clamp(.72rem,2.6vw,.87rem)/1.25 Arial,sans-serif;
+  text-align: center;
+  cursor: pointer;
+  touch-action: manipulation;
+  white-space: normal;
+}
+.analysis-combo-toggle { position: absolute; inset: 0; z-index: 1; }
+.analysis-combo-options {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  align-items: stretch;
+  gap: 8px;
+  min-width: 0;
+}
+.analysis-combo-options[hidden],
+.analysis-combo-recorder[hidden],
+.analysis-combo-record[hidden],
+.live-detected-note[hidden] { display: none !important; }
+.analysis-combo.expanded .analysis-combo-toggle { visibility: hidden; }
+.analysis-combo-options .analysis-combo-option {
+  width: 100%;
+  height: 46px;
+  min-height: 46px;
+  padding: 7px 5px;
+  border-radius: 13px;
+}
+.analysis-combo-option#quickScaleFinderButton {
+  background: #f7f4ef;
+  border-color: rgba(75,78,109,.55);
+  color: #27344c;
+}
+.analysis-combo-options .analyzer-launch-button {
+  font: 700 clamp(.72rem,2.6vw,.87rem)/1.25 Arial,sans-serif;
+  box-shadow: 0 5px 15px rgba(26,59,102,.18);
+  transform: none;
+}
+.analysis-combo-options .analyzer-launch-button:hover,
+.analysis-combo-options .analyzer-launch-button:focus-visible {
+  transform: none;
+}
+.analysis-combo-recorder {
+  position: absolute;
+  z-index: 5;
+  top: auto;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  right: auto;
+  display: block;
+  width: min(322px, calc(100vw - 24px));
+  max-height: min(45vh, 280px);
+  overflow-y: auto;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 12px;
+  opacity: 0;
+  transform: translate(-50%, 9px);
+  transform-origin: bottom center;
+}
+.analysis-combo-recorder.open {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+[dir="rtl"] .analysis-combo-recorder {
+  left: 50%;
+  right: auto;
+  text-align: right;
+}
+.analysis-combo-record {
+  width: 100%;
+  margin-top: 10px;
+  padding: 11px 14px;
+  border: 0;
+  border-radius: 11px;
+  background: #774953;
+  color: #fff;
+  font: 700 .92rem/1.2 Arial,sans-serif;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.analysis-combo-record[aria-pressed="true"] { background: #9d3041; }
+.analysis-combo-record:focus-visible,
+.analysis-combo-toggle:focus-visible,
+.analysis-combo-option:focus-visible {
+  outline: 3px solid #e8b659;
+  outline-offset: 2px;
+}
+.analyzer-launch-row .analysis-mini-badge {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 8px);
+  transform: translateX(-50%);
+  z-index: 1;
+  pointer-events: none;
+}
+.hold-record-button { touch-action: manipulation; }
+#circleContainer .dynamic-label.analysis-live-pitch {
+  outline: 3px solid #e6b32a !important;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 5px rgba(255,224,130,.35),0 0 15px rgba(255,200,60,.85);
+}
+#circleContainer .dynamic-label.analysis-live-near {
+  outline: 2px dashed #f0c86b !important;
+  outline-offset: 3px;
+}
+.live-detected-note {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 3px);
+  z-index: 12;
+  max-width: 94%;
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: rgba(255,247,218,.96);
+  border: 1px solid #b38b31;
+  color: #2e2942;
+  font: 700 clamp(.66rem,2.5vw,.85rem)/1.3 Arial,sans-serif;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  pointer-events: none;
+  box-shadow: 0 3px 10px rgba(0,0,0,.16);
+}
+@media (max-width: 430px) {
+  .analysis-combo-recorder {
+    width: min(322px, calc(100vw - 20px));
+    max-height: min(42vh, 265px);
+  }
+}

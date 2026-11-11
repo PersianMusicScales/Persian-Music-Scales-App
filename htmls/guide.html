@@ -24,49 +24,45 @@
   <link rel="stylesheet" href="../csss/guidestyle.css" />
 
   <script>
+    const guideLanguageLabels = {
+      en: { title: "Persian Music Scales", nav: ["Scales", "Tuner", "Guide", "About"], links: ["Learn the music theory behind the application", "Persian Music Theory Reference", "Dastgah and Avaz", "Koron, Sori and Microtones", "Visualization Methodology", "How Audio Analysis Works"] },
+      fr: { title: "Persian Music Scales", nav: ["Gammes", "Accordeur", "Guide", "À propos"], links: ["Approfondir les notions de théorie musicale", "Références théoriques sur la musique persane", "Dastgāh et āvāz", "Koron, sori et micro-intervalles", "Méthodologie de la visualisation", "Méthodologie de l’analyse audio"] },
+      fa: { title: "گام‌های موسیقی ایرانی", nav: ["گام‌ها", "تیونر", "راهنما", "درباره"], links: ["آشنایی با مبانی نظری موسیقی دستگاهی ایران", "منابع نظری موسیقی دستگاهی ایران", "دستگاه و آواز", "کرن، سُری و ریزفاصله‌ها", "روش‌شناسی نمایش گام‌ها", "روش‌شناسی تحلیل صوت"] }
+    };
     function switchLanguage() {
-      const lang = document.getElementById("languageSelector").value;
-      document.querySelectorAll("section").forEach(section => {
+      const choice = document.getElementById("languageSelector").value;
+      const lang = guideLanguageLabels[choice] ? choice : "en";
+      document.querySelectorAll("main > section[lang]").forEach(section => {
         section.classList.toggle("active", section.lang === lang);
       });
-
-      // Update the document title based on the selected language
-      if (lang === "fa") {
-          document.title = "گام‌های موسیقی ایرانی";
-          document.getElementById("pageTitle").textContent = "گام‌های موسیقی ایرانی";
-      } else {
-          document.title = "Persian Music Scales";
-          document.getElementById("pageTitle").textContent = "Persian Music Scales";
-      }
-
-      // Update Bottom Menu Labels
-      const bottomNavLinks = document.querySelectorAll(".bottom-nav a");
-      bottomNavLinks.forEach(link => {
-        const enText = link.getAttribute("data-en");
-        const faText = link.getAttribute("data-fa");
-        if (lang === "fa") {
-          // Replace English text with Persian
-          link.querySelector(".menu-text").textContent = faText;
-        } else {
-          // Replace Persian text with English
-          link.querySelector(".menu-text").textContent = enText;
-        }
+      document.documentElement.lang = lang;
+      document.documentElement.dir = lang === "fa" ? "rtl" : "ltr";
+      document.title = lang === "fa" ? "راهنمای گام‌های موسیقی ایرانی" :
+        lang === "fr" ? "Guide des gammes de musique persane" : "How to Use Persian Music Scales";
+      document.getElementById("pageTitle").textContent = guideLanguageLabels[lang].title;
+      document.querySelectorAll(".bottom-nav .menu-text").forEach((el, i) => {
+        el.textContent = guideLanguageLabels[lang].nav[i];
       });
+      const reference = document.querySelector(".guide-reference-links");
+      const texts = guideLanguageLabels[lang].links;
+      reference.querySelector("h2").textContent = texts[0];
+      reference.querySelectorAll("a").forEach((anchor, i) => {
+        anchor.textContent = texts[i + 1];
+        const url = new URL(anchor.getAttribute("href"), document.baseURI);
+        url.searchParams.set("lang", lang);
+        anchor.href = url.href;
+      });
+      try { localStorage.setItem("persianMusicScalesLanguage", lang); } catch (_) {}
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-      // Detect the user's language
-      const userLang = navigator.language || navigator.languages[0];
-      const langSelector = document.getElementById("languageSelector");
-      
-      // Check if the language is Farsi (Persian)
-      if (userLang.includes("fa")) {
-          langSelector.value = "fa"; // Set to Farsi
-      } else {
-          langSelector.value = "en"; // Default to English
-      }
-
-      // Trigger language switch
+      let stored = "";
+      try { stored = localStorage.getItem("persianMusicScalesLanguage") || ""; } catch (_) {}
+      const requested = new URLSearchParams(location.search).get("lang");
+      const browser = (navigator.language || "en").slice(0,2).toLowerCase();
+      const fallback = guideLanguageLabels[browser] ? browser : "en";
+      document.getElementById("languageSelector").value =
+        guideLanguageLabels[requested] ? requested : guideLanguageLabels[stored] ? stored : fallback;
       switchLanguage();
     });
   </script>
@@ -78,6 +74,7 @@
     <h1 id="pageTitle">Persian Music Scales</h1> <!-- Original H1 -->
     <select id="languageSelector" class="language-selector" aria-label="Select Language" onchange="switchLanguage()">
       <option value="en" selected>EN</option>
+      <option value="fr">FR</option>
       <option value="fa">فا</option>
     </select>
   </header>
@@ -116,6 +113,37 @@
       <h2>Read More</h2>
       <p>We invite you to explore the full article for more details:</p>
       <p><a href="https://sites.google.com/view/persianmusicscales/article">Full Article</a></p>
+    </section>
+
+    <!-- Section française : vocabulaire musicologique conservé en contexte -->
+    <section lang="fr">
+      <h1>Guide de Persian Music Scales</h1>
+      <p>Cette application permet d’étudier les collections de hauteurs et les intervalles de la musique classique persane. Elle met en relation les modèles de gammes persanes et les notes diatoniques de référence, sans réduire un dastgāh à une simple gamme occidentale.</p>
+
+      <h2>Principe de fonctionnement</h2>
+      <p>Deux cercles interactifs sont superposés :</p>
+      <ul>
+        <li><strong>Cercle diatonique :</strong> il indique les notes de référence. Sa rotation permet de transposer le modèle et d’observer les rapports entre les degrés.</li>
+        <img src="../assets/images/diatonic-circle.png" alt="Cercle diatonique" style="width:35%; max-width:600px; margin-top:20px;">
+        <li><strong>Cercle des gammes persanes :</strong> il présente les degrés et les intervalles du modèle sélectionné. La note placée en haut du cercle ne correspond pas nécessairement au šāhed ou à la note finale du dastgāh.</li>
+        <img src="../assets/images/persian-scale.png" alt="Cercle des gammes persanes" style="width:35%; max-width:600px; margin-top:20px;">
+      </ul>
+
+      <h3>Note de référence et fonctions modales</h3>
+      <p>La note située à <strong>12 heures</strong> sert de référence au modèle numérique. Elle n’est pas nécessairement le centre modal, le šāhed ou la note de conclusion (finalis).</p>
+      <ul>
+        <li>Repérez la note au sommet du cercle des gammes persanes.</li>
+        <li>Elle indique la hauteur de référence du modèle dans sa position actuelle.</li>
+        <li>Faites tourner le cercle diatonique pour examiner différentes transpositions. Lorsqu’une attribution est étayée par les sources musicologiques, ★ indique le šāhed et ◆ la note finale. Ces signes peuvent être affichés ou masqués. La rubrique « À propos de ces notes » précise les sources, les attributions provisoires et les limites de l’interprétation. L’absence de symbole signifie que la fonction n’a pas encore été établie pour ce modèle ; elle ne signifie pas que la note est absente.</li>
+      </ul>
+
+      <h2>Exemple</h2>
+      <p>Si la note de référence « do » se trouve à 12 heures, une rotation de 60° du cercle diatonique la déplace vers « ré ». Les intervalles relatifs et les degrés auxquels sont associés les marqueurs de šāhed et de finalis demeurent inchangés.</p>
+      <img src="../assets/images/example.png" alt="Exemple de visualisation d’une gamme persane" style="width:100%; max-width:600px; margin-top:20px;">
+
+      <h2>Pour aller plus loin</h2>
+      <p>La présentation détaillée du projet est disponible dans l’article original :</p>
+      <p><a href="https://sites.google.com/view/persianmusicscales/article" lang="en">Article complet (anglais)</a></p>
     </section>
 
     <!-- Farsi Section -->

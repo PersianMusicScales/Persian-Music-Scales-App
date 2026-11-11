@@ -1281,16 +1281,23 @@
         ? new MediaRecorder(stream, { mimeType: recorder.mimeType })
         : new MediaRecorder(stream);
 
-      recorder.mediaRecorder.addEventListener("dataavailable", (event) => {
-        if (event.data?.size) recorder.chunks.push(event.data);
+      // Bind callbacks to this particular recording instance. A cancelled
+      // recording can be discarded immediately; its delayed events must never
+      // contaminate a new recording that starts afterward.
+      const activeMediaRecorder = recorder.mediaRecorder;
+      activeMediaRecorder.addEventListener("dataavailable", event => {
+        if (recorder.mediaRecorder === activeMediaRecorder &&
+            !recorder.cancelled && event.data?.size) recorder.chunks.push(event.data);
       });
-      recorder.mediaRecorder.addEventListener("error", (event) => {
+      activeMediaRecorder.addEventListener("error", event => {
+        if (recorder.mediaRecorder !== activeMediaRecorder) return;
         console.error("MediaRecorder error:", event.error || event);
         recorder.cancelled = true;
         finalizeMicrophoneRecording().catch(console.error);
       });
-      recorder.mediaRecorder.addEventListener("stop", () => {
-        finalizeMicrophoneRecording().catch((error) => {
+      activeMediaRecorder.addEventListener("stop", () => {
+        if (recorder.mediaRecorder !== activeMediaRecorder) return;
+        finalizeMicrophoneRecording().catch(error => {
           console.error(error);
           updateRecordingFeedback(t("recordingFailed"), 0, "error");
         });
@@ -1359,19 +1366,18 @@
     stopRecordingClock();
     stopMicrophoneMeter();
 
-    if (recorder.mediaRecorder && recorder.mediaRecorder.state !== "inactive") {
-      try {
-        recorder.mediaRecorder.stop();
-      } catch (error) {
-        console.warn("Could not cancel MediaRecorder cleanly:", error);
-        cleanupMicrophoneResources();
-      }
-    } else {
-      cleanupMicrophoneResources();
+    // Cancel immediately and synchronously: release the mic tracks, discard
+    // chunks and invalidate the old recorder so its later stop/data events
+    // cannot trigger analysis or disturb a subsequent recording.
+    const obsoleteRecorder = recorder.mediaRecorder;
+    if (obsoleteRecorder && obsoleteRecorder.state !== "inactive") {
+      try { obsoleteRecorder.stop(); }
+      catch (error) { console.warn("Could not cancel MediaRecorder cleanly:", error); }
     }
-
+    cleanupMicrophoneResources();
     recorder.starting = false;
     recorder.recording = false;
+    recorder.cancelled = false;
     setRecorderButtonsState("ready", false);
     setCancelRecordingVisible(false);
     if (announce) updateRecordingFeedback(t("recordingCancelled"), 0, "ready");

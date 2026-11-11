@@ -3194,8 +3194,8 @@
         peak < 0.001 || rms < 0.0003 || rms >= 0.02) return baselineGain;
     const targetRms = 0.075;
     const peakHeadroom = 0.85 / peak;
-    const safeGain = clamp(Math.min(targetRms / rms, peakHeadroom), 1, 10);
-    return Math.max(baselineGain, safeGain);
+    const safeGain = clamp(Math.min(targetRms / rms, peakHeadroom), 0.5, 10);
+    return Math.min(Math.max(baselineGain, safeGain), Math.max(0.5, peakHeadroom));
   }
 
   function calculateAdaptivePlaybackGain({ peak = 0, rms = 0 } = {}) {

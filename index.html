@@ -76,7 +76,7 @@
   </script>
 
   <!-- Link to External CSS -->
-  <link rel="stylesheet" href="csss/indexstyle.css?v=20261111-result-nav-pr" />
+  <link rel="stylesheet" href="csss/indexstyle.css?v=20261111-pwa-device" />
   <link rel="stylesheet" href="csss/audio-analyzer.css?v=20261111-result-nav-pr" />
   <link rel="stylesheet" href="csss/bottom-nav.css?v=20261111-unified" />
 
@@ -162,6 +162,16 @@
   <!-- HEADER -->
   <header>
     <h1 id="pageTitle">Persian Music Scales</h1>
+    <!-- Desktop-only installation invitation inside the existing header row. -->
+    <aside id="desktopInstallNotice" class="desktop-install-notice" role="status" aria-live="polite" hidden>
+      <span class="desktop-install-symbol" aria-hidden="true">↓</span>
+      <span class="desktop-install-copy">
+        <strong id="desktopInstallTitle">Install Persian Music Scales</strong>
+        <span id="desktopInstallDescription">Use the browser install icon to install this app.</span>
+      </span>
+      <button id="desktopInstallAction" class="desktop-install-action" type="button" hidden>Install</button>
+      <button id="desktopInstallDismiss" class="desktop-install-dismiss" type="button" aria-label="Dismiss installation tip" title="Dismiss">×</button>
+    </aside>
     <!-- Language Selector positioned at top right -->
     <select id="languageSelector" class="language-selector" aria-label="Select Language">
       <option value="en">en</option>
@@ -308,12 +318,9 @@
     </section>
 
 
-    <!-- Add to Home Screen Button -->
-    <button id="add-to-home">Install App</button>
-    
     <!-- My App Button -->
     <div class="my-app-container" id="myAppContainer">
-      <button id="myAppButton" class="my-app-button">
+      <button id="myAppButton" class="my-app-button" type="button" aria-label="Install application on phone">
         <div class="my-app-icon">
           <!-- Insert Your SVG Icon Here -->
           <img src="assets/icons/myapp_icon.svg" alt="My App Icon">
@@ -790,7 +797,7 @@
   <!-- External Scripts -->
   <script src="src/key-signature.js"></script>
   <script src="src/modal-roles.js"></script>
-  <script src="src/index.js?v=20261111-avazha-stable-toolbar"></script>
+  <script src="src/index.js?v=20261111-pwa-device"></script>
   <script src="src/audio-analyzer.js?v=20261111-ios-mic-sensitivity"></script>
 </body>
 </html>

@@ -23,6 +23,9 @@
 
   const I18N = {
     en: {
+      inlineMicDenied: "Access denied",
+      inlineMicFailed: "Microphone error",
+      inlineTapPlay: "Tap Play",
       swipeCancel: "Cancel",
       swipeAnalyze: "Analyze",
       swipeInstructions: "Swipe left to cancel, right to analyze",
@@ -181,6 +184,9 @@
       gapClear: "It leads the next candidate by {gap} percentage points.",
     },
     fr: {
+      inlineMicDenied: "Accès refusé",
+      inlineMicFailed: "Erreur du micro",
+      inlineTapPlay: "Appuyer sur Lire",
       swipeCancel: "Annuler",
       swipeAnalyze: "Analyser",
       swipeInstructions: "Glisser à gauche pour annuler, à droite pour analyser",
@@ -339,6 +345,9 @@
       gapClear: "Il devance le candidat suivant de {gap} points.",
     },
     fa: {
+      inlineMicDenied: "دسترسی رد شد",
+      inlineMicFailed: "خطای میکروفن",
+      inlineTapPlay: "پخش را بزنید",
       swipeCancel: "لغو",
       swipeAnalyze: "تحلیل",
       swipeInstructions: "برای لغو به چپ و برای تحلیل به راست بکشید",
@@ -1130,7 +1139,7 @@
     if (!elements.micSwipeHandle) return;
     elements.micSwipeHandle.style.setProperty("--swipe-offset", "0px");
     elements.micSwipeHandle.setAttribute("aria-valuenow", "0");
-    elements.micSwipe?.classList.remove("toward-cancel", "toward-analyze");
+    elements.micSwipe?.classList.remove("toward-cancel", "toward-analyze", "dragging");
   }
 
   function bindMicrophoneRecorderEvents() {
@@ -1649,8 +1658,11 @@
     if (elements.micInlineStatus) {
       const messageVisible = mode === "error" || mode === "processing" || mode === "arming";
       elements.micInlineStatus.hidden = !messageVisible;
-      elements.micInlineStatus.textContent = messageVisible
-        ? (mode === "processing" ? t("inlineProcessing") : message) : "";
+      const concise = mode === "processing" ? t("inlineProcessing")
+        : message === t("microphoneDenied") ? t("inlineMicDenied")
+        : message === t("tapToHear") ? t("inlineTapPlay")
+        : mode === "error" ? t("inlineMicFailed") : message;
+      elements.micInlineStatus.textContent = messageVisible ? concise : "";
       elements.micInlineStatus.title = messageVisible ? message : "";
     }
   }

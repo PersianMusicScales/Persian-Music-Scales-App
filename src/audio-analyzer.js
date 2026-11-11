@@ -23,6 +23,8 @@
 
   const I18N = {
     en: {
+      viewResults: "View results",
+      loopPlayback: "↻ Loop playback",
       inlineMicDenied: "Access denied",
       inlineMicFailed: "Microphone error",
       inlineTapPlay: "Tap Play",
@@ -184,6 +186,8 @@
       gapClear: "It leads the next candidate by {gap} percentage points.",
     },
     fr: {
+      viewResults: "Voir les résultats",
+      loopPlayback: "↻ Lecture en boucle",
       inlineMicDenied: "Accès refusé",
       inlineMicFailed: "Erreur du micro",
       inlineTapPlay: "Appuyer sur Lire",
@@ -345,6 +349,8 @@
       gapClear: "Il devance le candidat suivant de {gap} points.",
     },
     fa: {
+      viewResults: "نمایش نتایج",
+      loopPlayback: "↻ پخش پیوسته",
       inlineMicDenied: "دسترسی رد شد",
       inlineMicFailed: "خطای میکروفن",
       inlineTapPlay: "پخش را بزنید",
@@ -694,6 +700,8 @@
     playPause: $("#trackPlayPauseButton"),
     melodyPlayPause: $("#melodyPlayPauseButton"),
     stop: $("#trackStopButton"),
+    loopEnabled: $("#analysisLoopEnabled"),
+    loopLabel: $("#analysisLoopLabel"),
     status: $("#analysisStatus"),
     progressLabel: $("#analysisProgressLabel"),
     progressBar: $("#analysisProgressBar"),
@@ -737,6 +745,7 @@
     nowRole: $("#nowPlayingRole"),
     badge: $("#analysisMiniBadge"),
     badgeText: $("#analysisMiniBadgeText"),
+    badgeAction: $("#analysisMiniBadgeAction"),
   };
 
   if (!elements.launch || !elements.drawer || !elements.audio) {
@@ -982,7 +991,12 @@
   function bindEvents() {
     elements.launch.addEventListener("click", () => {
       closeQuickFinder({ restoreFocus: false, cancelRecording: false });
-      openDrawer();
+      openDrawer({ preferResults: true });
+    });
+    elements.badge?.addEventListener("click", (event) => {
+      // The shortcut is inside the circle; don't rotate or retune it.
+      event.stopPropagation();
+      if (state.analysis?.events?.length) openDrawer({ preferResults: true });
     });
     bindQuickFinderEvents();
     elements.close.addEventListener("click", closeDrawer);
@@ -1043,6 +1057,16 @@
     elements.playPause.addEventListener("click", toggleOriginalPlayback);
     elements.melodyPlayPause?.addEventListener("click", toggleMelodyPlayback);
     elements.stop.addEventListener("click", stopPlayback);
+    elements.loopEnabled?.addEventListener("change", () => {
+      const repeat = loopPlaybackEnabled();
+      // Web Audio supports changing the active source's loop in place.
+      // The playback clock already wraps times modulo the track duration.
+      if (state.bufferPlayer.playing && state.bufferPlayer.source) {
+        state.bufferPlayer.source.loop = repeat;
+        state.bufferPlayer.loop = repeat;
+      }
+      elements.audio.loop = repeat;
+    });
     elements.seek.addEventListener("input", seekFromSlider);
     elements.detail?.addEventListener("input", () => {
       elements.detailValue.textContent = `${Math.round(Number(elements.detail.value) || 0)}%`;
@@ -1694,6 +1718,9 @@
         : dictionary.melodyPlay;
     }
     elements.stop.textContent = dictionary.stop;
+    if (elements.loopLabel) elements.loopLabel.textContent = dictionary.loopPlayback;
+    if (elements.badgeAction) elements.badgeAction.textContent = dictionary.viewResults;
+    if (state.selectedCandidate) updateBadgeAccessibility();
     if (elements.detailValue && elements.detail) {
       elements.detailValue.textContent = `${Math.round(Number(elements.detail.value) || 0)}%`;
     }
@@ -1716,12 +1743,26 @@
     }
   }
 
-  function openDrawer() {
+  function openDrawer({ preferResults = false } = {}) {
     elements.drawer.classList.add("open");
     elements.backdrop.classList.add("open");
     elements.drawer.setAttribute("aria-hidden", "false");
     document.body.classList.add("analyzer-lock-scroll");
-    setTimeout(() => elements.close.focus(), 80);
+    const scroller = elements.drawer.querySelector(".analyzer-scroll");
+    // Retain the original first-load onboarding order; after analysis
+    // jump to Section 4 without moving or duplicating any sections.
+    requestAnimationFrame(() => {
+      if (!scroller || !elements.drawer.classList.contains("open")) return;
+      const target = preferResults && state.analysis?.events?.length
+        ? $("#resultHeading")?.closest(".analyzer-card") : null;
+      if (!target) {
+        scroller.scrollTop = 0;
+      } else {
+        scroller.scrollTop += target.getBoundingClientRect().top -
+          scroller.getBoundingClientRect().top - 8;
+      }
+    });
+    setTimeout(() => elements.close.focus({ preventScroll: true }), 80);
   }
 
   function closeDrawer({ restoreFocus = true } = {}) {
@@ -2035,7 +2076,7 @@
       // AudioContext may remain suspended until a direct user gesture.
       await resumeOriginalAudioOutputIfPossible();
       started = await startBufferPlayback(0, {
-        loop: false,
+        loop: loopPlaybackEnabled(),
         automatic: false,
       });
     } catch (error) {
@@ -2180,6 +2221,16 @@
     return diverse;
   }
 
+  function updateBadgeAccessibility() {
+    if (!elements.badge || !elements.badgeText) return;
+    elements.badge.setAttribute("aria-label",
+      `${elements.badgeText.textContent}. ${t("viewResults")}`);
+  }
+
+  function loopPlaybackEnabled() {
+    return elements.loopEnabled?.checked !== false;
+  }
+
   function renderResults(candidates, selectedCandidate = null) {
     const automatic = candidates[0];
     const selected = selectedCandidate || state.selectedCandidate || automatic;
@@ -2225,6 +2276,7 @@
 
     elements.badge.classList.add("visible");
     elements.badgeText.textContent = `${state.selectionSource === "automatic" ? t("badge") : t("selectedLabel")}: ${scaleDisplayName(selected.scaleName)} · ${tonicName} (${selected.matchPercent}%)`;
+    updateBadgeAccessibility();
     if (elements.quickFinderHelp) {
       elements.quickFinderHelp.textContent = `${state.selectionSource === "automatic" ? t("badge") : t("selectedLabel")}: ${scaleDisplayName(selected.scaleName)} · ${tonicName}`;
     }
@@ -2594,6 +2646,7 @@
     const source = context.createBufferSource();
     source.buffer = state.audioBuffer;
     source.loop = Boolean(loop);
+    elements.audio.loop = Boolean(loop);
     source.loopStart = 0;
     source.loopEnd = duration;
     source.connect(state.visualizer.originalGain);
@@ -2643,7 +2696,7 @@
       }
 
       const started = await startBufferPlayback(state.cursorTime, {
-        loop: false,
+        loop: loopPlaybackEnabled(),
         automatic: false,
       });
       if (!started) {

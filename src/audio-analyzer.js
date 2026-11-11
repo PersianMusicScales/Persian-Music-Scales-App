@@ -592,6 +592,7 @@
     playbackGain: 1,
     analysisGain: 1,
     loadGeneration: 0,
+    loadAttemptId: 0,
     autoCloseTimer: 0,
     analysisRequest: null,
     exampleLoading: false,
@@ -1421,6 +1422,9 @@
       recorder.starting = false;
       recorder.recording = true;
       recorder.mediaRecorder.start(200);
+      // An explicitly started microphone take supersedes pending file decoding
+      // or example downloads, but keeps existing results until it is finalized.
+      state.loadAttemptId++;
       setRecorderButtonsState("recording", true);
       resetMicSwipePosition();
       setCancelRecordingVisible(true);
@@ -1944,6 +1948,9 @@
 
   async function loadExampleTrack() {
     if (state.exampleLoading || state.worker || state.recorder.recording || state.recorder.starting) return;
+    // If another input is chosen while the example downloads, only the
+    // newest choice may replace the analysis session.
+    const attempt = ++state.loadAttemptId;
     state.exampleLoading = true;
     if (elements.exampleTrack) {
       elements.exampleTrack.disabled = true;
@@ -1959,11 +1966,14 @@
       });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const blob = await response.blob();
+      if (attempt !== state.loadAttemptId) return;
       const file = fileFromBlob(blob, EXAMPLE_TRACK.fileName);
-      await loadFile(file, { origin: "example" });
+      await loadFile(file, { origin: "example", attempt });
     } catch (error) {
-      console.error("Example recording could not be loaded:", error);
-      setStatus(t("exampleFailed"), 0, true);
+      if (attempt === state.loadAttemptId) {
+        console.error("Example recording could not be loaded:", error);
+        setStatus(t("exampleFailed"), 0, true);
+      }
     } finally {
       state.exampleLoading = false;
       if (elements.exampleTrack) {
@@ -1974,58 +1984,93 @@
     }
   }
 
-  async function loadFile(file, { origin = "file" } = {}) {
-    if (state.recorder.recording || state.recorder.starting || state.recorder.stream) {
-      cancelMicrophoneRecording({ announce: false });
+  async function decodeNewTrack(file) {
+    // Decode before touching the currently valid results. Close the temporary
+    // context even when the file is corrupt or decoding throws. Avoid an
+    // additional encoded-byte copy (important on memory-constrained phones).
+    const bytes = await file.arrayBuffer();
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) throw new Error("Web Audio is unavailable");
+    const context = new AudioContextClass();
+    try {
+      return await context.decodeAudioData(bytes);
+    } finally {
+      if (context.state !== "closed") {
+        try { await context.close(); } catch (error) {
+          console.warn("Could not close temporary audio decoder:", error);
+        }
+      }
     }
-    const isAudio = file.type.startsWith("audio/") || /\.(mp3|wav|m4a|aac|ogg|flac|webm)$/i.test(file.name);
-    if (!isAudio) {
-      setStatus(t("unsupported"), 0, true);
-      return;
-    }
+  }
 
-    const generation = ++state.loadGeneration;
+  function releasePreviousTrackSession() {
+    // Call ONLY when a replacement has decoded successfully.
+    // Leave the shared playback AudioContext intact for iOS user-gesture
+    // activation; clear only old session data and media references.
     clearTimeout(state.autoCloseTimer);
     state.autoCloseTimer = 0;
     terminateWorker();
     resetPlaybackForNewTrack();
-    state.audioBuffer = null;
+    if (state.objectUrl) {
+      URL.revokeObjectURL(state.objectUrl);
+      state.objectUrl = null;
+    }
     state.file = null;
-    state.inputOrigin = origin === "microphone"
-      ? "microphone"
-      : origin === "example"
-        ? "example"
-        : "file";
-    resumeOriginalAudioOutputIfPossible();
+    state.audioBuffer = null;
+    state.analysisRequest = null;
     state.playbackGain = 1;
     state.analysisGain = 1;
-    state.analysisRequest = null;
+    state.inputOrigin = "file";
     elements.trackSummary.classList.remove("visible");
     elements.trackName.textContent = "";
     elements.trackMeta.textContent = "";
     drawEmptyCanvas(elements.waveform, "Waveform");
     drawEmptyCanvas(elements.timeline, "Detected notes");
-    resetAnalysisResult();
-    applyAnalyzerDefaults({ announce: false });
-    state.file = file;
+    resetAnalysisResult(true);
+  }
+
+  async function loadFile(file, { origin = "file", attempt = null } = {}) {
+    const currentAttempt = attempt === null ? ++state.loadAttemptId : attempt;
+    if (currentAttempt !== state.loadAttemptId) return false;
+    // Invalid file selections must not erase an earlier successful analysis.
+    const isAudio = file && (
+      (file.type || "").startsWith("audio/") ||
+      /\.(mp3|wav|m4a|aac|ogg|flac|webm)$/i.test(file.name || "")
+    );
+    if (!isAudio) {
+      setStatus(t("unsupported"), 0, true);
+      return false;
+    }
+
     setStatus(t("decoding"), 5);
-    updateButtons();
-
-    if (state.objectUrl) URL.revokeObjectURL(state.objectUrl);
-    state.objectUrl = URL.createObjectURL(file);
-    elements.audio.src = state.objectUrl;
-    elements.audio.load();
-
     try {
-      const bytes = await file.arrayBuffer();
-      if (generation !== state.loadGeneration) return;
-      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-      const context = new AudioContextClass();
-      state.audioBuffer = await context.decodeAudioData(bytes.slice(0));
-      await context.close();
-      if (generation !== state.loadGeneration) return;
+      const decoded = await decodeNewTrack(file);
+      if (currentAttempt !== state.loadAttemptId) return false;
 
-      const levelProfile = measureAudioBufferLevel(state.audioBuffer);
+      // Commit the new session only after the complete file is decodable.
+      // Creating its URL first lets an allocation failure preserve the old
+      // session too. Cancel an ongoing microphone take only at this point.
+      const newUrl = URL.createObjectURL(file);
+      if (state.recorder.recording || state.recorder.starting || state.recorder.stream) {
+        cancelMicrophoneRecording({ announce: false });
+      }
+      const generation = ++state.loadGeneration;
+      releasePreviousTrackSession();
+
+      state.file = file;
+      state.audioBuffer = decoded;
+      state.objectUrl = newUrl;
+      state.inputOrigin = origin === "microphone"
+        ? "microphone"
+        : origin === "example"
+          ? "example"
+          : "file";
+      elements.audio.src = newUrl;
+      elements.audio.load();
+      resumeOriginalAudioOutputIfPossible();
+      applyAnalyzerDefaults({ announce: false });
+
+      const levelProfile = measureAudioBufferLevel(decoded);
       if (state.inputOrigin === "microphone") {
         state.playbackGain = calculateIOSMicrophonePlaybackGain(
           levelProfile,
@@ -2040,22 +2085,23 @@
 
       elements.trackSummary.classList.add("visible");
       elements.trackName.textContent = file.name;
-      const durationNote = state.audioBuffer.duration > state.analysisLimitSeconds ? ` · ${t("fileTooLong")}` : "";
-      elements.trackMeta.textContent = `${formatTime(state.audioBuffer.duration)} · ${formatBytes(file.size)}${durationNote}`;
-      elements.totalTime.textContent = formatTime(state.audioBuffer.duration);
+      const durationNote = decoded.duration > state.analysisLimitSeconds ? ` · ${t("fileTooLong")}` : "";
+      elements.trackMeta.textContent = `${formatTime(decoded.duration)} · ${formatBytes(file.size)}${durationNote}`;
+      elements.totalTime.textContent = formatTime(decoded.duration);
       state.cursorTime = 0;
       elements.seek.value = "0";
-      drawWaveform(state.audioBuffer);
+      drawWaveform(decoded);
       drawEmptyCanvas(elements.timeline, "Detected notes");
       setStatus(t("autoAnalyzing"), 0);
       updateButtons();
       await analyzeTrack({ autoStart: true, loadGeneration: generation });
+      return true;
     } catch (error) {
-      if (generation !== state.loadGeneration) return;
-      console.error(error);
-      state.audioBuffer = null;
+      if (currentAttempt !== state.loadAttemptId) return false;
+      console.error("Could not load audio recording:", error);
       setStatus(t("unsupported"), 0, true);
       updateButtons();
+      return false;
     }
   }
 
@@ -2091,15 +2137,20 @@
       state.worker = worker;
 
       worker.onmessage = (event) => {
+        // A terminated worker may already have an event queued. Never allow
+        // the previous track's progress, completion or errors to overwrite
+        // a newer session (or clear a newer worker).
+        if (state.worker !== worker || request.loadGeneration !== state.loadGeneration) {
+          worker.terminate();
+          return;
+        }
         const message = event.data || {};
         if (message.type === "progress") {
           setStatus(t("analyzing"), message.progress);
         } else if (message.type === "complete") {
           state.worker = null;
-          if (request.loadGeneration === state.loadGeneration) {
-            handleAnalysisComplete(message.result, mode, request);
-          }
           worker.terminate();
+          handleAnalysisComplete(message.result, mode, request);
         } else if (message.type === "error") {
           state.worker = null;
           worker.terminate();
@@ -2108,6 +2159,10 @@
       };
 
       worker.onerror = (event) => {
+        if (state.worker !== worker || request.loadGeneration !== state.loadGeneration) {
+          worker.terminate();
+          return;
+        }
         console.error(event);
         state.worker = null;
         worker.terminate();

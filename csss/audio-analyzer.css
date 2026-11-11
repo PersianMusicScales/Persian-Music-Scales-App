@@ -2529,3 +2529,82 @@ html { scrollbar-gutter: stable; }
   outline: 2px solid #e6b32a;
   outline-offset: 2px;
 }
+
+/* Detected-scale actions: a separate Stop button never hijacks View results.
+   Both remain inside the existing centered card, without page reflow. */
+#circleContainer > #analysisMiniBadge .analysis-mini-badge-actions {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+#circleContainer > #analysisMiniBadge .analysis-mini-badge-actions button {
+  appearance: none;
+  border: 1px solid rgba(63, 82, 105, .35);
+  border-radius: 8px;
+  padding: 5px 6px;
+  min-height: 30px;
+  flex: 1 1 68px;
+  font: inherit;
+  font-weight: 600;
+  font-size: .79em;
+  line-height: 1.2;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+#circleContainer > #analysisMiniBadge .analysis-result-view {
+  background: #f0e8d9;
+  color: #2a4661;
+}
+#circleContainer > #analysisMiniBadge .analysis-result-stop {
+  background: #f7e6e3;
+  color: #853d45;
+}
+#circleContainer > #analysisMiniBadge .analysis-mini-badge-actions button:focus-visible,
+#circleContainer > #analysisCollapsedChip:focus-visible {
+  outline: 3px solid #e6b32a;
+  outline-offset: 2px;
+}
+#circleContainer > #analysisCollapsedChip {
+  position: absolute;
+  inset: auto;
+  right: 3%;
+  bottom: 3%;
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 42%;
+  min-height: 32px;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 5px 9px;
+  border: 1px solid rgba(111, 90, 45, .7);
+  border-radius: 999px;
+  background: rgba(255,251,239,.96);
+  color: #263f58;
+  box-shadow: 0 3px 12px rgba(0,0,0,.17);
+  font: 700 clamp(.62rem, 2.4vw, .78rem)/1.2 Arial,sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+#circleContainer > #analysisCollapsedChip[hidden] { display: none !important; }
+#circleContainer > #analysisCollapsedChip .analysis-chip-icon { font-size: 1.12em; }
+@media (max-width: 430px) {
+  #circleContainer > #analysisMiniBadge {
+    width: min(210px, 62%);
+    max-width: 62%;
+    padding: 7px;
+  }
+  #circleContainer > #analysisMiniBadge .analysis-mini-badge-actions {
+    gap: 4px;
+  }
+  #circleContainer > #analysisMiniBadge .analysis-mini-badge-actions button {
+    padding: 4px;
+    min-height: 30px;
+    font-size: .72em;
+  }
+}

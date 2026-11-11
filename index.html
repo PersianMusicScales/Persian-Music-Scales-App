@@ -261,49 +261,50 @@
         </div>
       </aside>
       <button id="playScale">► Play Scale</button>
+      <!-- The combined analyzer occupies the original right-hand action slot,
+           so the circle, notation widget and player do not move on expansion. -->
+      <!-- Stable-height analyzer entry. Expanding does not add a grid row. -->
+      <div class="analyzer-launch-row">
+        <div id="quickScaleFinder" class="analysis-combo">
+          <button id="analysisComboToggle" class="analysis-combo-toggle" type="button"
+                  aria-controls="analysisComboOptions" aria-expanded="false"
+                  data-analyzer-text="comboTitle">Analyze a Track or Your Singing</button>
+          <div id="analysisComboOptions" class="analysis-combo-options" hidden>
+            <button id="quickScaleFinderButton" class="analysis-combo-option" type="button"
+                    aria-controls="quickScaleFinderPanel" aria-expanded="false">
+              <span id="quickScaleFinderLabel" data-analyzer-text="microphoneOption">Microphone</span>
+            </button>
+            <button id="openAudioAnalyzer" class="analysis-combo-option analyzer-launch-button" type="button"
+                    aria-haspopup="dialog" aria-controls="audioAnalyzerDrawer">Analyze Track</button>
+          </div>
+          <div id="quickScaleFinderPanel" class="quick-recording-popover analysis-combo-recorder"
+               role="group" aria-label="Microphone recording" hidden>
+            <div id="quickRecordingFeedback" class="recording-feedback quick-recording-feedback"
+                 data-state="ready" aria-live="polite">
+              <span class="recording-dot" aria-hidden="true"></span>
+              <strong id="quickRecordingStatus" data-analyzer-text="enableMicrophone">Enable microphone</strong>
+              <time id="quickRecordingTimer" datetime="PT0S">0:00</time>
+            </div>
+            <div class="microphone-level-track" aria-hidden="true">
+              <div id="quickMicrophoneLevel" class="microphone-level-fill"></div>
+            </div>
+            <button id="quickRecordingStartButton" class="analysis-combo-record" type="button"
+                    aria-pressed="false" hidden data-analyzer-text="record">● Record</button>
+            <button id="quickCancelRecordingButton" class="cancel-recording-button" type="button"
+                    hidden data-analyzer-text="cancelRecording">Cancel recording</button>
+            <p class="quick-finder-privacy" data-analyzer-text="microphonePrivacy">The recording stays in this browser and is not uploaded.</p>
+          </div>
+        </div>
+        <div id="analysisMiniBadge" class="analysis-mini-badge" aria-live="polite">
+          <strong id="analysisMiniBadgeText"></strong>
+        </div>
+      </div>
     </div>
     <section id="currentScaleSummary" class="visually-hidden" aria-live="polite" aria-atomic="true">
       <h2>Current scale model</h2>
       <p id="currentScaleSummaryText">Shur — cumulative pitch positions: 0, 150, 300, 500, 700, 800 and 1000 cents from the selected tonic.</p>
     </section>
 
-
-    <!-- Stable-height analyzer entry. Expanding does not add a grid row. -->
-    <div class="analyzer-launch-row">
-      <div id="quickScaleFinder" class="analysis-combo">
-        <button id="analysisComboToggle" class="analysis-combo-toggle" type="button"
-                aria-controls="analysisComboOptions" aria-expanded="false"
-                data-analyzer-text="comboTitle">Analyze a Track or Your Singing</button>
-        <div id="analysisComboOptions" class="analysis-combo-options" hidden>
-          <button id="quickScaleFinderButton" class="analysis-combo-option" type="button"
-                  aria-controls="quickScaleFinderPanel" aria-expanded="false">
-            <span id="quickScaleFinderLabel" data-analyzer-text="microphoneOption">Microphone</span>
-          </button>
-          <button id="openAudioAnalyzer" class="analysis-combo-option analyzer-launch-button" type="button"
-                  aria-haspopup="dialog" aria-controls="audioAnalyzerDrawer">Analyze Track</button>
-        </div>
-        <div id="quickScaleFinderPanel" class="quick-recording-popover analysis-combo-recorder"
-             role="group" aria-label="Microphone recording" hidden>
-          <div id="quickRecordingFeedback" class="recording-feedback quick-recording-feedback"
-               data-state="ready" aria-live="polite">
-            <span class="recording-dot" aria-hidden="true"></span>
-            <strong id="quickRecordingStatus" data-analyzer-text="enableMicrophone">Enable microphone</strong>
-            <time id="quickRecordingTimer" datetime="PT0S">0:00</time>
-          </div>
-          <div class="microphone-level-track" aria-hidden="true">
-            <div id="quickMicrophoneLevel" class="microphone-level-fill"></div>
-          </div>
-          <button id="quickRecordingStartButton" class="analysis-combo-record" type="button"
-                  aria-pressed="false" hidden data-analyzer-text="record">● Record</button>
-          <button id="quickCancelRecordingButton" class="cancel-recording-button" type="button"
-                  hidden data-analyzer-text="cancelRecording">Cancel recording</button>
-          <p class="quick-finder-privacy" data-analyzer-text="microphonePrivacy">The recording stays in this browser and is not uploaded.</p>
-        </div>
-      </div>
-      <div id="analysisMiniBadge" class="analysis-mini-badge" aria-live="polite">
-        <strong id="analysisMiniBadgeText"></strong>
-      </div>
-    </div>
 
     <!-- Add to Home Screen Button -->
     <button id="add-to-home">Install App</button>

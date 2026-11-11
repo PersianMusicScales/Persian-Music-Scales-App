@@ -2563,36 +2563,44 @@ html { scrollbar-gutter: stable; }
   color: #853d45;
 }
 #circleContainer > #analysisMiniBadge .analysis-mini-badge-actions button:focus-visible,
-#circleContainer > #analysisCollapsedChip:focus-visible {
+.play-button-container > .analyzer-launch-row > #analysisCollapsedChip:focus-visible {
   outline: 3px solid #e6b32a;
   outline-offset: 2px;
 }
-#circleContainer > #analysisCollapsedChip {
+/* Collapsed Results shortcut is attached to the analyzer card, rather than
+   the musical circle. Absolute placement keeps every surrounding position fixed. */
+.play-button-container > .analyzer-launch-row > #analysisCollapsedChip {
   position: absolute;
   inset: auto;
-  right: 3%;
-  bottom: 3%;
-  z-index: 40;
+  left: 50%;
+  right: auto;
+  bottom: calc(100% + 4px);
+  transform: translateX(-50%);
+  z-index: 1452;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 5px;
-  max-width: 42%;
-  min-height: 32px;
+  width: max-content;
+  max-width: calc(100% - 6px);
+  min-height: 30px;
   box-sizing: border-box;
   margin: 0;
-  padding: 5px 9px;
-  border: 1px solid rgba(111, 90, 45, .7);
+  padding: 5px 10px;
+  border: 1px solid rgba(111, 90, 45, .43);
   border-radius: 999px;
-  background: rgba(255,251,239,.96);
+  background: rgba(255, 251, 239, .68);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
   color: #263f58;
-  box-shadow: 0 3px 12px rgba(0,0,0,.17);
+  box-shadow: 0 2px 8px rgba(0,0,0,.10);
   font: 700 clamp(.62rem, 2.4vw, .78rem)/1.2 Arial,sans-serif;
   white-space: nowrap;
   cursor: pointer;
   touch-action: manipulation;
 }
-#circleContainer > #analysisCollapsedChip[hidden] { display: none !important; }
-#circleContainer > #analysisCollapsedChip .analysis-chip-icon { font-size: 1.12em; }
+.play-button-container > .analyzer-launch-row > #analysisCollapsedChip[hidden] { display: none !important; }
+.play-button-container > .analyzer-launch-row > #analysisCollapsedChip .analysis-chip-icon { font-size: 1.12em; }
 @media (max-width: 430px) {
   #circleContainer > #analysisMiniBadge {
     width: min(210px, 62%);

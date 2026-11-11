@@ -2657,11 +2657,15 @@ html { scrollbar-gutter: stable; }
   background: rgba(255,246,241,.97);
 }
 #circleContainer > #analysisMiniBadge.analysis-failed strong { color: #822f41; }
+/* A failed result needs both Try again and an explicit Close action.
+   Keep its original footprint and the existing stop/collapse behavior. */
 #circleContainer > #analysisMiniBadge.analysis-failed .analysis-result-stop {
-  display: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 #circleContainer > #analysisMiniBadge.analysis-failed .analysis-mini-badge-actions button {
-  flex: 1 1 auto;
+  flex: 1 1 65px;
 }
 @media (prefers-reduced-motion: reduce) {
   .mic-inline-swipe:not(.dragging) .mic-swipe-handle { animation: none; }

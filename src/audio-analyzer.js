@@ -23,6 +23,7 @@
 
   const I18N = {
     en: {
+      dismissFailure: "× Close",
       analysisFailedTitle: "No notes detected",
       analysisFailedAction: "Try again",
       analysisFailedHelp: "No stable pitches could be identified. Record again in a quieter place, or move the iPhone nearer your instrument.",
@@ -192,6 +193,7 @@
       gapClear: "It leads the next candidate by {gap} percentage points.",
     },
     fr: {
+      dismissFailure: "× Fermer",
       analysisFailedTitle: "Aucune note détectée",
       analysisFailedAction: "Réessayer",
       analysisFailedHelp: "Aucune hauteur stable détectée. Réenregistrez dans un lieu plus calme ou rapprochez l’iPhone de l’instrument.",
@@ -361,6 +363,7 @@
       gapClear: "Il devance le candidat suivant de {gap} points.",
     },
     fa: {
+      dismissFailure: "× بستن",
       analysisFailedTitle: "نتی شناسایی نشد",
       analysisFailedAction: "تلاش دوباره",
       analysisFailedHelp: "نت پایداری پیدا نشد. در محیطی آرام‌تر دوباره ضبط کنید یا آیفون را به ساز نزدیک‌تر کنید.",
@@ -919,7 +922,7 @@
           channelCount: { ideal: 1 },
           echoCancellation: { ideal: false },
           noiseSuppression: { ideal: false },
-          autoGainControl: { ideal: IS_IOS },
+          autoGainControl: { ideal: false },
         },
         video: false,
       });
@@ -1344,14 +1347,25 @@
     updateButtons();
 
     try {
-      const stream = recorder.stream?.getAudioTracks?.().some(track => track.readyState === "live")
+      // iOS can leave a previously granted track alive but muted after an
+      // audio-session change. Reacquire instead of recording a silent track.
+      // On iOS, a live-looking track can still produce silence after the
+      // browser changes audio sessions. Acquire a fresh native mic stream
+      // for each take; other platforms keep the existing reusable stream.
+      const readyStream = !IS_IOS && recorder.stream?.getAudioTracks?.().some(track =>
+        track.readyState === "live" && track.enabled && !track.muted);
+      if (!readyStream && recorder.stream) {
+        stopMediaStream(recorder.stream);
+        recorder.stream = null;
+      }
+      const stream = readyStream
         ? recorder.stream
         : await navigator.mediaDevices.getUserMedia({
             audio: {
               channelCount: { ideal: 1 },
               echoCancellation: { ideal: false },
               noiseSuppression: { ideal: false },
-              autoGainControl: { ideal: IS_IOS },
+              autoGainControl: { ideal: false },
             },
             video: false,
           });
@@ -1836,7 +1850,8 @@
       elements.badgeText.textContent = dictionary.analysisFailedTitle;
       if (elements.resultPlaceholder) elements.resultPlaceholder.textContent = dictionary.analysisFailedHelp;
     }
-    if (elements.badgeStop) elements.badgeStop.textContent = dictionary.stopAndHide;
+    if (elements.badgeStop) elements.badgeStop.textContent =
+      state.analysisFailure ? dictionary.dismissFailure : dictionary.stopAndHide;
     if (elements.badgeChipLabel) elements.badgeChipLabel.textContent = dictionary.resultsShortcut;
     if (state.selectedCandidate || state.analysisFailure) updateBadgeAccessibility();
     if (elements.detailValue && elements.detail) {
@@ -2360,6 +2375,7 @@
     state.analysisBadgeCollapsed = false;
     elements.badgeText.textContent = t("analysisFailedTitle");
     if (elements.badgeAction) elements.badgeAction.textContent = t("analysisFailedAction");
+    if (elements.badgeStop) elements.badgeStop.textContent = t("dismissFailure");
     if (elements.failureTitle) elements.failureTitle.textContent = t("analysisFailedTitle");
     if (elements.failureHelp) elements.failureHelp.textContent = t("analysisFailedHelp");
     if (elements.failureRetry) elements.failureRetry.textContent = t("retryRecording");
@@ -2425,6 +2441,7 @@
     syncManualControls(selected);
 
     elements.badgeText.textContent = `${state.selectionSource === "automatic" ? t("badge") : t("selectedLabel")}: ${scaleDisplayName(selected.scaleName)} · ${tonicName} (${selected.matchPercent}%)`;
+    if (elements.badgeStop) elements.badgeStop.textContent = t("stopAndHide");
     updateBadgeAccessibility();
     updateBadgeVisibility();
     if (elements.quickFinderHelp) {

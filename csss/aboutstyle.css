@@ -379,12 +379,10 @@ a {
   letter-spacing: 0;
 }
 
+/* The decorative background remains the same in both OS color schemes.
+   Other About content surfaces may still adapt to dark mode. */
 @media (prefers-color-scheme: dark) {
-  body::before {
-    background: rgba(140, 140, 140, 0.75);
-  }
-
-  .hero-card,
+.hero-card,
   .projects-section,
   .info-card,
   .support-card {

@@ -32,7 +32,7 @@ Application.prototype.start = function () {
     }
   };
 
-  swal.fire("Turn on the Microphone").then(function () {
+  swal.fire(window.getTunerTranslation ? window.getTunerTranslation("microphone") : "Turn on the Microphone").then(function () {
     self.tuner.init();
     self.frequencyData = new Uint8Array(self.tuner.analyser.frequencyBinCount);
   });

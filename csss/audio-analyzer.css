@@ -2244,3 +2244,83 @@ html { scrollbar-gutter: stable; }
     max-height: min(42vh, 265px);
   }
 }
+
+/* Revised compact desktop/mobile action deck:
+   the combined control lives below-right of the circle beside Play Scale.
+   Its vertical split occupies the same fixed-height card. */
+.play-button-container > .analyzer-launch-row {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  align-self: center;
+  position: relative;
+  z-index: 1450;
+  width: min(164px, 100%);
+  height: 88px;
+  min-height: 88px;
+  flex: none;
+  margin: 0;
+  padding: 0;
+  display: block;
+  overflow: visible;
+}
+.play-button-container > .analyzer-launch-row .analysis-combo {
+  width: 100%;
+  height: 88px;
+}
+.play-button-container > .analyzer-launch-row .analysis-combo-toggle {
+  height: 88px;
+  padding: 9px 10px;
+  border: 1px solid rgba(72,85,101,.48);
+  border-radius: 13px;
+  background: rgba(251,249,248,.97);
+  box-shadow: 0 3px 10px rgba(18,31,43,.16);
+  color: #253442;
+  font-size: clamp(.67rem, 1.55vw, .84rem);
+  line-height: 1.32;
+}
+.play-button-container > .analyzer-launch-row .analysis-combo-options {
+  inset: 0;
+  grid-template-columns: minmax(0,1fr);
+  grid-template-rows: repeat(2,minmax(0,1fr));
+  gap: 5px;
+}
+.play-button-container > .analyzer-launch-row .analysis-combo-option {
+  height: 41.5px;
+  min-height: 0;
+  padding: 4px 7px;
+  font-size: clamp(.64rem,1.4vw,.78rem);
+  line-height: 1.2;
+  border-radius: 11px;
+}
+.play-button-container > .analyzer-launch-row .analysis-combo-recorder {
+  /* Centered above the fixed card, not above the circle. */
+  position: absolute;
+  top: auto;
+  bottom: calc(100% + 9px);
+  left: auto;
+  right: 0;
+  width: min(310px, calc(100vw - 24px));
+  max-height: min(43vh, 300px);
+  transform: translateY(9px);
+  transform-origin: bottom right;
+  box-sizing: border-box;
+}
+.play-button-container > .analyzer-launch-row .analysis-combo-recorder.open {
+  transform: translateY(0);
+}
+[dir="rtl"] .play-button-container > .analyzer-launch-row .analysis-combo-recorder {
+  right: 0;
+  left: auto;
+}
+@media (max-width: 700px) {
+  .play-button-container > .analyzer-launch-row {
+    width: 100%;
+    height: 80px;
+    min-height: 80px;
+  }
+  .play-button-container > .analyzer-launch-row .analysis-combo { height: 80px; }
+  .play-button-container > .analyzer-launch-row .analysis-combo-toggle { height: 80px; font-size: clamp(.62rem,2.3vw,.73rem); }
+  .play-button-container > .analyzer-launch-row .analysis-combo-options { gap: 4px; }
+  .play-button-container > .analyzer-launch-row .analysis-combo-option { height: 38px; padding: 3px 4px; font-size: clamp(.58rem,2.2vw,.7rem); }
+}

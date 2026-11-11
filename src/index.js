@@ -86,7 +86,7 @@ const translations = {
     playButton: "► Jouer la Gamme",
     title: "Persian Music Scales",
     bottomNav: {
-      scales: "Échelles",
+      scales: "Gammes",
       tuner: "Accordeur",
       guide: "Guide",
       about: "À propos",

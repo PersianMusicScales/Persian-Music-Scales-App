@@ -78,3 +78,6 @@
 html[lang="fa"] .bottom-nav > a > :not(.nav-icon) {
   direction: rtl;
 }
+
+/* Preserve the established mirrored tab order for Persian without resizing. */
+html[lang="fa"] .bottom-nav { direction: rtl; }

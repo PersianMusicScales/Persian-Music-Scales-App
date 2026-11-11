@@ -1358,3 +1358,19 @@ footer {
     padding: 4px;
   }
 }
+
+/* Browser-tab layout only: the standalone desktop/mobile PWAs retain their
+ * established centering. In a browser tab, vertically centering the entire
+ * circle + action deck can place the deck beneath the fixed bottom nav when
+ * browser chrome reduces the available viewport height. Top-aligning main
+ * prevents that overlap without resizing the circle or changing its position
+ * when the analyzer, Avazha, or a notation panel is opened. */
+@media screen and (display-mode: browser) and (min-width: 701px) {
+  main {
+    justify-content: flex-start;
+    padding-bottom: max(150px, calc(90px + env(safe-area-inset-bottom, 0px)));
+  }
+  .play-button-container {
+    flex: 0 0 auto;
+  }
+}

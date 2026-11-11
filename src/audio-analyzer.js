@@ -23,6 +23,7 @@
 
   const I18N = {
     en: {
+      localServerRequired: "This downloaded copy uses file://. For microphone analysis, open the extracted app through http://localhost instead; the browser may block its analysis worker.",
       comboTitle: "Analyze a Track or Your Singing",
       microphoneOption: "Microphone",
       record: "● Record",
@@ -176,6 +177,7 @@
       gapClear: "It leads the next candidate by {gap} percentage points.",
     },
     fr: {
+      localServerRequired: "Cette copie est ouverte en file://. Pour analyser un enregistrement, ouvrez l’application via http://localhost : le navigateur peut bloquer le traitement local.",
       comboTitle: "Analyser un morceau ou votre chant",
       microphoneOption: "Microphone",
       record: "● Enregistrer",
@@ -329,6 +331,7 @@
       gapClear: "Il devance le candidat suivant de {gap} points.",
     },
     fa: {
+      localServerRequired: "این نسخه با نشانی file:// باز شده است. برای تحلیل ضبط، برنامه را از طریق http://localhost اجرا کنید؛ مرورگر ممکن است اجرای تحلیل‌گر محلی را مسدود کند.",
       comboTitle: "تحلیل قطعه یا آواز شما",
       microphoneOption: "میکروفن",
       record: "● ضبط",
@@ -1821,8 +1824,14 @@
   }
 
   function throwWorkerError(message) {
-    setStatus(`${t("error")} ${message || ""}`.trim(), 0, true);
-    if (state.inputOrigin === "microphone") updateRecordingFeedback(t("recordingFailed"), 0, "error");
+    const localFile = window.location.protocol === "file:";
+    const explanation = localFile ? t("localServerRequired") : `${t("error")} ${message || ""}`.trim();
+    setStatus(explanation, 0, true);
+    if (state.inputOrigin === "microphone") {
+      updateRecordingFeedback(explanation, 0, "error");
+      closeQuickFinder({ restoreFocus: false, cancelRecording: false });
+      openDrawer();
+    }
     elements.analyze.disabled = false;
     updateButtons();
   }

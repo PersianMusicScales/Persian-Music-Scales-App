@@ -3,6 +3,10 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+
+# Restrict the workflow token to the minimum needed for checkout and tests.
+permissions:
+  contents: read
 jobs:
   browser-tests:
     runs-on: ubuntu-24.04

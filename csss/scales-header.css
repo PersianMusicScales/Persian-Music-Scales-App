@@ -1,6 +1,7 @@
 /* Shared Scales-style header for About and Guide.
  * Visual values mirror csss/indexstyle.css (the Scales page).
  * Scales itself retains its existing styles and markup. */
+body > header.about-header,
 body > header {
   position: relative;
   z-index: 20;
@@ -17,6 +18,7 @@ body > header {
   box-shadow: none;
 }
 
+body > header.about-header h1,
 body > header h1 {
   flex: 1 1 auto;
   min-width: 0;
@@ -31,6 +33,7 @@ body > header h1 {
   overflow-wrap: break-word;
 }
 
+body > header.about-header .language-selector,
 body > header .language-selector {
   flex: 0 0 auto;
   width: auto;
@@ -49,11 +52,13 @@ body > header .language-selector {
 }
 
 @media (max-width: 380px) {
-  body > header {
+  body > header.about-header,
+body > header {
     gap: 8px;
     padding-inline: 12px;
   }
-  body > header h1 {
+  body > header.about-header h1,
+body > header h1 {
     font-size: clamp(1.3rem, 6.5vw, 1.8rem);
   }
 }

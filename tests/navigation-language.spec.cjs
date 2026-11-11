@@ -43,6 +43,10 @@ test("Tuner preserves Farsi language when navigating from Scales and back", asyn
   await expect(page.locator("html")).toHaveAttribute("lang", "fa");
   await expect(page.locator("#tunerAutoLabel")).toHaveText("خودکار");
   await expect(page.locator(".bottom-nav a").nth(1)).toContainText("تیونر");
+  const microphoneDialog = page.locator(".swal2-container");
+  if (await microphoneDialog.isVisible()) {
+    await page.locator(".swal2-confirm").click();
+  }
   await page.locator('.bottom-nav a[href*="index.html"]').click();
   await expect(page.locator("#languageSelector")).toHaveValue("fa");
 });

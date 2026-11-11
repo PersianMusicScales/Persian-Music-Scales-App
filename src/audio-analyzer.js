@@ -1356,25 +1356,111 @@
     state.recorder.timerId = 0;
   }
 
+  // Approximate predominant fundamental by YIN-style normalized
+  // difference on a downsampled, recent mono waveform. This deliberately
+  // runs only during MediaRecorder capture, never on permission activation.
+  function detectLiveFundamental(bytes, sampleRate) {
+    const stride = Math.max(1, Math.round(sampleRate / 12000));
+    const effectiveRate = sampleRate / stride;
+    const count = Math.min(2048, Math.floor(bytes.length / stride));
+    if (count < 512) return null;
+    const values = new Float32Array(count);
+    let energy = 0;
+    for (let i = 0; i < count; i++) {
+      const v = (bytes[i * stride] - 128) / 128;
+      values[i] = v;
+      energy += v * v;
+    }
+    if (Math.sqrt(energy / count) < 0.012) return null;
+
+    const minimumLag = Math.max(3, Math.floor(effectiveRate / 1400));
+    const maximumLag = Math.min(Math.floor(effectiveRate / 65), Math.floor(count / 3));
+    const compareCount = Math.min(960, count - maximumLag);
+    const scores = new Float32Array(maximumLag + 1);
+    let cumulative = 0;
+    for (let lag = 1; lag <= maximumLag; lag++) {
+      let difference = 0;
+      for (let i = 0; i < compareCount; i++) {
+        const delta = values[i] - values[i + lag];
+        difference += delta * delta;
+      }
+      cumulative += difference;
+      scores[lag] = cumulative > 0 ? difference * lag / cumulative : 1;
+    }
+    let bestLag = -1;
+    let lowest = 1;
+    for (let lag = minimumLag; lag < maximumLag; lag++) {
+      const score = scores[lag];
+      if (score < lowest) { lowest = score; bestLag = lag; }
+      if (score < 0.16 && score <= scores[lag + 1]) {
+        bestLag = lag;
+        lowest = score;
+        break; // first credible minimum, avoiding octave doubling
+      }
+    }
+    if (bestLag < 1 || lowest > 0.28) return null;
+    const prev = scores[bestLag - 1], now = scores[bestLag], next = scores[bestLag + 1];
+    const denom = prev - 2 * now + next;
+    const correction = Math.abs(denom) > 1e-6
+      ? clamp((prev - next) / (2 * denom), -0.5, 0.5) : 0;
+    const frequency = effectiveRate / (bestLag + correction);
+    return Number.isFinite(frequency) && frequency >= 65 && frequency <= 1400 ? frequency : null;
+  }
+
+  function clearLivePitch() {
+    $$("#circleContainer .analysis-live-pitch, #circleContainer .analysis-live-near")
+      .forEach(label => label.classList.remove("analysis-live-pitch", "analysis-live-near"));
+    if (elements.liveReadout) {
+      elements.liveReadout.hidden = true;
+      elements.liveReadout.textContent = "";
+    }
+    state.recorder.liveLabel = null;
+  }
+
+  function renderLivePitch(frequency) {
+    clearLivePitch();
+    if (!state.recorder.recording || !frequency) return;
+    // 24 equally spaced positions per octave; 50 cents per position.
+    // MIDI C maps to pitch-class zero even after octave transposition.
+    const semitones = 69 + 12 * Math.log2(frequency / 440);
+    const bin = mod(Math.round(semitones * 2), 24);
+    if (!state.labelBindings.length) rebuildLabelBindings();
+    const binding = nearestBinding(bin);
+    if (binding?.label && binding.distance <= 1) {
+      binding.label.classList.add(binding.distance === 0 ? "analysis-live-pitch" : "analysis-live-near");
+      state.recorder.liveLabel = binding.label;
+    }
+    if (elements.liveReadout) {
+      elements.liveReadout.textContent = `${pitchClassName(bin)} · ${frequency.toFixed(1)} Hz`;
+      elements.liveReadout.hidden = false;
+    }
+  }
+
   async function startMicrophoneMeter(stream) {
     stopMicrophoneMeter();
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (!AudioContextClass || !stream) return;
     const context = new AudioContextClass();
     await context.resume().catch(() => {});
+    if (!state.recorder.recording) {
+      context.close().catch(() => {});
+      return;
+    }
     const source = context.createMediaStreamSource(stream);
     const analyser = context.createAnalyser();
-    analyser.fftSize = 256;
-    analyser.smoothingTimeConstant = 0.72;
+    analyser.fftSize = 8192;
+    analyser.smoothingTimeConstant = 0.5;
     source.connect(analyser);
     state.recorder.meterContext = context;
     state.recorder.meterSource = source;
     state.recorder.meterAnalyser = analyser;
     state.recorder.meterData = new Uint8Array(analyser.fftSize);
+    state.recorder.lastPitchAt = 0;
+    rebuildLabelBindings();
 
-    const draw = () => {
+    const draw = timestamp => {
       if (!state.recorder.recording || !state.recorder.meterAnalyser) return;
-      state.recorder.meterAnalyser.getByteTimeDomainData(state.recorder.meterData);
+      analyser.getByteTimeDomainData(state.recorder.meterData);
       let sum = 0;
       for (const sample of state.recorder.meterData) {
         const normalized = (sample - 128) / 128;
@@ -1382,16 +1468,21 @@
       }
       const rms = Math.sqrt(sum / state.recorder.meterData.length);
       const level = clamp(Math.pow(rms * 4.4, 0.72) * 100, 0, 100);
-      microphoneLevelElements().forEach((meter) => {
+      microphoneLevelElements().forEach(meter => {
         meter.style.width = `${level}%`;
         meter.classList.toggle("clipping", level > 92);
       });
+      if (timestamp - state.recorder.lastPitchAt >= 95) {
+        state.recorder.lastPitchAt = timestamp;
+        renderLivePitch(detectLiveFundamental(state.recorder.meterData, context.sampleRate));
+      }
       state.recorder.meterFrame = requestAnimationFrame(draw);
     };
-    draw();
+    state.recorder.meterFrame = requestAnimationFrame(draw);
   }
 
   function stopMicrophoneMeter() {
+    clearLivePitch();
     cancelAnimationFrame(state.recorder.meterFrame);
     state.recorder.meterFrame = 0;
     try { state.recorder.meterSource?.disconnect(); } catch (_) {}

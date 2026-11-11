@@ -1330,6 +1330,12 @@
 
     clearTimeout(state.autoCloseTimer);
     state.autoCloseTimer = 0;
+    // Starting a new take clears only the old failure announcement, not the
+    // underlying scale or recording logic.
+    if (state.analysisFailure) {
+      state.analysisFailure = false;
+      updateBadgeVisibility();
+    }
     recorder.starting = true;
     recorder.cancelled = false;
     recorder.finalizing = false;

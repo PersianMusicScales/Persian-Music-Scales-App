@@ -16,6 +16,7 @@
 }
 
 body {
+    min-height: 100vh;
     font-family: Arial, sans-serif;
     line-height: 1.6;
     background-image: url('../assets/images/aboutBackground.png');
@@ -28,7 +29,7 @@ body::before {
   content: "";
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.15);
+  background: rgba(50, 50, 50, 0.75);
   pointer-events: none;
   z-index: -1;
 }
@@ -36,7 +37,7 @@ body::before {
 /* Dark-mode overlay */
 @media (prefers-color-scheme: dark) {
   body::before {
-    background: rgba(0,0,0,0.25);
+    background: rgba(140, 140, 140, 0.75);
   }
 }
 

@@ -77,7 +77,7 @@
 
   <!-- Link to External CSS -->
   <link rel="stylesheet" href="csss/indexstyle.css?v=20261111-float2" />
-  <link rel="stylesheet" href="csss/audio-analyzer.css" />
+  <link rel="stylesheet" href="csss/audio-analyzer.css?v=20261111-recorder-pr1" />
 
   <!-- Tap Overlay CSS -->
   <style>
@@ -230,6 +230,7 @@
       <canvas id="radialSpectrumCanvas" class="radial-spectrum-canvas" aria-hidden="true"></canvas>
       <div class="diatonic-scale" id="diatonicScale"></div>
       <div class="outer-scale" id="outerScale"></div>
+      <span id="liveDetectedNote" class="live-detected-note" aria-hidden="true" hidden></span>
 
     </div>
 
@@ -260,45 +261,6 @@
         </div>
       </aside>
       <button id="playScale">► Play Scale</button>
-      <!-- The existing microphone moves with the staff on narrow screens,
-           but retains fixed desktop positioning. No recorder logic changes. -->
-      <!-- Direct floating microphone recorder: hold, release, analyze, and loop. -->
-      <section id="quickScaleFinder" class="quick-scale-finder" aria-label="Find the scale">
-      <button
-      id="quickScaleFinderButton"
-      class="quick-scale-finder-button"
-      type="button"
-      aria-pressed="false"
-      aria-controls="quickScaleFinderPanel"
-      aria-describedby="quickScaleFinderHelp"
-      >
-      <span class="quick-finder-icon-ring" aria-hidden="true">
-      <span class="quick-finder-icon-core">🎙</span>
-      </span>
-      <span class="quick-finder-copy">
-      <strong id="quickScaleFinderLabel" data-analyzer-text="enableMicrophone">Enable microphone</strong>
-      <small id="quickScaleFinderHelp" data-analyzer-text="microphoneSetupHint">Tap once for microphone access</small>
-      </span>
-      </button>
-      
-      <div
-      id="quickScaleFinderPanel"
-      class="quick-recording-popover"
-      aria-live="polite"
-      hidden
-      >
-      <div id="quickRecordingFeedback" class="recording-feedback quick-recording-feedback" data-state="ready">
-      <span class="recording-dot" aria-hidden="true"></span>
-      <strong id="quickRecordingStatus" data-analyzer-text="enableMicrophone">Enable microphone</strong>
-      <time id="quickRecordingTimer" datetime="PT0S">0:00</time>
-      </div>
-      <div class="microphone-level-track" aria-hidden="true">
-      <div id="quickMicrophoneLevel" class="microphone-level-fill"></div>
-      </div>
-      <button id="quickCancelRecordingButton" class="cancel-recording-button" type="button" hidden data-analyzer-text="cancelRecording">Cancel recording</button>
-      <p class="quick-finder-privacy" data-analyzer-text="microphonePrivacy">The recording stays in this browser and is not uploaded.</p>
-      </div>
-      </section>
     </div>
     <section id="currentScaleSummary" class="visually-hidden" aria-live="polite" aria-atomic="true">
       <h2>Current scale model</h2>
@@ -306,21 +268,43 @@
     </section>
 
 
-    <!-- Audio Track Analyzer entry point -->
+    <!-- Stable-height analyzer entry. Expanding does not add a grid row. -->
     <div class="analyzer-launch-row">
-      <button
-        id="openAudioAnalyzer"
-        class="analyzer-launch-button"
-        type="button"
-        aria-haspopup="dialog"
-        aria-controls="audioAnalyzerDrawer"
-      >🎧 Analyze Track</button>
+      <div id="quickScaleFinder" class="analysis-combo">
+        <button id="analysisComboToggle" class="analysis-combo-toggle" type="button"
+                aria-controls="analysisComboOptions" aria-expanded="false"
+                data-analyzer-text="comboTitle">Analyze a Track or Your Singing</button>
+        <div id="analysisComboOptions" class="analysis-combo-options" hidden>
+          <button id="quickScaleFinderButton" class="analysis-combo-option" type="button"
+                  aria-controls="quickScaleFinderPanel" aria-expanded="false">
+            <span id="quickScaleFinderLabel" data-analyzer-text="microphoneOption">Microphone</span>
+          </button>
+          <button id="openAudioAnalyzer" class="analysis-combo-option analyzer-launch-button" type="button"
+                  aria-haspopup="dialog" aria-controls="audioAnalyzerDrawer">Analyze Track</button>
+        </div>
+        <div id="quickScaleFinderPanel" class="quick-recording-popover analysis-combo-recorder"
+             role="group" aria-label="Microphone recording" hidden>
+          <div id="quickRecordingFeedback" class="recording-feedback quick-recording-feedback"
+               data-state="ready" aria-live="polite">
+            <span class="recording-dot" aria-hidden="true"></span>
+            <strong id="quickRecordingStatus" data-analyzer-text="enableMicrophone">Enable microphone</strong>
+            <time id="quickRecordingTimer" datetime="PT0S">0:00</time>
+          </div>
+          <div class="microphone-level-track" aria-hidden="true">
+            <div id="quickMicrophoneLevel" class="microphone-level-fill"></div>
+          </div>
+          <button id="quickRecordingStartButton" class="analysis-combo-record" type="button"
+                  aria-pressed="false" hidden data-analyzer-text="record">● Record</button>
+          <button id="quickCancelRecordingButton" class="cancel-recording-button" type="button"
+                  hidden data-analyzer-text="cancelRecording">Cancel recording</button>
+          <p class="quick-finder-privacy" data-analyzer-text="microphonePrivacy">The recording stays in this browser and is not uploaded.</p>
+        </div>
+      </div>
       <div id="analysisMiniBadge" class="analysis-mini-badge" aria-live="polite">
         <strong id="analysisMiniBadgeText"></strong>
       </div>
     </div>
 
-     
     <!-- Add to Home Screen Button -->
     <button id="add-to-home">Install App</button>
     
@@ -828,7 +812,7 @@
   <script src="src/key-signature.js"></script>
   <script src="src/modal-roles.js"></script>
   <script src="src/index.js?v=20261111-float2"></script>
-  <script src="src/audio-analyzer.js"></script>
+  <script src="src/audio-analyzer.js?v=20261111-recorder-pr1"></script>
 </body>
 </html>
 

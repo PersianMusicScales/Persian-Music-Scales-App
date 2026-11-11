@@ -1138,12 +1138,8 @@
       return;
     }
 
-    /* Unlock the persistent Web Audio graph while this trusted pointer/keyboard
-       gesture is active. The decoded recording can then start automatically
-       after asynchronous analysis without relying on HTML-media autoplay. */
-    const playbackUnlock = ensureOriginalVisualizerGraph().catch((error) => {
-      console.warn("Could not unlock automatic recording playback:", error);
-    });
+    // MediaRecorder must not wait for audio playback graph initialization.
+    // The final analysis opens in its own drawer; autoplay is unnecessary.
 
     clearTimeout(state.autoCloseTimer);
     state.autoCloseTimer = 0;
@@ -1166,7 +1162,6 @@
             },
             video: false,
           });
-      await playbackUnlock;
       setMicrophonePermissionState("granted");
 
       if (!recorder.holdActive || recorder.cancelled) {
@@ -1449,7 +1444,9 @@
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (!AudioContextClass || !stream) return;
     const context = new AudioContextClass();
-    await context.resume().catch(() => {});
+    // Never block recording on AudioContext.resume(): on some mobile browsers
+    // it remains suspended until another user gesture.
+    context.resume().catch((error) => console.warn("Mic meter audio context:", error));
     if (!state.recorder.recording) {
       context.close().catch(() => {});
       return;

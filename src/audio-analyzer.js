@@ -23,6 +23,10 @@
 
   const I18N = {
     en: {
+      analysisFailedTitle: "No notes detected",
+      analysisFailedAction: "Try again",
+      analysisFailedHelp: "No stable pitches could be identified. Record again in a quieter place, or move the iPhone nearer your instrument.",
+      retryRecording: "Try recording again",
       stopAndHide: "■ Stop & hide",
       resultsShortcut: "Results",
       viewResults: "View results",
@@ -188,6 +192,10 @@
       gapClear: "It leads the next candidate by {gap} percentage points.",
     },
     fr: {
+      analysisFailedTitle: "Aucune note détectée",
+      analysisFailedAction: "Réessayer",
+      analysisFailedHelp: "Aucune hauteur stable détectée. Réenregistrez dans un lieu plus calme ou rapprochez l’iPhone de l’instrument.",
+      retryRecording: "Réenregistrer",
       stopAndHide: "■ Arrêter et masquer",
       resultsShortcut: "Résultats",
       viewResults: "Voir les résultats",
@@ -353,6 +361,10 @@
       gapClear: "Il devance le candidat suivant de {gap} points.",
     },
     fa: {
+      analysisFailedTitle: "نتی شناسایی نشد",
+      analysisFailedAction: "تلاش دوباره",
+      analysisFailedHelp: "نت پایداری پیدا نشد. در محیطی آرام‌تر دوباره ضبط کنید یا آیفون را به ساز نزدیک‌تر کنید.",
+      retryRecording: "ضبط دوباره",
       stopAndHide: "■ توقف و بستن",
       resultsShortcut: "نتایج",
       viewResults: "نمایش نتایج",
@@ -561,6 +573,7 @@
     automaticCandidate: null,
     selectionSource: "automatic",
     analysisBadgeCollapsed: false,
+    analysisFailure: false,
     modalFeatures: null,
     activeEventIndex: -1,
     animationFrame: 0,
@@ -760,6 +773,10 @@
     badgeStop: $("#analysisStopDismiss"),
     badgeChip: $("#analysisCollapsedChip"),
     badgeChipLabel: $("#analysisCollapsedChipLabel"),
+    failureNotice: $("#analysisFailureNotice"),
+    failureTitle: $("#analysisFailureTitle"),
+    failureHelp: $("#analysisFailureHelp"),
+    failureRetry: $("#analysisFailureRetry"),
   };
 
   if (!elements.launch || !elements.drawer || !elements.audio) {
@@ -902,7 +919,7 @@
           channelCount: { ideal: 1 },
           echoCancellation: { ideal: false },
           noiseSuppression: { ideal: false },
-          autoGainControl: { ideal: false },
+          autoGainControl: { ideal: IS_IOS },
         },
         video: false,
       });
@@ -1009,11 +1026,11 @@
     });
     elements.badgeView?.addEventListener("click", (event) => {
       event.stopPropagation(); // Don't rotate the underlying circle.
-      if (state.analysis?.events?.length) openDrawer({ preferResults: true });
+      if (state.analysis?.events?.length || state.analysisFailure) openDrawer({ preferResults: true });
     });
     elements.badgeStop?.addEventListener("click", (event) => {
       event.stopPropagation();
-      if (!state.analysis?.events?.length) return;
+      if (!state.analysis?.events?.length && !state.analysisFailure) return;
       stopPlayback(); // Stops loop, audio, highlighted notes and timeline animation.
       state.analysisBadgeCollapsed = true;
       updateBadgeVisibility();
@@ -1021,7 +1038,16 @@
     });
     elements.badgeChip?.addEventListener("click", (event) => {
       event.stopPropagation();
-      if (state.analysis?.events?.length) openDrawer({ preferResults: true });
+      if (state.analysis?.events?.length || state.analysisFailure) openDrawer({ preferResults: true });
+    });
+    elements.failureRetry?.addEventListener("click", () => {
+      closeDrawer({ restoreFocus: false });
+      state.analysisFailure = false;
+      updateBadgeVisibility();
+      updateRecordingFeedback(t("recordReady"), 0, "ready");
+      expandAnalysisCombo(true);
+      const control = microphonePermissionIsReady() ? elements.quickRecordStart : elements.quickFinderButton;
+      control?.focus({ preventScroll: true });
     });
     // Prevent pointer gestures on these controls from reaching circle drag handlers.
     [elements.badgeView, elements.badgeStop, elements.badgeChip].forEach((button) => {
@@ -1304,6 +1330,12 @@
 
     clearTimeout(state.autoCloseTimer);
     state.autoCloseTimer = 0;
+    // Starting a new take clears only the old failure announcement, not the
+    // underlying scale or recording logic.
+    if (state.analysisFailure) {
+      state.analysisFailure = false;
+      updateBadgeVisibility();
+    }
     recorder.starting = true;
     recorder.cancelled = false;
     recorder.finalizing = false;
@@ -1319,7 +1351,7 @@
               channelCount: { ideal: 1 },
               echoCancellation: { ideal: false },
               noiseSuppression: { ideal: false },
-              autoGainControl: { ideal: false },
+              autoGainControl: { ideal: IS_IOS },
             },
             video: false,
           });
@@ -1795,10 +1827,18 @@
     }
     elements.stop.textContent = dictionary.stop;
     if (elements.loopLabel) elements.loopLabel.textContent = dictionary.loopPlayback;
-    if (elements.badgeAction) elements.badgeAction.textContent = dictionary.viewResults;
+    if (elements.badgeAction) elements.badgeAction.textContent =
+      state.analysisFailure ? dictionary.analysisFailedAction : dictionary.viewResults;
+    if (elements.failureTitle) elements.failureTitle.textContent = dictionary.analysisFailedTitle;
+    if (elements.failureHelp) elements.failureHelp.textContent = dictionary.analysisFailedHelp;
+    if (elements.failureRetry) elements.failureRetry.textContent = dictionary.retryRecording;
+    if (state.analysisFailure && elements.badgeText) {
+      elements.badgeText.textContent = dictionary.analysisFailedTitle;
+      if (elements.resultPlaceholder) elements.resultPlaceholder.textContent = dictionary.analysisFailedHelp;
+    }
     if (elements.badgeStop) elements.badgeStop.textContent = dictionary.stopAndHide;
     if (elements.badgeChipLabel) elements.badgeChipLabel.textContent = dictionary.resultsShortcut;
-    if (state.selectedCandidate) updateBadgeAccessibility();
+    if (state.selectedCandidate || state.analysisFailure) updateBadgeAccessibility();
     if (elements.detailValue && elements.detail) {
       elements.detailValue.textContent = `${Math.round(Number(elements.detail.value) || 0)}%`;
     }
@@ -1831,7 +1871,7 @@
     // jump to Section 4 without moving or duplicating any sections.
     requestAnimationFrame(() => {
       if (!scroller || !elements.drawer.classList.contains("open")) return;
-      const target = preferResults && state.analysis?.events?.length
+      const target = preferResults && !state.analysisFailure && state.analysis?.events?.length
         ? $("#resultHeading")?.closest(".analyzer-card") : null;
       if (!target) {
         scroller.scrollTop = 0;
@@ -2094,11 +2134,12 @@
 
     if (!result.events?.length || result.voicedFrameCount < 4) {
       setStatus(t("noVoiced"), 0, true);
+      showAnalysisFailure();
       if (state.inputOrigin === "microphone") {
         updateRecordingFeedback(t("noVoiced"), 0, "error");
         closeQuickFinder({ restoreFocus: false, cancelRecording: false });
-        openDrawer(); // show the diagnostic instead of hiding the outcome
       }
+      if (request.autoStart) openDrawer({ preferResults: true });
       updateButtons();
       return;
     }
@@ -2306,9 +2347,25 @@
   }
 
   function updateBadgeVisibility() {
-    const ready = Boolean(state.analysis?.events?.length && state.selectedCandidate);
+    const ready = Boolean(state.analysisFailure ||
+      (state.analysis?.events?.length && state.selectedCandidate));
     elements.badge?.classList.toggle("visible", ready && !state.analysisBadgeCollapsed);
+    elements.badge?.classList.toggle("analysis-failed", state.analysisFailure);
     if (elements.badgeChip) elements.badgeChip.hidden = !(ready && state.analysisBadgeCollapsed);
+    if (elements.failureNotice) elements.failureNotice.hidden = !state.analysisFailure;
+  }
+
+  function showAnalysisFailure() {
+    state.analysisFailure = true;
+    state.analysisBadgeCollapsed = false;
+    elements.badgeText.textContent = t("analysisFailedTitle");
+    if (elements.badgeAction) elements.badgeAction.textContent = t("analysisFailedAction");
+    if (elements.failureTitle) elements.failureTitle.textContent = t("analysisFailedTitle");
+    if (elements.failureHelp) elements.failureHelp.textContent = t("analysisFailedHelp");
+    if (elements.failureRetry) elements.failureRetry.textContent = t("retryRecording");
+    if (elements.resultPlaceholder) elements.resultPlaceholder.textContent = t("analysisFailedHelp");
+    updateBadgeAccessibility();
+    updateBadgeVisibility();
   }
 
   function updateBadgeAccessibility() {
@@ -3180,9 +3237,10 @@
   function calculateIOSMicrophoneAnalysisGain({ peak = 0, rms = 0 } = {}, previousGain = 1) {
     if (!IS_IOS || !Number.isFinite(peak) || !Number.isFinite(rms)
         || peak < 0.001 || rms < 0.0003 || rms >= 0.012) return previousGain;
-    const desiredRms = 0.02;
-    const headroom = 0.9 / peak;
-    return Math.max(previousGain, clamp(Math.min(desiredRms / rms, headroom), 1, 10));
+    const desiredRms = 0.035;
+    const headroom = 0.85 / peak;
+    return Math.min(Math.max(previousGain, clamp(Math.min(desiredRms / rms, headroom), 1, 24)),
+      Math.max(1, headroom));
   }
 
   // Boost the existing Web Audio playback path for genuinely quiet iPhone
@@ -3748,6 +3806,9 @@
     clearCircleHighlights();
     if (clearBadge) {
       state.analysisBadgeCollapsed = false;
+      state.analysisFailure = false;
+      if (elements.failureNotice) elements.failureNotice.hidden = true;
+      elements.badge?.classList.remove("analysis-failed");
       elements.badge.classList.remove("visible");
       if (elements.badgeChip) elements.badgeChip.hidden = true;
       elements.quickFinderButton?.classList.remove("has-result");

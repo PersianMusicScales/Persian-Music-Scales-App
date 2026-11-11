@@ -77,7 +77,7 @@
 
   <!-- Link to External CSS -->
   <link rel="stylesheet" href="csss/indexstyle.css?v=20261111-avaz-color" />
-  <link rel="stylesheet" href="csss/audio-analyzer.css?v=20261111-stop-ios-gain-pr" />
+  <link rel="stylesheet" href="csss/audio-analyzer.css?v=20261111-ios-swiperecord-retry" />
   <link rel="stylesheet" href="csss/bottom-nav.css?v=20261111-unified" />
 
   <!-- Tap Overlay CSS -->
@@ -306,13 +306,14 @@
               </button>
               <button id="quickRecordingStartButton" class="analysis-combo-option mic-inline-record" type="button" hidden>● Record</button>
               <div id="micSwipeControl" class="mic-inline-swipe" hidden aria-label="Recording in progress">
-                <span class="mic-swipe-side mic-swipe-cancel" aria-hidden="true"><b>×</b><small id="micSwipeCancelLabel">Cancel</small></span>
-                <span class="mic-swipe-side mic-swipe-analyze" aria-hidden="true"><b>✓</b><small id="micSwipeAnalyzeLabel">Analyze</small></span>
+                <span class="mic-swipe-side mic-swipe-cancel" aria-hidden="true"><b>← ×</b><small id="micSwipeCancelLabel">Cancel</small></span>
+                <span class="mic-swipe-side mic-swipe-analyze" aria-hidden="true"><b>✓ →</b><small id="micSwipeAnalyzeLabel">Analyze</small></span>
                 <button id="micSwipeHandle" class="mic-swipe-handle" type="button" role="slider"
                         aria-valuemin="-100" aria-valuemax="100" aria-valuenow="0"
                         aria-label="Swipe left to cancel, right to analyze">
                   <span class="mic-swipe-live-dot" aria-hidden="true"></span>
                   <time id="quickRecordingTimer" datetime="PT0S">0:00</time>
+                  <span class="mic-swipe-drag-grip" aria-hidden="true">↔</span>
                 </button>
               </div>
               <span id="micInlineStatus" class="mic-inline-status" role="status" aria-live="polite" hidden></span>
@@ -420,6 +421,11 @@
     </div>
 
     <div class="analyzer-scroll">
+      <div id="analysisFailureNotice" class="analysis-failure-notice" role="alert" hidden>
+        <strong id="analysisFailureTitle">No notes detected</strong>
+        <p id="analysisFailureHelp">Try again with a clearer recording or place the iPhone closer to the instrument.</p>
+        <button id="analysisFailureRetry" type="button">Try recording again</button>
+      </div>
       <section class="analyzer-card" aria-labelledby="uploadTrackHeading">
         <div class="analyzer-card-heading">
           <h3 id="uploadTrackHeading" data-analyzer-text="uploadTitle">1. Load a recording</h3>
@@ -809,7 +815,7 @@
   <script src="src/key-signature.js"></script>
   <script src="src/modal-roles.js"></script>
   <script src="src/index.js?v=20261111-avaz-color"></script>
-  <script src="src/audio-analyzer.js?v=20261111-stop-ios-gain-pr"></script>
+  <script src="src/audio-analyzer.js?v=20261111-ios-swiperecord-retry"></script>
 </body>
 </html>
 

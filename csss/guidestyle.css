@@ -295,7 +295,7 @@ html[dir="rtl"] .guide-instruction {
   text-align: center;
 }
 .guide-figure img,
-.guide-topic-content > img {
+.guide-topic-content img {
   display: block;
   width: auto;
   max-width: 100%;
@@ -307,6 +307,20 @@ html[dir="rtl"] .guide-instruction {
   box-shadow: 0 3px 14px rgba(29, 44, 55, .1);
 }
 .guide-figure img { max-width: min(100%, 470px); }
+/* The example image was moved under .guide-merged-circles in Stage 1.
+   Give the full diagram its own bounded width, regardless of nesting.
+   Both the circle and all note labels must stay visible on small screens. */
+.guide-merged-circles,
+.guide-merged-circles > img { min-width: 0; }
+.guide-merged-circles > img {
+  display: block;
+  width: min(100%, 520px);
+  max-width: 100%;
+  max-height: none;
+  height: auto;
+  margin: 18px auto 24px;
+  object-fit: contain;
+}
 .guide-reference-list {
   columns: 2;
   column-gap: 32px;

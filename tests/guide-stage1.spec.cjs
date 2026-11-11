@@ -54,3 +54,31 @@ test("Guide persists the selected language on navigation", async ({ page }) => {
   await page.locator('.bottom-nav a[href*="tuner.html"]').click();
   await expect(page.locator("#languageSelector")).toHaveValue("fa");
 });
+
+test("each Guide circle illustration fits its available card width", async ({ page }) => {
+  for (const width of [320, 390, 430, 1280]) {
+    await page.setViewportSize({ width, height: 844 });
+    for (const language of ["en", "fa", "fr"]) {
+      await page.goto("/htmls/guide.html?lang=" + language, { waitUntil: "domcontentloaded" });
+      const lesson = page.locator('section.guide-language-panel[lang="' + language + '"] [data-guide-topic="1"]');
+      const card = lesson.locator(".guide-topic-content");
+      await expect(lesson).toHaveAttribute("open", "");
+      const bounds = await card.boundingBox();
+      const images = lesson.locator("img");
+      await expect(images).toHaveCount(3);
+      for (let i = 0; i < 3; i++) {
+        const image = images.nth(i);
+        await expect(image).toBeVisible();
+        const imgBox = await image.boundingBox();
+        expect(imgBox.width, "image must not be wider than content").toBeLessThanOrEqual(bounds.width + 1);
+        expect(imgBox.x, "image must stay within card").toBeGreaterThanOrEqual(bounds.x - 1);
+        expect(imgBox.x + imgBox.width, "image right edge must stay within card").toBeLessThanOrEqual(bounds.x + bounds.width + 1);
+        const dimensions = await image.evaluate(img => ({
+          natural: img.naturalWidth / img.naturalHeight,
+          displayed: img.getBoundingClientRect().width / img.getBoundingClientRect().height
+        }));
+        expect(Math.abs(dimensions.natural - dimensions.displayed)).toBeLessThan(0.02);
+      }
+    }
+  }
+});

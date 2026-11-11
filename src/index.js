@@ -613,15 +613,80 @@ const avazhaContainer = document.getElementById("avazhaContainer");
 const avazhaButton = document.getElementById("avazhaButton");
 const avazhaColumns = document.getElementById("avazhaColumns");
 const avazhaDynamicColumn = document.getElementById("avazhaDynamicColumn");
-const avazhaToolbar = document.querySelector(".scale-controls");
 
-// When expanded, the menu takes its own grid row, so it cannot be clipped by
-// either screen edge or cover the Shahed/Finalis control below it.
+// Mount the menu outside the toolbar. It can now float in viewport coordinates
+// without adding grid rows, resizing controls, or moving the scale circles.
+avazhaColumns.classList.add("avazha-viewport-popover");
+document.body.appendChild(avazhaColumns);
+
+function avazhaRectOverlap(a, b) {
+  if (!a || !b) return 0;
+  return Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) *
+         Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+}
+
+function positionAvazhaMenu() {
+  if (avazhaColumns.classList.contains("hidden")) return;
+  const edge = 10, gap = 8;
+  const viewportWidth = document.documentElement.clientWidth;
+  const viewportHeight = document.documentElement.clientHeight;
+  const trigger = avazhaButton.getBoundingClientRect();
+  const notes = modalRoleButton.getBoundingClientRect();
+  const scale = scaleSelector.getBoundingClientRect();
+  const circle = circleContainer.getBoundingClientRect();
+
+  // Measure at a neutral fixed position; never insert a layout row.
+  avazhaColumns.style.visibility = "hidden";
+  avazhaColumns.style.left = "0px";
+  avazhaColumns.style.top = "0px";
+  const panel = avazhaColumns.getBoundingClientRect();
+  const width = panel.width, height = panel.height;
+  const maxX = Math.max(edge, viewportWidth - edge - width);
+  const maxY = Math.max(edge, viewportHeight - edge - height);
+  const clampX = value => Math.max(edge, Math.min(maxX, value));
+  const clampY = value => Math.max(edge, Math.min(maxY, value));
+
+  // Prefer a nearby placement on the inside of the screen, while testing
+  // alternatives for narrow phones and the mirrored Persian toolbar.
+  const xOptions = [
+    trigger.left - width - gap, trigger.right + gap,
+    trigger.right - width, trigger.left, edge, maxX
+  ].map(clampX);
+  const yOptions = [
+    trigger.bottom + gap, trigger.top - height - gap,
+    notes.bottom + gap
+  ].map(clampY);
+
+  let best = { score: Infinity, left: edge, top: edge };
+  for (const x of xOptions) for (const y of yOptions) {
+    const candidate = { left: x, right: x + width, top: y, bottom: y + height };
+    const paddedNotes = {
+      left: notes.left - gap, right: notes.right + gap,
+      top: notes.top - gap, bottom: notes.bottom + gap
+    };
+    const notesOverlap = avazhaRectOverlap(candidate, paddedNotes);
+    const triggerOverlap = avazhaRectOverlap(candidate, trigger);
+    const selectorOverlap = avazhaRectOverlap(candidate, scale);
+    const circleOverlap = avazhaRectOverlap(candidate, circle);
+    const distance = Math.abs(x + width / 2 - (trigger.left + trigger.right) / 2) +
+                     Math.abs(y - (trigger.bottom + gap));
+    const score = (notesOverlap > 0 ? 1000000 + notesOverlap : 0) +
+                  (triggerOverlap > 0 ? 1000000 + triggerOverlap : 0) +
+                  (selectorOverlap > 0 ? 10000 + selectorOverlap : 0) +
+                  circleOverlap * .02 + distance * .5 +
+                  (y < trigger.top - gap ? 30 : 0);
+    if (score < best.score) best = { score, left: x, top: y };
+  }
+  avazhaColumns.style.left = best.left + "px";
+  avazhaColumns.style.top = best.top + "px";
+  avazhaColumns.style.visibility = "";
+}
+
 function setAvazhaOpen(open) {
   avazhaColumns.classList.toggle("hidden", !open);
   avazhaContainer.classList.toggle("menu-open", open);
-  avazhaToolbar.classList.toggle("avazha-expanded", open);
   avazhaButton.setAttribute("aria-expanded", String(open));
+  if (open) positionAvazhaMenu();
 }
 
 function toggleAvazhaColumns() {
@@ -657,8 +722,15 @@ avazItems.forEach((item) => {
 });
 avazhaButton.addEventListener("click", toggleAvazhaColumns);
 document.addEventListener("pointerdown", (event) => {
-  if (!avazhaContainer.contains(event.target)) setAvazhaOpen(false);
+  if (!avazhaContainer.contains(event.target) &&
+      !avazhaColumns.contains(event.target)) setAvazhaOpen(false);
 });
+window.addEventListener("resize", positionAvazhaMenu);
+window.addEventListener("scroll", positionAvazhaMenu, { passive: true });
+if (window.visualViewport) {
+  window.visualViewport.addEventListener("resize", positionAvazhaMenu);
+  window.visualViewport.addEventListener("scroll", positionAvazhaMenu);
+}
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && !avazhaColumns.classList.contains("hidden")) {
     setAvazhaOpen(false);
@@ -695,6 +767,7 @@ function populateAvazhaDynamicColumn() {
     itemDiv.innerHTML = displayText;
     avazhaDynamicColumn.appendChild(itemDiv);
   });
+  if (!avazhaColumns.classList.contains("hidden")) positionAvazhaMenu();
 }
 
 const referenceIntroductionTranslations = {
@@ -823,6 +896,7 @@ languageSelector.addEventListener("change", () => {
   } else {
     document.body.classList.remove("rtl");
   }
+  if (!avazhaColumns.classList.contains("hidden")) positionAvazhaMenu();
 });
 
 /* ---------- Scale Selector Change ---------- */

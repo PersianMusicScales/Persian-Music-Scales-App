@@ -1,6 +1,6 @@
 const { test, expect } = require("@playwright/test");
 
-test("guide offers six topic cards in every language without losing original diagrams", async ({ page }) => {
+test("guide offers five topic cards in every language and keeps diagrams in the first lesson", async ({ page }) => {
   const errors = [];
   page.on("pageerror", error => errors.push(error.message));
   await page.setViewportSize({ width: 390, height: 844 });
@@ -12,18 +12,20 @@ test("guide offers six topic cards in every language without losing original dia
     await expect(page.locator("html")).toHaveAttribute("dir", language === "fa" ? "rtl" : "ltr");
     const panel = page.locator('section.guide-language-panel[lang="' + language + '"]');
     await expect(panel).toBeVisible();
-    await expect(panel.locator(".guide-topic")).toHaveCount(6);
+    await expect(panel.locator(".guide-topic")).toHaveCount(5);
     await expect(panel.locator(".guide-topic[open]")).toHaveCount(1);
+    await expect(panel.locator(".guide-intro")).toBeVisible();
+    await expect(panel.locator(".guide-model-boundaries")).toHaveCount(1);
 
-    const circles = panel.locator('[data-guide-topic="2"]');
-    await circles.locator("summary").click();
+    const circles = panel.locator('[data-guide-topic="1"]');
+    await expect(circles).toHaveAttribute("open", "");
     await expect(circles).toHaveAttribute("open", "");
     await expect(circles.locator("img")).toHaveCount(3);
     const images = circles.locator("img");
     for (let i = 0; i < 3; i++) {
       expect(await images.nth(i).evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
     }
-    const refs = panel.locator('[data-guide-topic="6"]');
+    const refs = panel.locator('[data-guide-topic="5"]');
     await refs.locator("summary").click();
     await expect(refs.locator('a[href*="reference/"]')).toHaveCount(8);
     await expect(refs.locator('a[href*="sites.google.com"]')).toHaveCount(1);
@@ -37,7 +39,7 @@ test("Guide works on narrow screens without horizontal scrolling or footer chang
     await page.setViewportSize({ width, height: 844 });
     await page.goto("/htmls/guide.html?lang=fa", { waitUntil: "domcontentloaded" });
     const panel = page.locator('section.guide-language-panel[lang="fa"]');
-    await panel.locator('[data-guide-topic="2"] summary').click();
+    await expect(panel.locator('[data-guide-topic="1"]')).toHaveAttribute("open", "");
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(2);
     const nav = page.locator(".bottom-nav");

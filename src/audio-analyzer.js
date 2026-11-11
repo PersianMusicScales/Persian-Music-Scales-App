@@ -605,6 +605,9 @@
       meterAnalyser: null,
       meterData: null,
       lastPitchAt: 0,
+      micNoiseFloor: 0.0015,
+      quietPitchCandidate: null,
+      quietPitchConfirmations: 0,
       liveLabel: null,
       minimumSeconds: 1.5,
       maximumSeconds: 45,
@@ -1505,7 +1508,46 @@
   // Approximate predominant fundamental by YIN-style normalized
   // difference on a downsampled, recent mono waveform. This deliberately
   // runs only during MediaRecorder capture, never on permission activation.
-  function detectLiveFundamental(bytes, sampleRate) {
+  // A lower, noise-aware floor is used for iPhone/iPad live monitoring.
+  // Pitch estimation itself remains the same normalized-difference algorithm.
+  // Android and desktop retain their existing fixed threshold.
+  function liveMicrophoneGate(rms) {
+    if (!IS_IOS) return 0.012;
+    const recorder = state.recorder;
+    const previous = recorder.micNoiseFloor;
+    // Follow quiet background levels quickly downward, but increase slowly
+    // while a musician is playing; a sustained note must not become "noise".
+    recorder.micNoiseFloor = clamp(
+      rms < previous ? 0.85 * previous + 0.15 * rms
+        : Math.min(rms, previous * 1.002 + 0.000002),
+      0.0007, 0.015
+    );
+    return clamp(recorder.micNoiseFloor * 1.75, 0.0027, 0.012);
+  }
+
+  function confirmQuietLivePitch(pitch, rms) {
+    if (!IS_IOS || rms >= 0.012) {
+      state.recorder.quietPitchCandidate = pitch;
+      state.recorder.quietPitchConfirmations = 0;
+      return pitch;
+    }
+    if (!pitch) {
+      state.recorder.quietPitchCandidate = null;
+      state.recorder.quietPitchConfirmations = 0;
+      return null;
+    }
+    const recorder = state.recorder;
+    const prior = recorder.quietPitchCandidate;
+    // A second nearby estimate protects against low-level broadband noise
+    // while still reacting within roughly 200 ms to a quiet sustained note.
+    const consistent = prior && Math.abs(1200 * Math.log2(pitch / prior)) <= 80;
+    recorder.quietPitchConfirmations = consistent
+      ? Math.min(2, recorder.quietPitchConfirmations + 1) : 1;
+    recorder.quietPitchCandidate = pitch;
+    return recorder.quietPitchConfirmations >= 2 ? pitch : null;
+  }
+
+  function detectLiveFundamental(bytes, sampleRate, minimumRms = 0.012) {
     const stride = Math.max(1, Math.round(sampleRate / 12000));
     const effectiveRate = sampleRate / stride;
     const count = Math.min(2048, Math.floor(bytes.length / stride));
@@ -1517,7 +1559,7 @@
       values[i] = v;
       energy += v * v;
     }
-    if (Math.sqrt(energy / count) < 0.012) return null;
+    if (Math.sqrt(energy / count) < minimumRms) return null;
 
     const minimumLag = Math.max(3, Math.floor(effectiveRate / 1400));
     const maximumLag = Math.min(Math.floor(effectiveRate / 65), Math.floor(count / 3));
@@ -1604,6 +1646,9 @@
     state.recorder.meterAnalyser = analyser;
     state.recorder.meterData = new Uint8Array(analyser.fftSize);
     state.recorder.lastPitchAt = 0;
+    state.recorder.micNoiseFloor = 0.0015;
+    state.recorder.quietPitchCandidate = null;
+    state.recorder.quietPitchConfirmations = 0;
     rebuildLabelBindings();
 
     const draw = timestamp => {
@@ -1622,7 +1667,9 @@
       });
       if (timestamp - state.recorder.lastPitchAt >= 95) {
         state.recorder.lastPitchAt = timestamp;
-        renderLivePitch(detectLiveFundamental(state.recorder.meterData, context.sampleRate));
+        const gate = liveMicrophoneGate(rms);
+        const fundamental = detectLiveFundamental(state.recorder.meterData, context.sampleRate, gate);
+        renderLivePitch(confirmQuietLivePitch(fundamental, rms));
       }
       state.recorder.meterFrame = requestAnimationFrame(draw);
     };
@@ -1631,6 +1678,9 @@
 
   function stopMicrophoneMeter() {
     clearLivePitch();
+    state.recorder.micNoiseFloor = 0.0015;
+    state.recorder.quietPitchCandidate = null;
+    state.recorder.quietPitchConfirmations = 0;
     cancelAnimationFrame(state.recorder.meterFrame);
     state.recorder.meterFrame = 0;
     try { state.recorder.meterSource?.disconnect(); } catch (_) {}
@@ -1889,7 +1939,10 @@
       const levelProfile = measureAudioBufferLevel(state.audioBuffer);
       if (state.inputOrigin === "microphone") {
         state.playbackGain = calculateAdaptivePlaybackGain(levelProfile);
-        state.analysisGain = clamp(state.playbackGain, 0.7, 3.5);
+        state.analysisGain = calculateIOSMicrophoneAnalysisGain(
+          levelProfile,
+          clamp(state.playbackGain, 0.7, 3.5)
+        );
       }
       applyOriginalPlaybackGain();
 
@@ -3079,6 +3132,17 @@
       }
     }
     return { peak, rms: count ? Math.sqrt(sumSquares / count) : 0 };
+  }
+
+  // Processing gain affects only the analysis copy of an iOS microphone
+  // recording. The MediaRecorder blob and decoded playback buffer are left
+  // untouched, so increasing sensitivity cannot change the saved sound.
+  function calculateIOSMicrophoneAnalysisGain({ peak = 0, rms = 0 } = {}, previousGain = 1) {
+    if (!IS_IOS || !Number.isFinite(peak) || !Number.isFinite(rms)
+        || peak < 0.001 || rms < 0.0003 || rms >= 0.012) return previousGain;
+    const desiredRms = 0.02;
+    const headroom = 0.9 / peak;
+    return Math.max(previousGain, clamp(Math.min(desiredRms / rms, headroom), 1, 10));
   }
 
   function calculateAdaptivePlaybackGain({ peak = 0, rms = 0 } = {}) {

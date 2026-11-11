@@ -244,11 +244,22 @@
       <span id="liveDetectedNote" class="live-detected-note" aria-hidden="true" hidden></span>
       <!-- The detected-scale shortcut floats at the circle center only when a
            successful result exists. It never changes the circle geometry. -->
-      <button id="analysisMiniBadge" class="analysis-mini-badge" type="button"
-              aria-controls="audioAnalyzerDrawer" aria-haspopup="dialog"
-              aria-label="View detected-scale analysis results">
+      <div id="analysisMiniBadge" class="analysis-mini-badge" role="group"
+           aria-label="Detected-scale analysis">
         <strong id="analysisMiniBadgeText" aria-live="polite"></strong>
-        <span id="analysisMiniBadgeAction" class="analysis-mini-badge-action">View results</span>
+        <div class="analysis-mini-badge-actions">
+          <button id="analysisViewResults" class="analysis-result-view" type="button"
+                  aria-controls="audioAnalyzerDrawer" aria-haspopup="dialog">
+            <span id="analysisMiniBadgeAction">View results</span>
+          </button>
+          <button id="analysisStopDismiss" class="analysis-result-stop" type="button">■ Stop &amp; hide</button>
+        </div>
+      </div>
+      <button id="analysisCollapsedChip" class="analysis-collapsed-chip" type="button"
+              aria-controls="audioAnalyzerDrawer" aria-haspopup="dialog"
+              aria-label="View detected-scale results" hidden>
+        <span class="analysis-chip-icon" aria-hidden="true">◎</span>
+        <span id="analysisCollapsedChipLabel">Results</span>
       </button>
 
     </div>

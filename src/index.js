@@ -613,10 +613,19 @@ const avazhaContainer = document.getElementById("avazhaContainer");
 const avazhaButton = document.getElementById("avazhaButton");
 const avazhaColumns = document.getElementById("avazhaColumns");
 const avazhaDynamicColumn = document.getElementById("avazhaDynamicColumn");
+const avazhaToolbar = document.querySelector(".scale-controls");
+
+// When expanded, the menu takes its own grid row, so it cannot be clipped by
+// either screen edge or cover the Shahed/Finalis control below it.
+function setAvazhaOpen(open) {
+  avazhaColumns.classList.toggle("hidden", !open);
+  avazhaContainer.classList.toggle("menu-open", open);
+  avazhaToolbar.classList.toggle("avazha-expanded", open);
+  avazhaButton.setAttribute("aria-expanded", String(open));
+}
 
 function toggleAvazhaColumns() {
-  avazhaColumns.classList.toggle("hidden");
-  avazhaContainer.classList.toggle("menu-open", !avazhaColumns.classList.contains("hidden"));
+  setAvazhaOpen(avazhaColumns.classList.contains("hidden"));
 }
 
 /* Each avaz is its own modal context, not Shur with a changed caption. */
@@ -635,8 +644,7 @@ avazItems.forEach((item) => {
     });
     // Selection is complete; collapse the menu so its list no longer
     // covers the circle's accessible modal-note help control on mobile.
-    avazhaColumns.classList.add("hidden");
-    avazhaContainer.classList.remove("menu-open");
+    setAvazhaOpen(false);
     updateModalRoleMarkers();
   };
   item.addEventListener("click", chooseAvaz);
@@ -648,6 +656,15 @@ avazItems.forEach((item) => {
   });
 });
 avazhaButton.addEventListener("click", toggleAvazhaColumns);
+document.addEventListener("pointerdown", (event) => {
+  if (!avazhaContainer.contains(event.target)) setAvazhaOpen(false);
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !avazhaColumns.classList.contains("hidden")) {
+    setAvazhaOpen(false);
+    avazhaButton.focus();
+  }
+});
 
 function updateAvazhaVisibility() {
   const selectedScale = scaleSelector.value;
@@ -660,9 +677,8 @@ function updateAvazhaVisibility() {
       item.classList.remove("active-modal-avaz");
       item.setAttribute("aria-pressed", "false");
     });
+    setAvazhaOpen(false);
     avazhaContainer.style.display = "none";
-    avazhaColumns.classList.add("hidden");
-    avazhaContainer.classList.remove("menu-open");
   }
 }
 

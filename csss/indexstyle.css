@@ -1430,3 +1430,20 @@ footer {
     padding: 6px 3px;
   }
 }
+
+/* Persian/RTL key-signature expansion: the notation preview is on the
+   right-hand side of the controls, so its panel must open inward (left).
+   Use border-box sizing to include padding/borders in the viewport limit. */
+.key-signature-widget .key-signature-popover {
+  box-sizing: border-box;
+  max-width: calc(100vw - 24px);
+}
+.rtl .key-signature-widget .key-signature-popover {
+  left: auto;
+  right: 0;
+}
+.key-signature-widget .key-signature-large-staff {
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
+}

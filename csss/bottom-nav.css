@@ -1,0 +1,83 @@
+/* Shared four-tab navigation. Keep exactly the same geometry and icon scale
+   on Scales, Tuner, Guide and About, regardless of text language or direction. */
+.bottom-nav {
+  box-sizing: border-box;
+  direction: ltr;
+  position: fixed;
+  inset: auto 0 0;
+  width: 100%;
+  height: calc(72px + env(safe-area-inset-bottom, 0px));
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: stretch;
+  justify-items: stretch;
+  margin: 0;
+  padding: 6px 0 calc(6px + env(safe-area-inset-bottom, 0px));
+  background-color: rgba(240, 240, 240, 0.92);
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+  z-index: 1200;
+}
+.bottom-nav > a {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  margin: 0;
+  padding: 0 2px;
+  color: #333;
+  text-decoration: none;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 13px;
+  line-height: 1;
+  transform: none;
+  transition: color .2s ease;
+}
+.bottom-nav > a:hover,
+.bottom-nav > a:focus-visible,
+.bottom-nav > a.active,
+.bottom-nav > a[aria-current="page"] {
+  transform: none;
+}
+.bottom-nav > a > .nav-icon {
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 30px;
+  flex: 0 0 30px;
+  padding: 0;
+  margin: 0;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+  font-size: 26px;
+  font-weight: normal;
+  line-height: 30px;
+}
+.bottom-nav > a > :not(.nav-icon) {
+  box-sizing: border-box;
+  display: block;
+  flex: 0 0 20px;
+  width: 100%;
+  min-width: 0;
+  height: 20px;
+  padding: 0;
+  margin: 0;
+  font-size: 13px;
+  font-weight: normal;
+  line-height: 20px;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  unicode-bidi: plaintext;
+}
+html[lang="fa"] .bottom-nav > a > :not(.nav-icon) {
+  direction: rtl;
+}
+
+/* Preserve the established mirrored tab order for Persian without resizing. */
+html[lang="fa"] .bottom-nav { direction: rtl; }

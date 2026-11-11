@@ -1,7 +1,7 @@
 /* Persian Music Scales PWA service worker — iOS playback + on-demand example audio v5.5 */
 "use strict";
 
-const CACHE_VERSION = "v25-results-access-loop";
+const CACHE_VERSION = "v26-unified-nav-tuner-i18n";
 const CACHE_NAME = `persian-music-scales-${CACHE_VERSION}`;
 
 /* These files are required for the main application and analyzer shell. */
@@ -10,6 +10,7 @@ const CORE_FILES = [
   "./index.html",
   "./manifest.json",
   "./csss/indexstyle.css",
+  "./csss/bottom-nav.css",
   "./csss/scales-header.css",
   "./csss/audio-analyzer.css",
   "./src/modal-roles.js",
@@ -26,6 +27,14 @@ const CORE_FILES = [
 
 /* Optional pages/assets should not make installation fail if one is renamed. */
 const OPTIONAL_FILES = [
+  "./htmls/tuner.html",
+  "./htmls/guide.html",
+  "./htmls/about.html",
+  "./csss/tunerstyle.css",
+  "./csss/guidestyle.css",
+  "./csss/aboutstyle.css",
+  "./src/tuner.js",
+  "./src/app.js",
   "./reference/index.html",
   "./reference/reference.css",
   "./reference/shur.html",

@@ -87,13 +87,15 @@
             margin-bottom: 2px;
         }
     </style>
+    <link rel="stylesheet" href="../csss/bottom-nav.css?v=20261111-unified" />
   <meta name="description" content="Browser-based chromatic tuner included in Persian Music Scales for examining pitch, frequency and microtonal tuning." />
   <link rel="canonical" href="https://persianmusicscales.github.io/Persian-Music-Scales-App/htmls/tuner.html" />
 </head>
 <body>
     <!-- Language Selector -->
     <select id="languageSelector" class="language-selector" aria-label="Select Language">
-        <option value="en">En</option>
+        <option value="en">EN</option>
+        <option value="fr">FR</option>
         <option value="fa">فا</option>
     </select>
 
@@ -113,7 +115,7 @@
             </div>
             <div class="a4">A<sub>4</sub> = <span>440</span> Hz</div>
             <label class="auto">
-                Auto
+                <span id="tunerAutoLabel">Auto</span>
                 <input type="checkbox" checked />
             </label>
         </section>
@@ -139,52 +141,74 @@
         </a>
     </nav>
 
-    <!-- JavaScript for Language Switching -->
+    <!-- Shared language preference and Tuner labels; pitch/frequency data stays LTR. -->
     <script>
-        const translations = {
-            en: {
-                bottomNav: {
-                    scales: "Scales",
-                    tuner: "Tuner",
-                    guide: "Guide",
-                    about: "About"
-                }
-            },
-            fa: {
-                bottomNav: {
-                    scales: "گام‌ها",
-                    tuner: "تیونر",
-                    guide: "راهنما",
-                    about: "درباره"
-                }
-            }
+      (() => {
+        const labels = {
+          en: {
+            title: "Persian Music Tuner – Microtonal Pitch & Frequency Tool",
+            nav: ["Scales", "Tuner", "Guide", "About"],
+            auto: "Auto",
+            microphone: "Turn on the Microphone",
+            language: "Select language",
+            autoAria: "Automatic note detection",
+            permission: "Microphone access"
+          },
+          fr: {
+            title: "Accordeur de musique persane – Hauteur et fréquence",
+            nav: ["Gammes", "Accordeur", "Guide", "À propos"],
+            auto: "Auto",
+            microphone: "Activer le microphone",
+            language: "Choisir la langue",
+            autoAria: "Détection automatique des notes",
+            permission: "Accès au microphone"
+          },
+          fa: {
+            title: "تیونر موسیقی ایرانی – کوک و فرکانس",
+            nav: ["گام‌ها", "تیونر", "راهنما", "درباره"],
+            auto: "خودکار",
+            microphone: "میکروفون را فعال کنید",
+            language: "انتخاب زبان",
+            autoAria: "تشخیص خودکار نت",
+            permission: "دسترسی به میکروفون"
+          }
         };
-
-        const languageSelector = document.getElementById("languageSelector");
-        const navLinks = document.querySelectorAll('.bottom-nav a[data-translate]');
-
-        function updateUI(currentLang) {
-            navLinks.forEach(link => {
-                const keyPath = link.getAttribute('data-translate').split('.');
-                let translation = translations[currentLang];
-                keyPath.forEach(key => {
-                    translation = translation[key];
-                });
-                link.querySelector('span').textContent = translation;
-            });
+        const selector = document.getElementById("languageSelector");
+        const navLinks = document.querySelectorAll(".bottom-nav a");
+        const autoLabel = document.getElementById("tunerAutoLabel");
+        function applyLanguage(language) {
+          const chosen = labels[language] ? language : "en";
+          const copy = labels[chosen];
+          selector.value = chosen;
+          document.documentElement.lang = chosen;
+          // Keep the tuner pitch and frequency readouts in LTR musical order;
+          // only translatable UI labels use Persian direction.
+          document.documentElement.dir = "ltr";
+          document.title = copy.title;
+          selector.setAttribute("aria-label", copy.language);
+          autoLabel.textContent = copy.auto;
+          autoLabel.dir = chosen === "fa" ? "rtl" : "ltr";
+          document.querySelector(".auto input").setAttribute("aria-label", copy.autoAria);
+          navLinks.forEach((link, index) => {
+            link.querySelector("span").textContent = copy.nav[index];
+            const url = new URL(link.getAttribute("href"), location.href);
+            url.searchParams.set("lang", chosen);
+            link.href = url.href;
+          });
+          try { localStorage.setItem("persianMusicScalesLanguage", chosen); } catch (_) {}
         }
 
-        // Language Detection and Initialization
-        const userLang = (navigator.language || navigator.languages[0]).substr(0, 2);
-        const defaultLang = ["en", "fa"].includes(userLang) ? userLang : "en";
-        languageSelector.value = defaultLang;
-        updateUI(defaultLang);
-
-        // Language Selector Event Listener
-        languageSelector.addEventListener("change", () => {
-            const selectedLang = languageSelector.value;
-            updateUI(selectedLang);
-        });
+        window.getTunerTranslation = key => {
+          const chosen = labels[selector.value] ? selector.value : "en";
+          return labels[chosen][key] || labels.en[key] || key;
+        };
+        selector.addEventListener("change", () => applyLanguage(selector.value));
+        let stored = "";
+        try { stored = localStorage.getItem("persianMusicScalesLanguage") || ""; } catch (_) {}
+        const requested = new URLSearchParams(location.search).get("lang");
+        const browser = (navigator.language || "en").slice(0, 2).toLowerCase();
+        applyLanguage(labels[requested] ? requested : labels[stored] ? stored : labels[browser] ? browser : "en");
+      })();
     </script>
 
     <!-- Scripts Section -->

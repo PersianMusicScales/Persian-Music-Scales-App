@@ -752,26 +752,22 @@
 
   function updateMicrophonePrompt() {
     const ready = microphonePermissionIsReady();
+    const active = state.recorder.recording;
     const dictionary = I18N[state.currentLanguage] || I18N.en;
-
-    if (elements.quickFinderLabel) {
-      elements.quickFinderLabel.textContent = ready ? dictionary.quickFindScale : dictionary.enableMicrophone;
+    if (elements.quickFinderLabel) elements.quickFinderLabel.textContent = dictionary.microphoneOption;
+    if (elements.quickRecordStart) {
+      elements.quickRecordStart.hidden = !ready;
+      elements.quickRecordStart.textContent = active ? dictionary.stopRecording : dictionary.record;
     }
-    if (elements.quickFinderHelp) {
-      elements.quickFinderHelp.textContent = ready ? dictionary.quickHoldHint : dictionary.microphoneSetupHint;
-    }
-    if (elements.recordButtonLabel) {
-      elements.recordButtonLabel.textContent = ready ? dictionary.holdToRecord : dictionary.enableMicrophone;
-    }
-    if (elements.recordButtonHelp) {
-      elements.recordButtonHelp.textContent = ready ? dictionary.releaseToAnalyze : dictionary.microphoneSetupHint;
-    }
-
-    recorderButtons().forEach((button) => {
+    if (elements.recordButtonLabel) elements.recordButtonLabel.textContent =
+      active ? dictionary.stopRecording : ready ? dictionary.record : dictionary.enableMicrophone;
+    if (elements.recordButtonHelp) elements.recordButtonHelp.textContent =
+      ready ? dictionary.recordingHelp : dictionary.microphoneSetupHint;
+    recorderButtons().forEach(button => {
       button.classList.toggle("permission-needed", !ready);
       button.classList.toggle("permission-ready", ready);
-      button.dataset.microphoneReady = ready ? "true" : "false";
-      button.setAttribute("aria-label", ready ? dictionary.microphoneReadyHold : dictionary.enableMicrophone);
+      button.setAttribute("aria-label", active ? dictionary.stopRecording :
+        ready ? dictionary.record : dictionary.enableMicrophone);
     });
   }
 
@@ -841,11 +837,7 @@
       setRecorderButtonsState("ready", false);
       updateRecordingFeedback(t("microphonePermissionReady"), 0, "ready");
       openQuickFinder();
-      window.setTimeout(() => {
-        if (!recorder.recording && !recorder.starting && !recorder.finalizing) {
-          closeQuickFinder({ restoreFocus: false, cancelRecording: false });
-        }
-      }, 2600);
+      elements.quickRecordStart?.focus({ preventScroll: true });
     } catch (error) {
       console.error("Microphone permission setup failed:", error);
       const denied = error?.name === "NotAllowedError" || error?.name === "SecurityError";
@@ -865,6 +857,7 @@
       if (["arming", "recording", "processing"].includes(mode)) button.classList.add(mode);
       button.setAttribute("aria-pressed", pressed ? "true" : "false");
     });
+    updateMicrophonePrompt();
     if (["arming", "recording", "processing"].includes(mode)) openQuickFinder();
   }
 
@@ -879,14 +872,15 @@
   }
 
   function openQuickFinder() {
-    if (!elements.quickFinderPanel || !elements.quickFinderButton) return;
+    if (!elements.quickFinderPanel) return;
+    expandAnalysisCombo(true);
     elements.quickFinderPanel.hidden = false;
     elements.quickFinder?.classList.add("status-open");
     requestAnimationFrame(() => elements.quickFinderPanel.classList.add("open"));
   }
 
   function closeQuickFinder({ restoreFocus = false, cancelRecording = true } = {}) {
-    if (!elements.quickFinderPanel || !elements.quickFinderButton) return;
+    if (!elements.quickFinderPanel) return;
     if (cancelRecording && (state.recorder.recording || state.recorder.starting)) {
       cancelMicrophoneRecording({ announce: false });
     }
@@ -895,20 +889,27 @@
     window.setTimeout(() => {
       if (!elements.quickFinderPanel.classList.contains("open")) elements.quickFinderPanel.hidden = true;
     }, 190);
-    if (restoreFocus) elements.quickFinderButton.focus({ preventScroll: true });
+    if (restoreFocus) elements.comboToggle?.focus({ preventScroll: true });
+  }
+
+  function expandAnalysisCombo(expanded) {
+    if (!elements.comboToggle || !elements.comboOptions) return;
+    if (!expanded && (state.recorder.recording || state.recorder.starting)) return;
+    elements.comboToggle.setAttribute("aria-expanded", String(expanded));
+    elements.comboOptions.hidden = !expanded;
+    elements.quickFinder?.classList.toggle("expanded", expanded);
+    if (!expanded) closeQuickFinder({ restoreFocus: false, cancelRecording: false });
   }
 
   function bindQuickFinderEvents() {
-    if (!elements.quickFinderButton) return;
-    const suppressSelection = (event) => event.preventDefault();
-    ["selectstart", "dragstart", "contextmenu"].forEach((type) => {
-      elements.quickFinderButton.addEventListener(type, suppressSelection);
+    elements.comboToggle?.addEventListener("click", () => {
+      expandAnalysisCombo(elements.comboOptions.hidden);
     });
-    /* Recording/permission click behaviour is bound centrally in
-       bindMicrophoneRecorderEvents(). This listener only suppresses navigation. */
-    elements.quickFinderButton.addEventListener("click", (event) => event.preventDefault());
+    document.addEventListener("pointerdown", event => {
+      if (!elements.quickFinder?.contains(event.target) &&
+          !state.recorder.recording && !state.recorder.starting) expandAnalysisCombo(false);
+    });
   }
-
 
   function initialize() {
     applyAnalyzerDefaults({ announce: false });
@@ -1081,106 +1082,36 @@
   }
 
   function bindMicrophoneRecorderEvents() {
-    const bindRecordButton = (button) => {
-      if (!button) return;
-
-      const suppressSelection = (event) => event.preventDefault();
-      ["selectstart", "dragstart", "contextmenu"].forEach((type) => {
-        button.addEventListener(type, suppressSelection);
-      });
-
-      button.addEventListener("pointerdown", (event) => {
-        if (event.pointerType === "mouse" && event.button !== 0) return;
-
-        /* Before permission is ready, allow this gesture to complete as a
-           normal tap. The click handler below performs the one-time setup.
-           This prevents the iOS permission dialog from breaking a hold. */
-        if (!microphonePermissionIsReady()) {
-          state.recorder.holdActive = false;
-          state.recorder.ignoreRelease = true;
-          return;
-        }
-
-        event.preventDefault();
-        button.setPointerCapture?.(event.pointerId);
-        state.recorder.holdActive = true;
-        beginMicrophoneRecording();
-      });
-
-      button.addEventListener("click", (event) => {
-        event.preventDefault();
-        if (microphonePermissionIsReady() || state.recorder.permissionPreparing) return;
-        state.recorder.holdActive = false;
-        state.recorder.ignoreRelease = true;
+    const clickRecorder = event => {
+      event.preventDefault();
+      if (state.recorder.recording) {
+        finishMicrophoneRecording();
+        return;
+      }
+      if (state.recorder.starting || state.recorder.finalizing || state.recorder.permissionPreparing) return;
+      if (!microphonePermissionIsReady()) {
         prepareMicrophonePermission();
-      });
-
-      const releasePointer = (event) => {
-        if (state.recorder.ignoreRelease || state.recorder.permissionPreparing) return;
-        if (event?.pointerId != null && button.hasPointerCapture?.(event.pointerId)) {
-          button.releasePointerCapture?.(event.pointerId);
-        }
-        if (!state.recorder.holdActive && !state.recorder.recording && !state.recorder.starting) return;
-        state.recorder.holdActive = false;
-        finishMicrophoneRecording();
-      };
-
-      button.addEventListener("pointerup", releasePointer);
-      button.addEventListener("pointercancel", releasePointer);
-      button.addEventListener("lostpointercapture", () => {
-        if (state.recorder.holdActive) return;
-        finishMicrophoneRecording();
-      });
-
-      button.addEventListener("keydown", (event) => {
-        if ((event.key !== " " && event.key !== "Enter") || event.repeat) return;
-        event.preventDefault();
-        if (!microphonePermissionIsReady()) {
-          state.recorder.holdActive = false;
-          state.recorder.ignoreRelease = true;
-          prepareMicrophonePermission();
-          return;
-        }
-        state.recorder.holdActive = true;
-        beginMicrophoneRecording();
-      });
-      button.addEventListener("keyup", (event) => {
-        if (event.key !== " " && event.key !== "Enter") return;
-        event.preventDefault();
-        if (state.recorder.ignoreRelease || state.recorder.permissionPreparing) return;
-        state.recorder.holdActive = false;
-        finishMicrophoneRecording();
-      });
-      button.addEventListener("blur", () => {
-        if (!state.recorder.recording && !state.recorder.starting) return;
-        state.recorder.holdActive = false;
-        finishMicrophoneRecording();
-      });
+        return;
+      }
+      state.recorder.holdActive = true; // remains true until Stop is clicked
+      beginMicrophoneRecording();
     };
-
-    recorderButtons().forEach(bindRecordButton);
-    cancelRecordingButtons().forEach((button) => {
+    recorderButtons().forEach(button => button.addEventListener("click", clickRecorder));
+    elements.quickFinderButton?.addEventListener("click", event => {
+      event.preventDefault();
+      expandAnalysisCombo(true);
+      openQuickFinder();
+      if (!microphonePermissionIsReady()) prepareMicrophonePermission();
+      else elements.quickRecordStart?.focus({ preventScroll: true });
+    });
+    cancelRecordingButtons().forEach(button => {
       button.addEventListener("click", () => cancelMicrophoneRecording({ announce: true }));
     });
-
-    /* Pointer capture normally provides the release event. These document-level
-       fallbacks also protect the first-use permission flow, where a browser
-       permission prompt can interrupt the original pointer sequence. */
-    window.addEventListener("pointerup", () => {
-      if (state.recorder.ignoreRelease || state.recorder.permissionPreparing) return;
-      if (!state.recorder.holdActive) return;
-      state.recorder.holdActive = false;
-      finishMicrophoneRecording();
-    }, true);
-    window.addEventListener("blur", () => {
-      if (!state.recorder.recording && !state.recorder.starting) return;
-      state.recorder.holdActive = false;
-      if (state.recorder.recording) finishMicrophoneRecording();
+    window.addEventListener("pagehide", () => {
+      if (state.recorder.recording || state.recorder.starting) cancelMicrophoneRecording({ announce: false });
     });
     document.addEventListener("visibilitychange", () => {
-      if (!document.hidden || (!state.recorder.recording && !state.recorder.starting)) return;
-      state.recorder.holdActive = false;
-      if (state.recorder.recording) finishMicrophoneRecording();
+      if (document.hidden && state.recorder.recording) finishMicrophoneRecording();
     });
   }
 
@@ -1538,6 +1469,7 @@
     });
 
     elements.launch.textContent = dictionary.launch;
+    if (elements.comboToggle) elements.comboToggle.textContent = dictionary.comboTitle;
     elements.analyze.textContent = dictionary.analyze;
     elements.playPause.textContent = (state.bufferPlayer.playing || !elements.audio.paused) ? dictionary.pause : dictionary.play;
     if (elements.melodyPlayPause) {

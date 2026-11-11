@@ -74,12 +74,7 @@ body::before {
 }
 
 
-/* Dark-mode overlay */
-@media (prefers-color-scheme: dark) {
-  body::before {
-    background: rgba(140,140,140,0.75);
-  }
-}
+/* Background overlay intentionally stays constant across system themes. */
 
 
 /* ===== Header ===== */

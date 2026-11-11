@@ -2324,3 +2324,141 @@ html { scrollbar-gutter: stable; }
   .play-button-container > .analyzer-launch-row .analysis-combo-options { gap: 4px; }
   .play-button-container > .analyzer-launch-row .analysis-combo-option { height: 38px; padding: 3px 4px; font-size: clamp(.58rem,2.2vw,.7rem); }
 }
+
+/* Inline microphone control — only the existing upper option changes state.
+   The action card and both option rows retain identical dimensions. */
+.analysis-combo-options .analysis-mic-slot {
+  position: relative;
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 11px;
+  isolation: isolate;
+}
+.analysis-combo-options .analysis-mic-slot > .analysis-combo-option,
+.analysis-combo-options .analysis-mic-slot > .mic-inline-swipe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+.analysis-combo-options .analysis-mic-slot [hidden] {
+  display: none !important;
+}
+.analysis-combo-options .mic-inline-record {
+  background: #f7f4ef;
+  border: 1px solid rgba(75,78,109,.55);
+  color: #27344c;
+  border-radius: 11px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.analysis-combo-options .mic-inline-record:focus-visible {
+  outline: 2px solid #e8b659;
+  outline-offset: -3px;
+}
+.analysis-combo-options .mic-inline-swipe {
+  overflow: hidden;
+  direction: ltr !important; /* physical left=cancel, right=analyze in every language */
+  border: 1px solid #a7747c;
+  border-radius: 11px;
+  background: linear-gradient(to right, #f4dedc 0%, #f9f6f3 49%, #e0f1e4 100%);
+  color: #29353d;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+.mic-swipe-side {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  width: 30%;
+  height: 100%;
+  top: 0;
+  pointer-events: none;
+  font: 700 10px/1 Arial,sans-serif;
+}
+.mic-swipe-side b { font-size: 14px; line-height: 1; }
+.mic-swipe-side small { font: 700 9px/1.1 Arial,sans-serif; }
+.mic-swipe-cancel { left: 2px; color: #9f2d42; }
+.mic-swipe-analyze { right: 2px; color: #237744; }
+.mic-swipe-handle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 2;
+  width: clamp(33px, 38%, 48px);
+  height: calc(100% - 5px);
+  min-height: 28px;
+  padding: 1px 2px;
+  border: 1px solid #9f7b83;
+  border-radius: 9px;
+  background: #774953;
+  color: white;
+  box-shadow: 0 2px 6px rgba(0,0,0,.24);
+  transform: translate(calc(-50% + var(--swipe-offset, 0px)), -50%);
+  transition: transform .16s ease, background-color .16s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font: 700 9px/1 Arial,sans-serif;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.mic-swipe-handle:active { cursor: grabbing; }
+.mic-inline-swipe.dragging .mic-swipe-handle { transition: none; }
+.mic-swipe-handle:focus-visible { outline: 2px solid #ffd37b; outline-offset: -2px; }
+.mic-swipe-live-dot {
+  flex: 0 0 6px;
+  width: 6px;
+  height: 6px;
+  background: #f8b5b5;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(255,255,255,.3);
+  animation: mic-inline-pulse 1.2s ease-in-out infinite;
+}
+.mic-inline-swipe.toward-cancel .mic-swipe-handle { background: #a12e45; }
+.mic-inline-swipe.toward-analyze .mic-swipe-handle { background: #247747; }
+@keyframes mic-inline-pulse {
+  50% { opacity: .55; }
+}
+.mic-inline-status {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 4px;
+  box-sizing: border-box;
+  background: rgba(250,247,243,.98);
+  border: 1px solid #d0ac6f;
+  border-radius: 10px;
+  color: #6d2935;
+  text-align: center;
+  font: 700 clamp(.52rem, 1.8vw, .68rem)/1.15 Arial,sans-serif;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+}
+@media (max-width: 430px) {
+  .mic-swipe-side small { display: none; }
+  .mic-swipe-side { width: 25%; }
+  .mic-swipe-handle { width: clamp(32px, 42%, 43px); font-size: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mic-swipe-live-dot { animation: none; }
+  .mic-swipe-handle { transition: none; }
+}

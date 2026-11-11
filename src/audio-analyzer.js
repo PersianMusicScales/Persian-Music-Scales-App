@@ -23,6 +23,13 @@
 
   const I18N = {
     en: {
+      inlineMicDenied: "Access denied",
+      inlineMicFailed: "Microphone error",
+      inlineTapPlay: "Tap Play",
+      swipeCancel: "Cancel",
+      swipeAnalyze: "Analyze",
+      swipeInstructions: "Swipe left to cancel, right to analyze",
+      inlineProcessing: "Analyzing…",
       localServerRequired: "This downloaded copy uses file://. For microphone analysis, open the extracted app through http://localhost instead; the browser may block its analysis worker.",
       comboTitle: "Analyze a Track or Your Singing",
       microphoneOption: "Microphone",
@@ -177,6 +184,13 @@
       gapClear: "It leads the next candidate by {gap} percentage points.",
     },
     fr: {
+      inlineMicDenied: "Accès refusé",
+      inlineMicFailed: "Erreur du micro",
+      inlineTapPlay: "Appuyer sur Lire",
+      swipeCancel: "Annuler",
+      swipeAnalyze: "Analyser",
+      swipeInstructions: "Glisser à gauche pour annuler, à droite pour analyser",
+      inlineProcessing: "Analyse…",
       localServerRequired: "Cette copie est ouverte en file://. Pour analyser un enregistrement, ouvrez l’application via http://localhost : le navigateur peut bloquer le traitement local.",
       comboTitle: "Analyser un morceau ou votre chant",
       microphoneOption: "Microphone",
@@ -331,6 +345,13 @@
       gapClear: "Il devance le candidat suivant de {gap} points.",
     },
     fa: {
+      inlineMicDenied: "دسترسی رد شد",
+      inlineMicFailed: "خطای میکروفن",
+      inlineTapPlay: "پخش را بزنید",
+      swipeCancel: "لغو",
+      swipeAnalyze: "تحلیل",
+      swipeInstructions: "برای لغو به چپ و برای تحلیل به راست بکشید",
+      inlineProcessing: "در حال تحلیل…",
       localServerRequired: "این نسخه با نشانی file:// باز شده است. برای تحلیل ضبط، برنامه را از طریق http://localhost اجرا کنید؛ مرورگر ممکن است اجرای تحلیل‌گر محلی را مسدود کند.",
       comboTitle: "تحلیل قطعه یا آواز شما",
       microphoneOption: "میکروفن",
@@ -572,6 +593,7 @@
       timerId: 0,
       maximumTimerId: 0,
       meterFrame: 0,
+      swipeProcessing: false,
       meterContext: null,
       meterSource: null,
       meterAnalyser: null,
@@ -623,9 +645,15 @@
     comboToggle: $("#analysisComboToggle"),
     comboOptions: $("#analysisComboOptions"),
     quickFinderButton: $("#quickScaleFinderButton"),
+    micSlot: $("#microphoneActionSlot"),
+    micSwipe: $("#micSwipeControl"),
+    micSwipeHandle: $("#micSwipeHandle"),
+    micSwipeCancelLabel: $("#micSwipeCancelLabel"),
+    micSwipeAnalyzeLabel: $("#micSwipeAnalyzeLabel"),
+    micInlineStatus: $("#micInlineStatus"),
     quickFinderLabel: $("#quickScaleFinderLabel"),
     quickFinderHelp: $("#quickScaleFinderHelp"),
-    quickFinderPanel: $("#quickScaleFinderPanel"),
+    quickFinderPanel: null,
     quickFinderClose: null,
     quickRecordButton: $("#quickScaleFinderButton"),
     quickRecordStart: $("#quickRecordingStartButton"),
@@ -754,24 +782,44 @@
   }
 
   function updateMicrophonePrompt() {
+    const recorder = state.recorder;
     const ready = microphonePermissionIsReady();
-    const active = state.recorder.recording;
     const dictionary = I18N[state.currentLanguage] || I18N.en;
-    if (elements.quickFinderLabel) elements.quickFinderLabel.textContent = dictionary.microphoneOption;
-    if (elements.quickRecordStart) {
-      elements.quickRecordStart.hidden = !ready;
-      elements.quickRecordStart.textContent = active ? dictionary.stopRecording : dictionary.record;
+    const recording = recorder.recording;
+    const starting = recorder.starting;
+    const processing = recorder.finalizing || (!recording && recorder.swipeProcessing);
+    const showSwipe = recording;
+
+    if (elements.quickFinderLabel) {
+      elements.quickFinderLabel.textContent = dictionary.microphoneOption;
     }
-    if (elements.recordButtonLabel) elements.recordButtonLabel.textContent =
-      active ? dictionary.stopRecording : ready ? dictionary.record : dictionary.enableMicrophone;
-    if (elements.recordButtonHelp) elements.recordButtonHelp.textContent =
-      ready ? dictionary.recordingHelp : dictionary.microphoneSetupHint;
-    recorderButtons().forEach(button => {
-      button.classList.toggle("permission-needed", !ready);
-      button.classList.toggle("permission-ready", ready);
-      button.setAttribute("aria-label", active ? dictionary.stopRecording :
-        ready ? dictionary.record : dictionary.enableMicrophone);
-    });
+    if (elements.quickFinderButton) {
+      elements.quickFinderButton.hidden = ready || showSwipe || processing;
+      elements.quickFinderButton.disabled = !recorder.supported || recorder.permissionPreparing;
+      elements.quickFinderButton.setAttribute("aria-busy", String(recorder.permissionPreparing));
+    }
+    if (elements.quickRecordStart) {
+      elements.quickRecordStart.hidden = !ready || showSwipe || processing;
+      elements.quickRecordStart.textContent = starting ? dictionary.requestingMicrophone : dictionary.record;
+      elements.quickRecordStart.disabled = starting || recorder.finalizing || Boolean(state.worker);
+    }
+    if (elements.micSwipe) {
+      elements.micSwipe.hidden = !showSwipe;
+      elements.micSwipe.setAttribute("aria-label", dictionary.swipeInstructions);
+    }
+    if (elements.micSwipeHandle) {
+      elements.micSwipeHandle.setAttribute("aria-label", dictionary.swipeInstructions);
+      elements.micSwipeHandle.disabled = !recording;
+    }
+    if (elements.micSwipeCancelLabel) elements.micSwipeCancelLabel.textContent = dictionary.swipeCancel;
+    if (elements.micSwipeAnalyzeLabel) elements.micSwipeAnalyzeLabel.textContent = dictionary.swipeAnalyze;
+    if (elements.recordButtonLabel) {
+      elements.recordButtonLabel.textContent = recording ? dictionary.stopRecording :
+        ready ? dictionary.record : dictionary.enableMicrophone;
+    }
+    if (elements.recordButtonHelp) {
+      elements.recordButtonHelp.textContent = ready ? dictionary.recordingHelp : dictionary.microphoneSetupHint;
+    }
   }
 
   function setMicrophonePermissionState(permissionState) {
@@ -841,7 +889,7 @@
       setMicrophonePermissionState("granted");
       setRecorderButtonsState("ready", false);
       updateRecordingFeedback(t("microphonePermissionReady"), 0, "ready");
-      openQuickFinder();
+      updateMicrophonePrompt();
       elements.quickRecordStart?.focus({ preventScroll: true });
     } catch (error) {
       console.error("Microphone permission setup failed:", error);
@@ -859,13 +907,13 @@
   }
 
   function setRecorderButtonsState(mode = "ready", pressed = false) {
-    recorderButtons().forEach((button) => {
+    state.recorder.swipeProcessing = mode === "processing";
+    recorderButtons().forEach(button => {
       button.classList.remove("arming", "recording", "processing");
       if (["arming", "recording", "processing"].includes(mode)) button.classList.add(mode);
-      button.setAttribute("aria-pressed", pressed ? "true" : "false");
+      button.setAttribute("aria-pressed", String(pressed));
     });
     updateMicrophonePrompt();
-    if (["arming", "recording", "processing"].includes(mode)) openQuickFinder();
   }
 
   function setCancelRecordingVisible(visible) {
@@ -874,43 +922,32 @@
     });
   }
 
+  // The recording interface is entirely inline. These compatibility methods
+  // are retained for existing analyzer callbacks, but never create overlays.
   function isQuickFinderOpen() {
-    return Boolean(elements.quickFinderPanel && !elements.quickFinderPanel.hidden && elements.quickFinderPanel.classList.contains("open"));
+    return false;
   }
 
   function openQuickFinder() {
-    if (!elements.quickFinderPanel) return;
     expandAnalysisCombo(true);
-    elements.quickFinderPanel.hidden = false;
-    elements.quickFinderButton?.setAttribute("aria-expanded", "true");
-    elements.quickFinder?.classList.add("status-open");
-    requestAnimationFrame(() => {
-      if (!elements.quickFinderPanel.hidden) elements.quickFinderPanel.classList.add("open");
-    });
+    updateMicrophonePrompt();
   }
 
   function closeQuickFinder({ restoreFocus = false, cancelRecording = true } = {}) {
-    if (!elements.quickFinderPanel) return;
     if (cancelRecording && (state.recorder.recording || state.recorder.starting)) {
       cancelMicrophoneRecording({ announce: false });
     }
-    elements.quickFinderPanel.classList.remove("open");
-    elements.quickFinderButton?.setAttribute("aria-expanded", "false");
-    elements.quickFinder?.classList.remove("status-open");
     if (!state.recorder.recording && !state.recorder.starting &&
         !state.recorder.finalizing && state.recorder.stream) {
       stopMediaStream(state.recorder.stream);
       state.recorder.stream = null;
     }
-    window.setTimeout(() => {
-      if (!elements.quickFinderPanel.classList.contains("open")) elements.quickFinderPanel.hidden = true;
-    }, 190);
     if (restoreFocus) elements.comboToggle?.focus({ preventScroll: true });
   }
 
   function expandAnalysisCombo(expanded) {
     if (!elements.comboToggle || !elements.comboOptions) return;
-    if (!expanded && (state.recorder.recording || state.recorder.starting)) return;
+    if (!expanded && (state.recorder.recording || state.recorder.starting || state.recorder.permissionPreparing || state.recorder.finalizing)) return;
     elements.comboToggle.setAttribute("aria-expanded", String(expanded));
     elements.comboOptions.hidden = !expanded;
     elements.quickFinder?.classList.toggle("expanded", expanded);
@@ -1090,6 +1127,7 @@
         button.disabled = true;
         button.classList.add("unsupported");
       });
+      updateMicrophonePrompt();
       updateRecordingFeedback(t("microphoneUnsupported"), 0, "error");
       return;
     }
@@ -1097,32 +1135,99 @@
     updateRecordingFeedback(microphonePermissionIsReady() ? t("microphonePermissionReady") : t("enableMicrophone"), 0, "ready");
   }
 
+  function resetMicSwipePosition() {
+    if (!elements.micSwipeHandle) return;
+    elements.micSwipeHandle.style.setProperty("--swipe-offset", "0px");
+    elements.micSwipeHandle.setAttribute("aria-valuenow", "0");
+    elements.micSwipe?.classList.remove("toward-cancel", "toward-analyze", "dragging");
+  }
+
   function bindMicrophoneRecorderEvents() {
-    const clickRecorder = event => {
-      event.preventDefault();
-      if (state.recorder.recording) {
-        finishMicrophoneRecording();
-        return;
-      }
-      if (state.recorder.starting || state.recorder.finalizing || state.recorder.permissionPreparing) return;
-      if (!microphonePermissionIsReady()) {
-        prepareMicrophonePermission();
-        return;
-      }
-      state.recorder.holdActive = true; // remains true until Stop is clicked
-      beginMicrophoneRecording();
-    };
-    recorderButtons().forEach(button => button.addEventListener("click", clickRecorder));
     elements.quickFinderButton?.addEventListener("click", event => {
       event.preventDefault();
-      expandAnalysisCombo(true);
-      openQuickFinder();
-      if (!microphonePermissionIsReady()) prepareMicrophonePermission();
-      else elements.quickRecordStart?.focus({ preventScroll: true });
+      if (state.recorder.permissionPreparing || state.recorder.recording || state.recorder.starting) return;
+      prepareMicrophonePermission();
     });
-    cancelRecordingButtons().forEach(button => {
-      button.addEventListener("click", () => cancelMicrophoneRecording({ announce: true }));
+
+    elements.quickRecordStart?.addEventListener("click", event => {
+      event.preventDefault();
+      if (state.recorder.starting || state.recorder.recording ||
+          state.recorder.finalizing || state.recorder.permissionPreparing || state.worker) return;
+      state.recorder.holdActive = true;
+      beginMicrophoneRecording();
     });
+
+    const handle = elements.micSwipeHandle;
+    const track = elements.micSwipe;
+    let activePointer = null;
+    let pointerStartX = 0;
+    let offset = 0;
+
+    function maxTravel() {
+      if (!track || !handle) return 0;
+      return Math.max(1, (track.getBoundingClientRect().width - handle.getBoundingClientRect().width) / 2 - 2);
+    }
+    function setOffset(value) {
+      const maximum = maxTravel();
+      offset = Math.max(-maximum, Math.min(maximum, value));
+      handle.style.setProperty("--swipe-offset", offset + "px");
+      handle.setAttribute("aria-valuenow", String(Math.round(100 * offset / maximum)));
+      track.classList.toggle("toward-cancel", offset < -maximum * 0.55);
+      track.classList.toggle("toward-analyze", offset > maximum * 0.55);
+    }
+    function completeSwipe() {
+      if (!state.recorder.recording) { resetMicSwipePosition(); return; }
+      const threshold = maxTravel() * 0.75;
+      const action = offset >= threshold ? "analyze" : offset <= -threshold ? "cancel" : null;
+      activePointer = null;
+      track.classList.remove("dragging");
+      resetMicSwipePosition();
+      if (action === "analyze") finishMicrophoneRecording();
+      else if (action === "cancel") cancelMicrophoneRecording({ announce: true });
+    }
+    handle?.addEventListener("pointerdown", event => {
+      if (!state.recorder.recording || (event.pointerType === "mouse" && event.button !== 0)) return;
+      event.preventDefault();
+      activePointer = event.pointerId;
+      pointerStartX = event.clientX;
+      offset = 0;
+      track.classList.add("dragging");
+      handle.setPointerCapture(event.pointerId);
+    });
+    handle?.addEventListener("pointermove", event => {
+      if (event.pointerId !== activePointer || !state.recorder.recording) return;
+      setOffset(event.clientX - pointerStartX);
+    });
+    handle?.addEventListener("pointerup", event => {
+      if (event.pointerId !== activePointer) return;
+      completeSwipe();
+    });
+    handle?.addEventListener("pointercancel", () => {
+      activePointer = null;
+      track.classList.remove("dragging");
+      resetMicSwipePosition();
+    });
+    handle?.addEventListener("lostpointercapture", () => {
+      if (activePointer !== null) {
+        activePointer = null;
+        track.classList.remove("dragging");
+        resetMicSwipePosition();
+      }
+    });
+    handle?.addEventListener("keydown", event => {
+      if (!state.recorder.recording) return;
+      if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+        event.preventDefault();
+        setOffset(offset + (event.key === "ArrowRight" ? 1 : -1) * maxTravel() * 0.26);
+      } else if (event.key === "Escape") {
+        event.preventDefault();
+        resetMicSwipePosition();
+      } else if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        completeSwipe();
+      }
+    });
+
     window.addEventListener("pagehide", () => {
       if (state.recorder.recording || state.recorder.starting) {
         cancelMicrophoneRecording({ announce: false });
@@ -1131,8 +1236,6 @@
         state.recorder.stream = null;
       }
     });
-    // Switching tabs does not stop recording; only Stop, Cancel or
-    // page teardown ends capture. requestAnimationFrame may pause while hidden.
   }
 
   async function beginMicrophoneRecording() {
@@ -1187,16 +1290,23 @@
         ? new MediaRecorder(stream, { mimeType: recorder.mimeType })
         : new MediaRecorder(stream);
 
-      recorder.mediaRecorder.addEventListener("dataavailable", (event) => {
-        if (event.data?.size) recorder.chunks.push(event.data);
+      // Bind callbacks to this particular recording instance. A cancelled
+      // recording can be discarded immediately; its delayed events must never
+      // contaminate a new recording that starts afterward.
+      const activeMediaRecorder = recorder.mediaRecorder;
+      activeMediaRecorder.addEventListener("dataavailable", event => {
+        if (recorder.mediaRecorder === activeMediaRecorder &&
+            !recorder.cancelled && event.data?.size) recorder.chunks.push(event.data);
       });
-      recorder.mediaRecorder.addEventListener("error", (event) => {
+      activeMediaRecorder.addEventListener("error", event => {
+        if (recorder.mediaRecorder !== activeMediaRecorder) return;
         console.error("MediaRecorder error:", event.error || event);
         recorder.cancelled = true;
         finalizeMicrophoneRecording().catch(console.error);
       });
-      recorder.mediaRecorder.addEventListener("stop", () => {
-        finalizeMicrophoneRecording().catch((error) => {
+      activeMediaRecorder.addEventListener("stop", () => {
+        if (recorder.mediaRecorder !== activeMediaRecorder) return;
+        finalizeMicrophoneRecording().catch(error => {
           console.error(error);
           updateRecordingFeedback(t("recordingFailed"), 0, "error");
         });
@@ -1207,6 +1317,7 @@
       recorder.recording = true;
       recorder.mediaRecorder.start(200);
       setRecorderButtonsState("recording", true);
+      resetMicSwipePosition();
       setCancelRecordingVisible(true);
       updateRecordingFeedback(t("recordingNow"), 0, "recording");
       startRecordingClock();
@@ -1239,6 +1350,7 @@
     if (!recorder.recording || !recorder.mediaRecorder) return;
     recorder.duration = Math.max(0, (performance.now() - recorder.startedAt) / 1000);
     recorder.recording = false; // Stop live highlighting immediately
+    resetMicSwipePosition();
     clearTimeout(recorder.maximumTimerId);
     recorder.maximumTimerId = 0;
     stopRecordingClock();
@@ -1257,24 +1369,24 @@
     const recorder = state.recorder;
     recorder.cancelled = true;
     recorder.holdActive = false;
+    resetMicSwipePosition();
     clearTimeout(recorder.maximumTimerId);
     recorder.maximumTimerId = 0;
     stopRecordingClock();
     stopMicrophoneMeter();
 
-    if (recorder.mediaRecorder && recorder.mediaRecorder.state !== "inactive") {
-      try {
-        recorder.mediaRecorder.stop();
-      } catch (error) {
-        console.warn("Could not cancel MediaRecorder cleanly:", error);
-        cleanupMicrophoneResources();
-      }
-    } else {
-      cleanupMicrophoneResources();
+    // Cancel immediately and synchronously: release the mic tracks, discard
+    // chunks and invalidate the old recorder so its later stop/data events
+    // cannot trigger analysis or disturb a subsequent recording.
+    const obsoleteRecorder = recorder.mediaRecorder;
+    if (obsoleteRecorder && obsoleteRecorder.state !== "inactive") {
+      try { obsoleteRecorder.stop(); }
+      catch (error) { console.warn("Could not cancel MediaRecorder cleanly:", error); }
     }
-
+    cleanupMicrophoneResources();
     recorder.starting = false;
     recorder.recording = false;
+    recorder.cancelled = false;
     setRecorderButtonsState("ready", false);
     setCancelRecordingVisible(false);
     if (announce) updateRecordingFeedback(t("recordingCancelled"), 0, "ready");
@@ -1541,7 +1653,18 @@
       });
     }
 
-    if (["arming", "recording", "processing", "error", "playing"].includes(mode)) openQuickFinder();
+    // A concise status is shown within the existing fixed-size microphone slot.
+    // Never open an overlay, modal or document row for recording feedback.
+    if (elements.micInlineStatus) {
+      const messageVisible = mode === "error" || mode === "processing" || mode === "arming";
+      elements.micInlineStatus.hidden = !messageVisible;
+      const concise = mode === "processing" ? t("inlineProcessing")
+        : message === t("microphoneDenied") ? t("inlineMicDenied")
+        : message === t("tapToHear") ? t("inlineTapPlay")
+        : mode === "error" ? t("inlineMicFailed") : message;
+      elements.micInlineStatus.textContent = messageVisible ? concise : "";
+      elements.micInlineStatus.title = messageVisible ? message : "";
+    }
   }
 
   function formatRecordingTime(seconds) {
@@ -3480,9 +3603,11 @@
         state.recorder.starting ||
         state.recorder.finalizing;
     }
-    recorderButtons().forEach((button) => {
-      button.disabled = !state.recorder.supported || state.recorder.finalizing || state.recorder.permissionPreparing || (Boolean(state.worker) && !state.recorder.recording);
+    recorderButtons().forEach(button => {
+      button.disabled = !state.recorder.supported || state.recorder.finalizing ||
+        state.recorder.permissionPreparing || (Boolean(state.worker) && !state.recorder.recording);
     });
+    updateMicrophonePrompt();
   }
 
   function terminateWorker() {

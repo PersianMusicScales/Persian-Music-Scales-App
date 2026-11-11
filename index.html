@@ -76,8 +76,8 @@
   </script>
 
   <!-- Link to External CSS -->
-  <link rel="stylesheet" href="csss/indexstyle.css?v=20261111-avazha-stable-toolbar" />
-  <link rel="stylesheet" href="csss/audio-analyzer.css?v=20261111-inline-swipe-pr10" />
+  <link rel="stylesheet" href="csss/indexstyle.css?v=20261111-result-nav-pr" />
+  <link rel="stylesheet" href="csss/audio-analyzer.css?v=20261111-result-nav-pr" />
 
   <!-- Tap Overlay CSS -->
   <style>
@@ -231,6 +231,14 @@
       <div class="diatonic-scale" id="diatonicScale"></div>
       <div class="outer-scale" id="outerScale"></div>
       <span id="liveDetectedNote" class="live-detected-note" aria-hidden="true" hidden></span>
+      <!-- The detected-scale shortcut floats at the circle center only when a
+           successful result exists. It never changes the circle geometry. -->
+      <button id="analysisMiniBadge" class="analysis-mini-badge" type="button"
+              aria-controls="audioAnalyzerDrawer" aria-haspopup="dialog"
+              aria-label="View detected-scale analysis results">
+        <strong id="analysisMiniBadgeText" aria-live="polite"></strong>
+        <span id="analysisMiniBadgeAction" class="analysis-mini-badge-action">View results</span>
+      </button>
 
     </div>
 
@@ -290,9 +298,6 @@
             <button id="openAudioAnalyzer" class="analysis-combo-option analyzer-launch-button" type="button"
                     aria-haspopup="dialog" aria-controls="audioAnalyzerDrawer">Analyze Track</button>
           </div>
-        </div>
-        <div id="analysisMiniBadge" class="analysis-mini-badge" aria-live="polite">
-          <strong id="analysisMiniBadgeText"></strong>
         </div>
       </div>
     </div>
@@ -554,6 +559,10 @@
           <button id="melodyPlayPauseButton" class="analyzer-button melody" type="button" disabled>♫ Simplified Melody</button>
           <button id="trackStopButton" class="analyzer-button ghost" type="button" disabled>■ Stop</button>
         </div>
+        <label class="analyzer-loop-option" for="analysisLoopEnabled">
+          <input id="analysisLoopEnabled" type="checkbox" checked>
+          <span id="analysisLoopLabel">↻ Loop playback</span>
+        </label>
 
         <div class="analyzer-status-row" aria-live="polite">
           <span id="analysisStatus">Load a track to begin.</span>
@@ -781,7 +790,7 @@
   <script src="src/key-signature.js"></script>
   <script src="src/modal-roles.js"></script>
   <script src="src/index.js?v=20261111-avazha-stable-toolbar"></script>
-  <script src="src/audio-analyzer.js?v=20261111-inline-swipe-pr10"></script>
+  <script src="src/audio-analyzer.js?v=20261111-result-nav-pr"></script>
 </body>
 </html>
 

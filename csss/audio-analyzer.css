@@ -2462,3 +2462,70 @@ html { scrollbar-gutter: stable; }
   .mic-swipe-live-dot { animation: none; }
   .mic-swipe-handle { transition: none; }
 }
+
+/* Results shortcut: painted over the center of the existing circle, never
+   part of the action deck or the document's layout calculations. */
+#circleContainer > #analysisMiniBadge {
+  position: absolute;
+  inset: auto;
+  top: 50%;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  z-index: 40;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  width: min(210px, 56%);
+  max-width: 56%;
+  min-height: 57px;
+  margin: 0;
+  padding: 9px 10px;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(166, 106, 0, .55);
+  border-radius: 14px;
+  background: rgba(255, 251, 239, .96);
+  color: #23324b;
+  font: 700 clamp(.65rem, 1.1vw, .86rem)/1.3 Arial, sans-serif;
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  pointer-events: auto;
+  cursor: pointer;
+  touch-action: manipulation;
+  box-shadow: 0 4px 15px rgba(0,0,0,.18);
+}
+#circleContainer > #analysisMiniBadge:not(.visible) { display: none; }
+#circleContainer > #analysisMiniBadge.visible { display: inline-flex; }
+#circleContainer > #analysisMiniBadge strong { color: #1a3b66; }
+#circleContainer > #analysisMiniBadge .analysis-mini-badge-action {
+  display: block;
+  color: #79572d;
+  font-weight: 500;
+  font-size: .9em;
+}
+#circleContainer > #analysisMiniBadge:hover { background: #fffaf0; }
+#circleContainer > #analysisMiniBadge:focus-visible {
+  outline: 3px solid #e6b32a;
+  outline-offset: 3px;
+}
+.analyzer-loop-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  margin-top: 10px;
+  color: #263e52;
+  font: 700 .8rem/1.3 Arial, sans-serif;
+  cursor: pointer;
+  user-select: none;
+}
+.analyzer-loop-option input {
+  width: 17px;
+  height: 17px;
+  accent-color: #774953;
+}
+.analyzer-loop-option input:focus-visible {
+  outline: 2px solid #e6b32a;
+  outline-offset: 2px;
+}

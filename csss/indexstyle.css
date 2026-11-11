@@ -1499,3 +1499,15 @@ footer {
 #avazhaLabel .avazha-selected-tone {
   font-size: .80em;
 }
+
+/* Short desktop browser tabs have less usable height because of browser chrome.
+   Keep the full key-signature / player / analyzer row above the fixed nav on
+   initial load. Standalone desktop and mobile PWAs never match this rule.
+   CSS sizing is stable throughout all menus and playback interactions. */
+@media screen and (display-mode: browser) and (min-width: 769px) {
+  :root {
+    --chart-size: min(20vw, max(140px, calc((100dvh - 395px) / 1.5)));
+    --outer-scale-size: calc(var(--chart-size) * 1.5);
+  }
+  .play-button-container { margin-top: 9px; }
+}

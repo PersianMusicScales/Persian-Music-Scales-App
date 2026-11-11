@@ -486,6 +486,7 @@
   breadcrumbs.appendChild(languageSelect);
 
   /* Retain original English nodes for reversible language switches. */
+  const englishTitle = document.title;
   const originalNodes = [];
   const walker = document.createTreeWalker(wrap, NodeFilter.SHOW_TEXT);
   let node;
@@ -523,10 +524,9 @@
       n.nodeValue = begin + translatedText(value, lang) + end;
     }
 
-    if (lang !== "en") {
-      const heading = wrap.querySelector("h1");
-      if (heading) document.title = heading.textContent.trim() + " – Persian Music Scales";
-    }
+    const heading = wrap.querySelector("h1");
+    document.title = lang === "en" ? englishTitle :
+      heading ? heading.textContent.trim() + " – Persian Music Scales" : englishTitle;
     document.querySelectorAll("a[href]").forEach(function (anchor) {
       const target = new URL(anchor.getAttribute("href"), window.location.href);
       if (target.origin !== window.location.origin ||

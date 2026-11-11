@@ -848,7 +848,9 @@
       const denied = error?.name === "NotAllowedError" || error?.name === "SecurityError";
       setMicrophonePermissionState(denied ? "denied" : "unknown");
       setRecorderButtonsState("ready", false);
-      updateRecordingFeedback(t(denied ? "microphoneDenied" : "recordingFailed"), 0, "error");
+      updateRecordingFeedback(window.location.protocol === "file:"
+        ? t("localServerRequired")
+        : t(denied ? "microphoneDenied" : "recordingFailed"), 0, "error");
     } finally {
       recorder.permissionPreparing = false;
       window.setTimeout(() => { recorder.ignoreRelease = false; }, 120);
@@ -1223,7 +1225,9 @@
       setRecorderButtonsState("ready", false);
       const denied = error?.name === "NotAllowedError" || error?.name === "SecurityError";
       if (denied) setMicrophonePermissionState("denied");
-      updateRecordingFeedback(t(denied ? "microphoneDenied" : "recordingFailed"), 0, "error");
+      updateRecordingFeedback(window.location.protocol === "file:"
+        ? t("localServerRequired")
+        : t(denied ? "microphoneDenied" : "recordingFailed"), 0, "error");
       updateButtons();
     }
   }

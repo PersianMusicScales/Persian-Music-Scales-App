@@ -23,6 +23,8 @@
 
   const I18N = {
     en: {
+      stopAndHide: "■ Stop & hide",
+      resultsShortcut: "Results",
       viewResults: "View results",
       loopPlayback: "↻ Loop playback",
       inlineMicDenied: "Access denied",
@@ -186,6 +188,8 @@
       gapClear: "It leads the next candidate by {gap} percentage points.",
     },
     fr: {
+      stopAndHide: "■ Arrêter et masquer",
+      resultsShortcut: "Résultats",
       viewResults: "Voir les résultats",
       loopPlayback: "↻ Lecture en boucle",
       inlineMicDenied: "Accès refusé",
@@ -349,6 +353,8 @@
       gapClear: "Il devance le candidat suivant de {gap} points.",
     },
     fa: {
+      stopAndHide: "■ توقف و بستن",
+      resultsShortcut: "نتایج",
       viewResults: "نمایش نتایج",
       loopPlayback: "↻ پخش پیوسته",
       inlineMicDenied: "دسترسی رد شد",
@@ -554,6 +560,7 @@
     selectedCandidate: null,
     automaticCandidate: null,
     selectionSource: "automatic",
+    analysisBadgeCollapsed: false,
     modalFeatures: null,
     activeEventIndex: -1,
     animationFrame: 0,
@@ -749,6 +756,10 @@
     badge: $("#analysisMiniBadge"),
     badgeText: $("#analysisMiniBadgeText"),
     badgeAction: $("#analysisMiniBadgeAction"),
+    badgeView: $("#analysisViewResults"),
+    badgeStop: $("#analysisStopDismiss"),
+    badgeChip: $("#analysisCollapsedChip"),
+    badgeChipLabel: $("#analysisCollapsedChipLabel"),
   };
 
   if (!elements.launch || !elements.drawer || !elements.audio) {
@@ -996,10 +1007,25 @@
       closeQuickFinder({ restoreFocus: false, cancelRecording: false });
       openDrawer({ preferResults: true });
     });
-    elements.badge?.addEventListener("click", (event) => {
-      // The shortcut is inside the circle; don't rotate or retune it.
+    elements.badgeView?.addEventListener("click", (event) => {
+      event.stopPropagation(); // Don't rotate the underlying circle.
+      if (state.analysis?.events?.length) openDrawer({ preferResults: true });
+    });
+    elements.badgeStop?.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (!state.analysis?.events?.length) return;
+      stopPlayback(); // Stops loop, audio, highlighted notes and timeline animation.
+      state.analysisBadgeCollapsed = true;
+      updateBadgeVisibility();
+      elements.badgeChip?.focus({ preventScroll: true });
+    });
+    elements.badgeChip?.addEventListener("click", (event) => {
       event.stopPropagation();
       if (state.analysis?.events?.length) openDrawer({ preferResults: true });
+    });
+    // Prevent pointer gestures on these controls from reaching circle drag handlers.
+    [elements.badgeView, elements.badgeStop, elements.badgeChip].forEach((button) => {
+      button?.addEventListener("pointerdown", (event) => event.stopPropagation());
     });
     bindQuickFinderEvents();
     elements.close.addEventListener("click", closeDrawer);
@@ -1770,6 +1796,8 @@
     elements.stop.textContent = dictionary.stop;
     if (elements.loopLabel) elements.loopLabel.textContent = dictionary.loopPlayback;
     if (elements.badgeAction) elements.badgeAction.textContent = dictionary.viewResults;
+    if (elements.badgeStop) elements.badgeStop.textContent = dictionary.stopAndHide;
+    if (elements.badgeChipLabel) elements.badgeChipLabel.textContent = dictionary.resultsShortcut;
     if (state.selectedCandidate) updateBadgeAccessibility();
     if (elements.detailValue && elements.detail) {
       elements.detailValue.textContent = `${Math.round(Number(elements.detail.value) || 0)}%`;
@@ -1938,7 +1966,10 @@
 
       const levelProfile = measureAudioBufferLevel(state.audioBuffer);
       if (state.inputOrigin === "microphone") {
-        state.playbackGain = calculateAdaptivePlaybackGain(levelProfile);
+        state.playbackGain = calculateIOSMicrophonePlaybackGain(
+          levelProfile,
+          calculateAdaptivePlaybackGain(levelProfile)
+        );
         state.analysisGain = calculateIOSMicrophoneAnalysisGain(
           levelProfile,
           clamp(state.playbackGain, 0.7, 3.5)
@@ -2274,10 +2305,19 @@
     return diverse;
   }
 
+  function updateBadgeVisibility() {
+    const ready = Boolean(state.analysis?.events?.length && state.selectedCandidate);
+    elements.badge?.classList.toggle("visible", ready && !state.analysisBadgeCollapsed);
+    if (elements.badgeChip) elements.badgeChip.hidden = !(ready && state.analysisBadgeCollapsed);
+  }
+
   function updateBadgeAccessibility() {
     if (!elements.badge || !elements.badgeText) return;
-    elements.badge.setAttribute("aria-label",
-      `${elements.badgeText.textContent}. ${t("viewResults")}`);
+    const detail = elements.badgeText.textContent;
+    elements.badge.setAttribute("aria-label", detail);
+    elements.badgeView?.setAttribute("aria-label", `${detail}. ${t("viewResults")}`);
+    elements.badgeChip?.setAttribute("aria-label", `${detail}. ${t("viewResults")}`);
+    elements.badgeChip?.setAttribute("title", detail);
   }
 
   function loopPlaybackEnabled() {
@@ -2327,9 +2367,9 @@
     renderAnalysisExplanation(selected, candidates);
     syncManualControls(selected);
 
-    elements.badge.classList.add("visible");
     elements.badgeText.textContent = `${state.selectionSource === "automatic" ? t("badge") : t("selectedLabel")}: ${scaleDisplayName(selected.scaleName)} · ${tonicName} (${selected.matchPercent}%)`;
     updateBadgeAccessibility();
+    updateBadgeVisibility();
     if (elements.quickFinderHelp) {
       elements.quickFinderHelp.textContent = `${state.selectionSource === "automatic" ? t("badge") : t("selectedLabel")}: ${scaleDisplayName(selected.scaleName)} · ${tonicName}`;
     }
@@ -3145,6 +3185,19 @@
     return Math.max(previousGain, clamp(Math.min(desiredRms / rms, headroom), 1, 10));
   }
 
+  // Boost the existing Web Audio playback path for genuinely quiet iPhone
+  // microphone recordings. This is gain-only, not a rewrite of recorded PCM:
+  // the captured Blob, decoded AudioBuffer, and offline pitch analysis stay
+  // unaltered. Require measurable signal and cap at available peak headroom.
+  function calculateIOSMicrophonePlaybackGain({ peak = 0, rms = 0 } = {}, baselineGain = 1) {
+    if (!IS_IOS || !Number.isFinite(peak) || !Number.isFinite(rms) ||
+        peak < 0.001 || rms < 0.0003 || rms >= 0.02) return baselineGain;
+    const targetRms = 0.075;
+    const peakHeadroom = 0.85 / peak;
+    const safeGain = clamp(Math.min(targetRms / rms, peakHeadroom), 0.5, 10);
+    return Math.min(Math.max(baselineGain, safeGain), Math.max(0.5, peakHeadroom));
+  }
+
   function calculateAdaptivePlaybackGain({ peak = 0, rms = 0 } = {}) {
     if (peak <= 0.0001 || rms <= 0.00001) return 1;
     const targetPeak = 0.9;
@@ -3158,7 +3211,8 @@
     const context = state.visualizer.originalContext;
     const gainNode = state.visualizer.originalGain;
     if (!context || !gainNode) return;
-    const value = clamp(Number(state.playbackGain) || 1, 0.5, 4);
+    const maxGain = IS_IOS && state.inputOrigin === "microphone" ? 10 : 4;
+    const value = clamp(Number(state.playbackGain) || 1, 0.5, maxGain);
     gainNode.gain.cancelScheduledValues(context.currentTime);
     gainNode.gain.setTargetAtTime(value, context.currentTime, 0.025);
   }
@@ -3693,7 +3747,9 @@
     updateNowPlaying(null);
     clearCircleHighlights();
     if (clearBadge) {
+      state.analysisBadgeCollapsed = false;
       elements.badge.classList.remove("visible");
+      if (elements.badgeChip) elements.badgeChip.hidden = true;
       elements.quickFinderButton?.classList.remove("has-result");
       if (elements.quickFinderHelp) elements.quickFinderHelp.textContent = t("quickHoldHint");
     }

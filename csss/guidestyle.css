@@ -34,12 +34,7 @@ body::before {
   z-index: -1;
 }
 
-/* Dark-mode overlay */
-@media (prefers-color-scheme: dark) {
-  body::before {
-    background: rgba(140, 140, 140, 0.75);
-  }
-}
+/* Background overlay intentionally stays constant across system themes. */
 
 header {
     position: relative; /* Establish positioning context */

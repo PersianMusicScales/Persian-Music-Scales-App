@@ -1118,6 +1118,7 @@
         button.disabled = true;
         button.classList.add("unsupported");
       });
+      updateMicrophonePrompt();
       updateRecordingFeedback(t("microphoneUnsupported"), 0, "error");
       return;
     }
@@ -1150,6 +1151,7 @@
     const handle = elements.micSwipeHandle;
     const track = elements.micSwipe;
     let activePointer = null;
+    let pointerStartX = 0;
     let offset = 0;
 
     function maxTravel() {
@@ -1169,6 +1171,7 @@
       const threshold = maxTravel() * 0.75;
       const action = offset >= threshold ? "analyze" : offset <= -threshold ? "cancel" : null;
       activePointer = null;
+      track.classList.remove("dragging");
       resetMicSwipePosition();
       if (action === "analyze") finishMicrophoneRecording();
       else if (action === "cancel") cancelMicrophoneRecording({ announce: true });
@@ -1177,13 +1180,14 @@
       if (!state.recorder.recording || (event.pointerType === "mouse" && event.button !== 0)) return;
       event.preventDefault();
       activePointer = event.pointerId;
+      pointerStartX = event.clientX;
       offset = 0;
+      track.classList.add("dragging");
       handle.setPointerCapture(event.pointerId);
     });
     handle?.addEventListener("pointermove", event => {
       if (event.pointerId !== activePointer || !state.recorder.recording) return;
-      const rect = track.getBoundingClientRect();
-      setOffset(event.clientX - (rect.left + rect.width / 2));
+      setOffset(event.clientX - pointerStartX);
     });
     handle?.addEventListener("pointerup", event => {
       if (event.pointerId !== activePointer) return;
@@ -1191,10 +1195,15 @@
     });
     handle?.addEventListener("pointercancel", () => {
       activePointer = null;
+      track.classList.remove("dragging");
       resetMicSwipePosition();
     });
     handle?.addEventListener("lostpointercapture", () => {
-      if (activePointer !== null) { activePointer = null; resetMicSwipePosition(); }
+      if (activePointer !== null) {
+        activePointer = null;
+        track.classList.remove("dragging");
+        resetMicSwipePosition();
+      }
     });
     handle?.addEventListener("keydown", event => {
       if (!state.recorder.recording) return;

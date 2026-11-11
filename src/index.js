@@ -681,6 +681,47 @@ function populateAvazhaDynamicColumn() {
   });
 }
 
+const referenceIntroductionTranslations = {
+  en: {
+    title: "Persian music theory reference and interactive tools",
+    first: "Persian Music Scales is an educational web application for exploring pitch and interval relationships used in Persian classical music. It includes interactive models for Shur, Nava, Segah, Homayoun, Esfahan, Chahargah and Mahur / Rast Panjgah, together with transposition, scale playback, a chromatic tuner and browser-based melody analysis.",
+    second: "The numerical scale models describe pitch collections used by this application. They are not complete definitions of a dastgah or gusheh: modal identity can also depend on melodic hierarchy, finalis, shahed, characteristic phrases, variable tones, modulation, context and performance practice.",
+    links: ["Reference", "Methodology", "Audio analysis", "Glossary", "Dataset"]
+  },
+  fr: {
+    title: "Références théoriques et outils interactifs de musique persane",
+    first: "Persian Music Scales est une application pédagogique consacrée aux hauteurs et aux intervalles de la musique classique persane. Elle présente des modèles interactifs de Šur, Navā, Segāh, Homāyun, Esfahān, Čahārgāh et Māhur / Rāst-Panjgāh, ainsi que des outils de transposition, d’écoute des gammes, d’accordage chromatique et d’analyse mélodique dans le navigateur.",
+    second: "Les modèles numériques décrivent les collections de hauteurs employées par l’application ; ils ne définissent pas à eux seuls un dastgāh ou un guše. L’identité modale dépend aussi de la hiérarchie mélodique, de la note finale (finalis), du šāhed, des phrases caractéristiques, des degrés mobiles, des modulations, du contexte et des pratiques d’interprétation.",
+    links: ["Documentation", "Méthodologie", "Analyse audio", "Glossaire", "Données"]
+  },
+  fa: {
+    title: "منابع نظری موسیقی دستگاهی ایران و ابزارهای تعاملی",
+    first: "«گام‌های موسیقی ایرانی» برنامه‌ای آموزشی برای بررسی درجات صوتی و روابط فاصله‌ای در موسیقی دستگاهی ایران است. این برنامه مدل‌های تعاملیِ شور، نوا، سه‌گاه، همایون، اصفهان، چهارگاه و ماهور / راست‌پنجگاه را به همراه ابزارهای انتقال گام، پخش صوتی، تیونر کروماتیک و تحلیل ملودی در مرورگر ارائه می‌کند.",
+    second: "مدل‌های عددیِ برنامه، مجموعهٔ درجات صوتی را توصیف می‌کنند، نه ساختار کامل یک دستگاه یا گوشه را. هویت مُدال همچنین به سلسله‌مراتب ملودیک، نت پایانی، شاهد، جمله‌های شاخص، درجات متغیر، مدگردی، بافت موسیقایی و شیوهٔ اجرا وابسته است.",
+    links: ["منابع", "روش‌شناسی", "تحلیل صوت", "واژه‌نامه", "مجموعه‌داده"]
+  }
+};
+
+function updateReferenceIntroduction() {
+  const copy = referenceIntroductionTranslations[currentLanguage] || referenceIntroductionTranslations.en;
+  const section = document.querySelector(".project-introduction");
+  if (!section) return;
+  section.lang = currentLanguage;
+  section.dir = currentLanguage === "fa" ? "rtl" : "ltr";
+  const title = document.getElementById("projectIntroductionTitle");
+  const paragraphs = section.querySelectorAll(":scope > p");
+  const anchors = section.querySelectorAll(".project-reference-links a");
+  title.textContent = copy.title;
+  if (paragraphs[0]) paragraphs[0].textContent = copy.first;
+  if (paragraphs[1]) paragraphs[1].textContent = copy.second;
+  anchors.forEach((anchor, index) => {
+    anchor.textContent = copy.links[index];
+    const url = new URL(anchor.getAttribute("href"), document.baseURI);
+    url.searchParams.set("lang", currentLanguage);
+    anchor.href = url.href;
+  });
+}
+
 /* ========== Update UI Controls (Translation) ========== */
 function updateUIControls() {
   const { scales, playButton, title, bottomNav, avazha, avazhaItems, installPopup, myAppLabel } =
@@ -709,6 +750,8 @@ function updateUIControls() {
     });
     label.textContent = text;
   });
+
+  updateReferenceIntroduction();
 
   // Update Avazha label
   updateAvazhaLabel();
@@ -750,6 +793,8 @@ function updatePopupContent() {
 /* ---------- Language Selector Change ---------- */
 languageSelector.addEventListener("change", () => {
   currentLanguage = languageSelector.value;
+  document.documentElement.lang = currentLanguage;
+  try { localStorage.setItem("persianMusicScalesLanguage", currentLanguage); } catch (_) {}
   updateStaticLabels();
   updateDynamicLabels();
   updateScaleTextSummary();
@@ -956,16 +1001,14 @@ function playOuterScale() {
 playScaleBtn.addEventListener("click", playOuterScale);
 
 /* ========== 4) Language Detection Script ========== */
-const userLang = navigator.language || navigator.languages[0];
+const userLang = (navigator.language || "en").toLowerCase();
 const langSelector = document.getElementById("languageSelector");
-
-if (userLang.includes("fa")) {
-  langSelector.value = "fa"; // Set to Persian
-} else if (userLang.includes("fr")) {
-  langSelector.value = "fr"; // Set to French
-} else {
-  langSelector.value = "en"; // Default to English
-}
+const requestedLang = new URLSearchParams(window.location.search).get("lang");
+let storedLang = "";
+try { storedLang = localStorage.getItem("persianMusicScalesLanguage") || ""; } catch (_) {}
+const browserLang = userLang.startsWith("fa") ? "fa" : userLang.startsWith("fr") ? "fr" : "en";
+langSelector.value = ["en", "fr", "fa"].includes(requestedLang) ? requestedLang :
+  ["en", "fr", "fa"].includes(storedLang) ? storedLang : browserLang;
 // Trigger language switch based on selection
 langSelector.dispatchEvent(new Event("change"));
 

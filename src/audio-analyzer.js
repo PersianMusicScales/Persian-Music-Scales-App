@@ -877,8 +877,11 @@
     if (!elements.quickFinderPanel) return;
     expandAnalysisCombo(true);
     elements.quickFinderPanel.hidden = false;
+    elements.quickFinderButton?.setAttribute("aria-expanded", "true");
     elements.quickFinder?.classList.add("status-open");
-    requestAnimationFrame(() => elements.quickFinderPanel.classList.add("open"));
+    requestAnimationFrame(() => {
+      if (!elements.quickFinderPanel.hidden) elements.quickFinderPanel.classList.add("open");
+    });
   }
 
   function closeQuickFinder({ restoreFocus = false, cancelRecording = true } = {}) {
@@ -887,6 +890,7 @@
       cancelMicrophoneRecording({ announce: false });
     }
     elements.quickFinderPanel.classList.remove("open");
+    elements.quickFinderButton?.setAttribute("aria-expanded", "false");
     elements.quickFinder?.classList.remove("status-open");
     if (!state.recorder.recording && !state.recorder.starting &&
         !state.recorder.finalizing && state.recorder.stream) {
@@ -1832,7 +1836,11 @@
 
     if (!result.events?.length || result.voicedFrameCount < 4) {
       setStatus(t("noVoiced"), 0, true);
-      if (state.inputOrigin === "microphone") updateRecordingFeedback(t("noVoiced"), 0, "error");
+      if (state.inputOrigin === "microphone") {
+        updateRecordingFeedback(t("noVoiced"), 0, "error");
+        closeQuickFinder({ restoreFocus: false, cancelRecording: false });
+        openDrawer(); // show the diagnostic instead of hiding the outcome
+      }
       updateButtons();
       return;
     }

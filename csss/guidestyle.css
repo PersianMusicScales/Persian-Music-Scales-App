@@ -134,3 +134,7 @@ section {
 section.active {
     display: block;
 }
+
+/* The reference links are shared by all language panels and remain visible. */
+section.guide-reference-links { display: block; }
+html[dir="rtl"] .container { direction: rtl; text-align: right; }

@@ -1868,49 +1868,66 @@
     );
     updateButtons();
 
-    if (request.loadGeneration === state.loadGeneration && state.inputOrigin === "microphone") {
-      closeQuickFinder({ restoreFocus: false, cancelRecording: false });
-      openDrawer(); // display ranked analysis, no automatic looping playback
-    } else if (request.autoStart && request.loadGeneration === state.loadGeneration) {
-      startAutomaticPlaybackAndClose();
+    // Recording, uploaded audio and the example all follow the same path.
+    // selectCandidate() has already updated the circle and Key Signature via
+    // applyCandidateToCircle() before synchronized playback begins.
+    if (request.autoStart && request.loadGeneration === state.loadGeneration) {
+      if (state.inputOrigin === "microphone") {
+        closeQuickFinder({ restoreFocus: false, cancelRecording: false });
+      }
+      startAutomaticPlaybackAndClose().catch((error) => {
+        console.error("Automatic playback after analysis failed:", error);
+        showPlaybackRequiresUserTap();
+      });
     }
   }
 
+  function showPlaybackRequiresUserTap() {
+    // Browsers may refuse autoplay after long asynchronous analysis.
+    // The drawer is the existing accessible playback UI; show its Play
+    // control rather than silently failing or claiming that audio started.
+    state.audioOutput.needsUserTap = true;
+    setStatus(t("tapToHear"), 100);
+    if (state.inputOrigin === "microphone") {
+      updateRecordingFeedback(t("tapToHear"), 0, "error");
+    }
+    elements.playPause.textContent = t("play");
+    elements.playPause.classList.remove("playing");
+    elements.playPause.classList.add("attention");
+    openDrawer();
+    elements.playPause.focus({ preventScroll: true });
+  }
+
   async function startAutomaticPlaybackAndClose() {
+    if (!state.analysis?.events?.length || !state.audioBuffer) return;
+    // Keep the selected modal model and notation in sync with the audio.
+    if (state.selectedCandidate) applyCandidateToCircle(state.selectedCandidate);
     state.cursorTime = 0;
+    state.activeEventIndex = -1;
     if (Number.isFinite(elements.audio.duration)) elements.audio.currentTime = 0;
     let started = false;
 
     try {
+      // Playback is attempted after every successful automatic analysis.
+      // AudioContext may remain suspended until a direct user gesture.
       await resumeOriginalAudioOutputIfPossible();
       started = await startBufferPlayback(0, {
-        loop: state.inputOrigin === "microphone",
-        automatic: state.inputOrigin === "microphone",
+        loop: false,
+        automatic: false,
       });
     } catch (error) {
       console.info("Automatic playback was blocked by the browser:", error);
     }
 
     if (!started) {
-      state.audioOutput.needsUserTap = true;
-      const message = (IS_IOS && IS_STANDALONE) ? t("tapToHear") : t("autoplayBlocked");
-      setStatus(message, 100);
-      if (state.inputOrigin === "microphone") {
-        updateRecordingFeedback(message, 0, "error");
-      }
-      elements.playPause.textContent = t("play");
-      elements.playPause.classList.remove("playing");
-      elements.playPause.classList.add("attention");
-      elements.playPause.focus({ preventScroll: true });
+      showPlaybackRequiresUserTap();
       return;
     }
-
     elements.playPause.classList.remove("attention");
-    if (state.inputOrigin === "microphone") {
-      updateRecordingFeedback(t("loopingPlayback"), 0, "playing");
-      window.setTimeout(() => closeQuickFinder({ restoreFocus: false, cancelRecording: false }), 2100);
-    }
-    scheduleAutomaticDrawerClose(2200);
+    // The playback animation updates the existing 24-position circle labels
+    // from the timestamped detected melody; reveal it for all input types.
+    updatePlaybackFrame();
+    scheduleAutomaticDrawerClose(950);
   }
 
   function applyAnalyzerDefaults({ announce = false } = {}) {
@@ -2503,7 +2520,7 @@
       }
 
       const started = await startBufferPlayback(state.cursorTime, {
-        loop: state.inputOrigin === "microphone",
+        loop: false,
         automatic: false,
       });
       if (!started) {

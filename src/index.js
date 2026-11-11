@@ -380,6 +380,38 @@ if (modalRoleFloat && modalRoleButton && modalRolePopover) {
   });
 }
 
+/* Avaz colors are an interface aid, not musical-function classifications.
+ * The outer-circle tonal is the Avaz's existing scale degree (1–4), so the
+ * highlight follows transposition and enharmonic / language re-labeling. */
+const avazTonalDegree = Object.freeze({
+  abuAta: 1, bayatTork: 2, afshari: 3, dashti: 4
+});
+
+function updateAvazTonalHighlight() {
+  const notes = Array.from(outerScale.querySelectorAll(".dynamic-label"));
+  notes.forEach((note) => {
+    note.classList.remove("avaz-tonal-highlight");
+    delete note.dataset.avazKey;
+  });
+  if (scaleSelector.value !== "Shur" || !activeAvazRole) return;
+
+  const degree = avazTonalDegree[activeAvazRole];
+  if (!Number.isInteger(degree) || !notes[degree]) return;
+  const note = notes[degree];
+  note.classList.add("avaz-tonal-highlight");
+  note.dataset.avazKey = activeAvazRole;
+  const name = translations[currentLanguage].avazhaItems[activeAvazRole] || activeAvazRole;
+  const tonal = note.textContent.trim();
+  const annotation = currentLanguage === "fa"
+    ? `نت مرتبط با ${name}: ${tonal}`
+    : currentLanguage === "fr"
+      ? `Note associée à ${name} : ${tonal}`
+      : `Tonal note for ${name}: ${tonal}`;
+  note.title = note.title ? note.title + " · " + annotation : annotation;
+  note.setAttribute("role", "img");
+  note.setAttribute("aria-label", note.title);
+}
+
 function updateModalRoleMarkers() {
   const legend = document.getElementById("modalRoleLegend");
   if (!legend) return;
@@ -495,6 +527,9 @@ function updateModalRoleMarkers() {
     detail.appendChild(sources);
   }
   legend.appendChild(detail);
+  // Apply only after modal-role markers so gold Shahed and blue Finalis
+  // symbols and accessibility labels remain intact.
+  updateAvazTonalHighlight();
 
 }
 
@@ -674,12 +709,17 @@ avazItems.forEach((item) => {
   item.setAttribute("role", "button");
   item.setAttribute("tabindex", "0");
   item.setAttribute("aria-pressed", "false");
+  item.dataset.avazKey = key;
   const chooseAvaz = () => {
     activeAvazRole = activeAvazRole === key ? null : key;
     avazItems.forEach((other) => {
       const isSelected = activeAvazRole === other.getAttribute("data-translate").split(".")[1];
       other.classList.toggle("active-modal-avaz", isSelected);
       other.setAttribute("aria-pressed", String(isSelected));
+    });
+    Array.from(avazhaDynamicColumn.children).forEach((toneItem, index) => {
+      toneItem.classList.toggle("active-modal-avaz",
+        activeAvazRole === avazItems[index]?.dataset.avazKey);
     });
     // Selection is complete; collapse the menu so its list no longer
     // covers the circle's accessible modal-note help control on mobile.
@@ -736,10 +776,15 @@ function populateAvazhaDynamicColumn() {
   // Extract the second, third, fourth, and fifth labels
   const labelsArray = Array.from(dynamicLabels).slice(1, 5);
 
-  labelsArray.forEach((label) => {
+  labelsArray.forEach((label, index) => {
     const displayText = label.innerHTML;
     const itemDiv = document.createElement("div");
     itemDiv.classList.add("avazha-item");
+    const key = avazItems[index]?.dataset.avazKey;
+    if (key) {
+      itemDiv.dataset.avazKey = key;
+      itemDiv.classList.toggle("active-modal-avaz", activeAvazRole === key);
+    }
     itemDiv.innerHTML = displayText;
     avazhaDynamicColumn.appendChild(itemDiv);
   });
@@ -848,6 +893,7 @@ function updateAvazhaLabel() {
   const avazhaLabel = document.getElementById("avazhaLabel");
   const localized = translations[currentLanguage];
   if (!activeAvazRole || scaleSelector.value !== "Shur") {
+    delete avazhaButton.dataset.avazKey;
     avazhaLabel.textContent = localized.avazha;
     avazhaButton.setAttribute("aria-label", localized.avazha);
     return;
@@ -855,6 +901,7 @@ function updateAvazhaLabel() {
 
   // The tonal is derived from the currently rotated/transposed outer scale,
   // not a fixed note assigned to the modal name.
+  avazhaButton.dataset.avazKey = activeAvazRole;
   const selectedIndex = avazItems.findIndex(item =>
     item.getAttribute("data-translate") === "avazha." + activeAvazRole
   );

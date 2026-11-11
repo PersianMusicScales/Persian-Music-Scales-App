@@ -1511,3 +1511,86 @@ footer {
   }
   .play-button-container { margin-top: 9px; }
 }
+
+/* Device-specific installation invitations: never show the phone icon by
+   default, and keep the desktop notice inside the existing header row. */
+#myAppContainer { display: none; }
+.desktop-install-notice {
+  display: flex;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: 7px;
+  box-sizing: border-box;
+  max-width: min(36vw, 420px);
+  min-width: 0;
+  height: 36px;
+  margin-inline-start: auto;
+  margin-inline-end: 12px;
+  padding: 4px 7px;
+  border: 1px solid rgba(72, 85, 101, .35);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, .91);
+  color: #263542;
+  font: 12px/1.2 Arial, sans-serif;
+}
+.desktop-install-notice[hidden],
+.desktop-install-notice [hidden] { display: none !important; }
+.desktop-install-symbol {
+  flex: 0 0 25px;
+  width: 25px;
+  height: 25px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  background: #e4e7f0;
+  font: bold 18px/1 Arial, sans-serif;
+}
+.desktop-install-copy {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  gap: 2px;
+  min-width: 0;
+  text-align: start;
+}
+.desktop-install-copy strong,
+.desktop-install-copy > span {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.desktop-install-notice button {
+  flex: 0 0 auto;
+  cursor: pointer;
+  font: inherit;
+}
+.desktop-install-action {
+  padding: 5px 8px;
+  border: 1px solid #456073;
+  border-radius: 6px;
+  background: #edf2fa;
+  color: #243b4f;
+  font-weight: bold !important;
+}
+.desktop-install-dismiss {
+  width: 22px;
+  height: 25px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #374656;
+  font-size: 20px !important;
+}
+.desktop-install-notice button:focus-visible,
+.my-app-button:focus-visible {
+  outline: 2px solid #397ac2;
+  outline-offset: 2px;
+}
+@media (max-width: 960px) {
+  #desktopInstallDescription { display: none; }
+  .desktop-install-notice { max-width: 225px; }
+}
+@media (max-width: 700px) {
+  .desktop-install-notice { display: none !important; }
+}

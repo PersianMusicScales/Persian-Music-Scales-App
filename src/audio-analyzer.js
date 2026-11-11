@@ -1042,6 +1042,9 @@
     });
     elements.failureRetry?.addEventListener("click", () => {
       closeDrawer({ restoreFocus: false });
+      state.analysisFailure = false;
+      updateBadgeVisibility();
+      updateRecordingFeedback(t("recordReady"), 0, "ready");
       expandAnalysisCombo(true);
       const control = microphonePermissionIsReady() ? elements.quickRecordStart : elements.quickFinderButton;
       control?.focus({ preventScroll: true });
@@ -1823,10 +1826,13 @@
     if (elements.failureTitle) elements.failureTitle.textContent = dictionary.analysisFailedTitle;
     if (elements.failureHelp) elements.failureHelp.textContent = dictionary.analysisFailedHelp;
     if (elements.failureRetry) elements.failureRetry.textContent = dictionary.retryRecording;
-    if (state.analysisFailure && elements.badgeText) elements.badgeText.textContent = dictionary.analysisFailedTitle;
+    if (state.analysisFailure && elements.badgeText) {
+      elements.badgeText.textContent = dictionary.analysisFailedTitle;
+      if (elements.resultPlaceholder) elements.resultPlaceholder.textContent = dictionary.analysisFailedHelp;
+    }
     if (elements.badgeStop) elements.badgeStop.textContent = dictionary.stopAndHide;
     if (elements.badgeChipLabel) elements.badgeChipLabel.textContent = dictionary.resultsShortcut;
-    if (state.selectedCandidate) updateBadgeAccessibility();
+    if (state.selectedCandidate || state.analysisFailure) updateBadgeAccessibility();
     if (elements.detailValue && elements.detail) {
       elements.detailValue.textContent = `${Math.round(Number(elements.detail.value) || 0)}%`;
     }
@@ -2351,6 +2357,7 @@
     if (elements.failureTitle) elements.failureTitle.textContent = t("analysisFailedTitle");
     if (elements.failureHelp) elements.failureHelp.textContent = t("analysisFailedHelp");
     if (elements.failureRetry) elements.failureRetry.textContent = t("retryRecording");
+    if (elements.resultPlaceholder) elements.resultPlaceholder.textContent = t("analysisFailedHelp");
     updateBadgeAccessibility();
     updateBadgeVisibility();
   }

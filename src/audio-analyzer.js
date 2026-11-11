@@ -23,14 +23,20 @@
 
   const I18N = {
     en: {
+      localServerRequired: "This downloaded copy uses file://. For microphone analysis, open the extracted app through http://localhost instead; the browser may block its analysis worker.",
+      comboTitle: "Analyze a Track or Your Singing",
+      microphoneOption: "Microphone",
+      record: "● Record",
+      stopRecording: "■ Stop recording",
+      recordingHelp: "Tap Record to begin; tap Stop to analyze.",
       launch: "🎧 Analyze Track",
       quickFindScale: "Find the scale",
       quickFindScaleHelp: "Record or upload a short phrase",
-      quickHoldHint: "Hold to record",
+      quickHoldHint: "● Record",
       enableMicrophone: "Enable microphone",
       microphoneSetupHint: "Tap once for microphone access",
-      microphoneReadyHold: "Microphone ready — hold to record",
-      microphonePermissionReady: "Microphone ready. Hold to record.",
+      microphoneReadyHold: "Microphone ready — tap Record",
+      microphonePermissionReady: "Microphone ready. ● Record.",
       loopingPlayback: "Playing repeatedly — tap the page to stop",
       quickPanelTitle: "What scale is this?",
       quickPanelHelp: "Record a clear phrase or choose an audio file.",
@@ -50,13 +56,13 @@
       exampleFailed: "The example recording could not be loaded.",
       tapToHear: "Analysis is ready. Tap Original to hear the result.",
       inputOr: "or record a phrase",
-      holdToRecord: "Hold to record",
-      releaseToAnalyze: "Release the button to stop and analyze automatically.",
+      holdToRecord: "● Record",
+      releaseToAnalyze: "Tap Stop to analyze the recording.",
       recordReady: "Microphone ready",
       requestingMicrophone: "Requesting microphone access…",
-      recordingNow: "Recording… release to analyze",
+      recordingNow: "Recording… tap Stop to analyze",
       recordingMaximum: "Maximum recording length reached. Preparing analysis…",
-      recordingTooShort: "The recording was too short. Hold for at least 1.5 seconds.",
+      recordingTooShort: "The recording was too short. Record at least 1.5 seconds.",
       microphoneUnsupported: "Microphone recording is not supported in this browser or connection.",
       microphoneDenied: "Microphone access was not granted. Allow microphone access and try again.",
       recordingFailed: "The recording could not be prepared for analysis.",
@@ -171,14 +177,20 @@
       gapClear: "It leads the next candidate by {gap} percentage points.",
     },
     fr: {
+      localServerRequired: "Cette copie est ouverte en file://. Pour analyser un enregistrement, ouvrez l’application via http://localhost : le navigateur peut bloquer le traitement local.",
+      comboTitle: "Analyser un morceau ou votre chant",
+      microphoneOption: "Microphone",
+      record: "● Enregistrer",
+      stopRecording: "■ Arrêter l’enregistrement",
+      recordingHelp: "Appuyez sur Enregistrer, puis sur Arrêter pour analyser.",
       launch: "🎧 Analyser un morceau",
       quickFindScale: "Trouver la gamme",
       quickFindScaleHelp: "Enregistrer ou charger une courte phrase",
-      quickHoldHint: "Maintenir pour enregistrer",
+      quickHoldHint: "● Enregistrer",
       enableMicrophone: "Activer le microphone",
       microphoneSetupHint: "Touchez une fois pour autoriser le microphone",
-      microphoneReadyHold: "Microphone prêt — maintenez pour enregistrer",
-      microphonePermissionReady: "Microphone prêt. Maintenez pour enregistrer.",
+      microphoneReadyHold: "Microphone prêt — appuyez sur Enregistrer",
+      microphonePermissionReady: "Microphone prêt. Appuyez sur Enregistrer.",
       loopingPlayback: "Lecture en boucle — touchez la page pour arrêter",
       quickPanelTitle: "Quelle est cette gamme ?",
       quickPanelHelp: "Enregistrez une phrase claire ou choisissez un fichier audio.",
@@ -198,13 +210,13 @@
       exampleFailed: "L’enregistrement exemple n’a pas pu être chargé.",
       tapToHear: "L’analyse est prête. Touchez Original pour entendre le résultat.",
       inputOr: "ou enregistrer une phrase",
-      holdToRecord: "Maintenir pour enregistrer",
-      releaseToAnalyze: "Relâchez le bouton pour arrêter et lancer automatiquement l’analyse.",
+      holdToRecord: "● Enregistrer",
+      releaseToAnalyze: "Appuyez sur Arrêter pour lancer l’analyse.",
       recordReady: "Microphone prêt",
       requestingMicrophone: "Demande d’accès au microphone…",
-      recordingNow: "Enregistrement… relâchez pour analyser",
+      recordingNow: "Enregistrement… appuyez sur Arrêter pour analyser",
       recordingMaximum: "Durée maximale atteinte. Préparation de l’analyse…",
-      recordingTooShort: "L’enregistrement est trop court. Maintenez au moins 1,5 seconde.",
+      recordingTooShort: "Enregistrement trop court. Enregistrez au moins 1,5 seconde.",
       microphoneUnsupported: "L’enregistrement au microphone n’est pas pris en charge par ce navigateur ou cette connexion.",
       microphoneDenied: "L’accès au microphone n’a pas été accordé. Autorisez-le puis réessayez.",
       recordingFailed: "L’enregistrement n’a pas pu être préparé pour l’analyse.",
@@ -319,14 +331,20 @@
       gapClear: "Il devance le candidat suivant de {gap} points.",
     },
     fa: {
+      localServerRequired: "این نسخه با نشانی file:// باز شده است. برای تحلیل ضبط، برنامه را از طریق http://localhost اجرا کنید؛ مرورگر ممکن است اجرای تحلیل‌گر محلی را مسدود کند.",
+      comboTitle: "تحلیل قطعه یا آواز شما",
+      microphoneOption: "میکروفن",
+      record: "● ضبط",
+      stopRecording: "■ توقف ضبط",
+      recordingHelp: "برای آغاز ضبط بزنید؛ برای توقف و تحلیل دوباره بزنید.",
       launch: "🎧 تحلیل قطعه",
       quickFindScale: "گام را پیدا کن",
       quickFindScaleHelp: "یک جمله ضبط یا فایل صوتی بارگذاری کنید",
-      quickHoldHint: "برای ضبط نگه دارید",
+      quickHoldHint: "● ضبط",
       enableMicrophone: "فعال‌کردن میکروفن",
       microphoneSetupHint: "برای دسترسی، یک‌بار لمس کنید",
-      microphoneReadyHold: "میکروفن آماده است — برای ضبط نگه دارید",
-      microphonePermissionReady: "میکروفن آماده است. برای ضبط نگه دارید.",
+      microphoneReadyHold: "میکروفن آماده است — ● ضبط",
+      microphonePermissionReady: "میکروفن آماده است. ● ضبط.",
       loopingPlayback: "پخش تکراری — برای توقف صفحه را لمس کنید",
       quickPanelTitle: "این چه گامی است؟",
       quickPanelHelp: "یک جملهٔ واضح ضبط کنید یا فایل صوتی انتخاب کنید.",
@@ -346,13 +364,13 @@
       exampleFailed: "بارگذاری نمونهٔ صوتی ممکن نشد.",
       tapToHear: "تحلیل آماده است. برای شنیدن نتیجه، دکمهٔ قطعهٔ اصلی را لمس کنید.",
       inputOr: "یا یک جملهٔ کوتاه ضبط کنید",
-      holdToRecord: "برای ضبط نگه دارید",
-      releaseToAnalyze: "برای توقف و تحلیل خودکار، دکمه را رها کنید.",
+      holdToRecord: "● ضبط",
+      releaseToAnalyze: "برای توقف و تحلیل خودکار، دکمهٔ توقف را بزنید.",
       recordReady: "میکروفن آماده است",
       requestingMicrophone: "در حال درخواست دسترسی به میکروفن…",
-      recordingNow: "در حال ضبط… برای تحلیل رها کنید",
+      recordingNow: "در حال ضبط… برای تحلیل، توقف را بزنید",
       recordingMaximum: "حداکثر زمان ضبط به پایان رسید؛ در حال آماده‌سازی تحلیل…",
-      recordingTooShort: "ضبط بسیار کوتاه بود. دکمه را دست‌کم ۱٫۵ ثانیه نگه دارید.",
+      recordingTooShort: "ضبط بسیار کوتاه بود. دست‌کم ۱٫۵ ثانیه ضبط کنید.",
       microphoneUnsupported: "ضبط با میکروفن در این مرورگر یا اتصال پشتیبانی نمی‌شود.",
       microphoneDenied: "اجازهٔ دسترسی به میکروفن داده نشد. دسترسی را فعال کرده و دوباره تلاش کنید.",
       recordingFailed: "آماده‌سازی فایل ضبط‌شده برای تحلیل ممکن نشد.",
@@ -558,6 +576,8 @@
       meterSource: null,
       meterAnalyser: null,
       meterData: null,
+      lastPitchAt: 0,
+      liveLabel: null,
       minimumSeconds: 1.5,
       maximumSeconds: 45,
     },
@@ -600,12 +620,16 @@
   const elements = {
     launch: $("#openAudioAnalyzer"),
     quickFinder: $("#quickScaleFinder"),
+    comboToggle: $("#analysisComboToggle"),
+    comboOptions: $("#analysisComboOptions"),
     quickFinderButton: $("#quickScaleFinderButton"),
     quickFinderLabel: $("#quickScaleFinderLabel"),
     quickFinderHelp: $("#quickScaleFinderHelp"),
     quickFinderPanel: $("#quickScaleFinderPanel"),
     quickFinderClose: null,
     quickRecordButton: $("#quickScaleFinderButton"),
+    quickRecordStart: $("#quickRecordingStartButton"),
+    liveReadout: $("#liveDetectedNote"),
     quickRecordingFeedback: $("#quickRecordingFeedback"),
     quickRecordingStatus: $("#quickRecordingStatus"),
     quickRecordingTimer: $("#quickRecordingTimer"),
@@ -702,7 +726,7 @@
   }
 
   function recorderButtons() {
-    return [elements.recordButton, elements.quickRecordButton].filter(Boolean);
+    return [elements.recordButton, elements.quickRecordStart].filter(Boolean);
   }
 
   function recordingFeedbackElements() {
@@ -731,26 +755,22 @@
 
   function updateMicrophonePrompt() {
     const ready = microphonePermissionIsReady();
+    const active = state.recorder.recording;
     const dictionary = I18N[state.currentLanguage] || I18N.en;
-
-    if (elements.quickFinderLabel) {
-      elements.quickFinderLabel.textContent = ready ? dictionary.quickFindScale : dictionary.enableMicrophone;
+    if (elements.quickFinderLabel) elements.quickFinderLabel.textContent = dictionary.microphoneOption;
+    if (elements.quickRecordStart) {
+      elements.quickRecordStart.hidden = !ready;
+      elements.quickRecordStart.textContent = active ? dictionary.stopRecording : dictionary.record;
     }
-    if (elements.quickFinderHelp) {
-      elements.quickFinderHelp.textContent = ready ? dictionary.quickHoldHint : dictionary.microphoneSetupHint;
-    }
-    if (elements.recordButtonLabel) {
-      elements.recordButtonLabel.textContent = ready ? dictionary.holdToRecord : dictionary.enableMicrophone;
-    }
-    if (elements.recordButtonHelp) {
-      elements.recordButtonHelp.textContent = ready ? dictionary.releaseToAnalyze : dictionary.microphoneSetupHint;
-    }
-
-    recorderButtons().forEach((button) => {
+    if (elements.recordButtonLabel) elements.recordButtonLabel.textContent =
+      active ? dictionary.stopRecording : ready ? dictionary.record : dictionary.enableMicrophone;
+    if (elements.recordButtonHelp) elements.recordButtonHelp.textContent =
+      ready ? dictionary.recordingHelp : dictionary.microphoneSetupHint;
+    recorderButtons().forEach(button => {
       button.classList.toggle("permission-needed", !ready);
       button.classList.toggle("permission-ready", ready);
-      button.dataset.microphoneReady = ready ? "true" : "false";
-      button.setAttribute("aria-label", ready ? dictionary.microphoneReadyHold : dictionary.enableMicrophone);
+      button.setAttribute("aria-label", active ? dictionary.stopRecording :
+        ready ? dictionary.record : dictionary.enableMicrophone);
     });
   }
 
@@ -815,22 +835,22 @@
         },
         video: false,
       });
-      stopMediaStream(stream);
+      // Permission activation keeps the stream ready without analysing it.
+      stopMediaStream(recorder.stream);
+      recorder.stream = stream;
       setMicrophonePermissionState("granted");
       setRecorderButtonsState("ready", false);
       updateRecordingFeedback(t("microphonePermissionReady"), 0, "ready");
       openQuickFinder();
-      window.setTimeout(() => {
-        if (!recorder.recording && !recorder.starting && !recorder.finalizing) {
-          closeQuickFinder({ restoreFocus: false, cancelRecording: false });
-        }
-      }, 2600);
+      elements.quickRecordStart?.focus({ preventScroll: true });
     } catch (error) {
       console.error("Microphone permission setup failed:", error);
       const denied = error?.name === "NotAllowedError" || error?.name === "SecurityError";
       setMicrophonePermissionState(denied ? "denied" : "unknown");
       setRecorderButtonsState("ready", false);
-      updateRecordingFeedback(t(denied ? "microphoneDenied" : "recordingFailed"), 0, "error");
+      updateRecordingFeedback(window.location.protocol === "file:"
+        ? t("localServerRequired")
+        : t(denied ? "microphoneDenied" : "recordingFailed"), 0, "error");
     } finally {
       recorder.permissionPreparing = false;
       window.setTimeout(() => { recorder.ignoreRelease = false; }, 120);
@@ -844,6 +864,7 @@
       if (["arming", "recording", "processing"].includes(mode)) button.classList.add(mode);
       button.setAttribute("aria-pressed", pressed ? "true" : "false");
     });
+    updateMicrophonePrompt();
     if (["arming", "recording", "processing"].includes(mode)) openQuickFinder();
   }
 
@@ -858,36 +879,53 @@
   }
 
   function openQuickFinder() {
-    if (!elements.quickFinderPanel || !elements.quickFinderButton) return;
+    if (!elements.quickFinderPanel) return;
+    expandAnalysisCombo(true);
     elements.quickFinderPanel.hidden = false;
+    elements.quickFinderButton?.setAttribute("aria-expanded", "true");
     elements.quickFinder?.classList.add("status-open");
-    requestAnimationFrame(() => elements.quickFinderPanel.classList.add("open"));
+    requestAnimationFrame(() => {
+      if (!elements.quickFinderPanel.hidden) elements.quickFinderPanel.classList.add("open");
+    });
   }
 
   function closeQuickFinder({ restoreFocus = false, cancelRecording = true } = {}) {
-    if (!elements.quickFinderPanel || !elements.quickFinderButton) return;
+    if (!elements.quickFinderPanel) return;
     if (cancelRecording && (state.recorder.recording || state.recorder.starting)) {
       cancelMicrophoneRecording({ announce: false });
     }
     elements.quickFinderPanel.classList.remove("open");
+    elements.quickFinderButton?.setAttribute("aria-expanded", "false");
     elements.quickFinder?.classList.remove("status-open");
+    if (!state.recorder.recording && !state.recorder.starting &&
+        !state.recorder.finalizing && state.recorder.stream) {
+      stopMediaStream(state.recorder.stream);
+      state.recorder.stream = null;
+    }
     window.setTimeout(() => {
       if (!elements.quickFinderPanel.classList.contains("open")) elements.quickFinderPanel.hidden = true;
     }, 190);
-    if (restoreFocus) elements.quickFinderButton.focus({ preventScroll: true });
+    if (restoreFocus) elements.comboToggle?.focus({ preventScroll: true });
+  }
+
+  function expandAnalysisCombo(expanded) {
+    if (!elements.comboToggle || !elements.comboOptions) return;
+    if (!expanded && (state.recorder.recording || state.recorder.starting)) return;
+    elements.comboToggle.setAttribute("aria-expanded", String(expanded));
+    elements.comboOptions.hidden = !expanded;
+    elements.quickFinder?.classList.toggle("expanded", expanded);
+    if (!expanded) closeQuickFinder({ restoreFocus: false, cancelRecording: false });
   }
 
   function bindQuickFinderEvents() {
-    if (!elements.quickFinderButton) return;
-    const suppressSelection = (event) => event.preventDefault();
-    ["selectstart", "dragstart", "contextmenu"].forEach((type) => {
-      elements.quickFinderButton.addEventListener(type, suppressSelection);
+    elements.comboToggle?.addEventListener("click", () => {
+      expandAnalysisCombo(elements.comboOptions.hidden);
     });
-    /* Recording/permission click behaviour is bound centrally in
-       bindMicrophoneRecorderEvents(). This listener only suppresses navigation. */
-    elements.quickFinderButton.addEventListener("click", (event) => event.preventDefault());
+    document.addEventListener("pointerdown", event => {
+      if (!elements.quickFinder?.contains(event.target) &&
+          !state.recorder.recording && !state.recorder.starting) expandAnalysisCombo(false);
+    });
   }
-
 
   function initialize() {
     applyAnalyzerDefaults({ announce: false });
@@ -1060,107 +1098,41 @@
   }
 
   function bindMicrophoneRecorderEvents() {
-    const bindRecordButton = (button) => {
-      if (!button) return;
-
-      const suppressSelection = (event) => event.preventDefault();
-      ["selectstart", "dragstart", "contextmenu"].forEach((type) => {
-        button.addEventListener(type, suppressSelection);
-      });
-
-      button.addEventListener("pointerdown", (event) => {
-        if (event.pointerType === "mouse" && event.button !== 0) return;
-
-        /* Before permission is ready, allow this gesture to complete as a
-           normal tap. The click handler below performs the one-time setup.
-           This prevents the iOS permission dialog from breaking a hold. */
-        if (!microphonePermissionIsReady()) {
-          state.recorder.holdActive = false;
-          state.recorder.ignoreRelease = true;
-          return;
-        }
-
-        event.preventDefault();
-        button.setPointerCapture?.(event.pointerId);
-        state.recorder.holdActive = true;
-        beginMicrophoneRecording();
-      });
-
-      button.addEventListener("click", (event) => {
-        event.preventDefault();
-        if (microphonePermissionIsReady() || state.recorder.permissionPreparing) return;
-        state.recorder.holdActive = false;
-        state.recorder.ignoreRelease = true;
+    const clickRecorder = event => {
+      event.preventDefault();
+      if (state.recorder.recording) {
+        finishMicrophoneRecording();
+        return;
+      }
+      if (state.recorder.starting || state.recorder.finalizing || state.recorder.permissionPreparing) return;
+      if (!microphonePermissionIsReady()) {
         prepareMicrophonePermission();
-      });
-
-      const releasePointer = (event) => {
-        if (state.recorder.ignoreRelease || state.recorder.permissionPreparing) return;
-        if (event?.pointerId != null && button.hasPointerCapture?.(event.pointerId)) {
-          button.releasePointerCapture?.(event.pointerId);
-        }
-        if (!state.recorder.holdActive && !state.recorder.recording && !state.recorder.starting) return;
-        state.recorder.holdActive = false;
-        finishMicrophoneRecording();
-      };
-
-      button.addEventListener("pointerup", releasePointer);
-      button.addEventListener("pointercancel", releasePointer);
-      button.addEventListener("lostpointercapture", () => {
-        if (state.recorder.holdActive) return;
-        finishMicrophoneRecording();
-      });
-
-      button.addEventListener("keydown", (event) => {
-        if ((event.key !== " " && event.key !== "Enter") || event.repeat) return;
-        event.preventDefault();
-        if (!microphonePermissionIsReady()) {
-          state.recorder.holdActive = false;
-          state.recorder.ignoreRelease = true;
-          prepareMicrophonePermission();
-          return;
-        }
-        state.recorder.holdActive = true;
-        beginMicrophoneRecording();
-      });
-      button.addEventListener("keyup", (event) => {
-        if (event.key !== " " && event.key !== "Enter") return;
-        event.preventDefault();
-        if (state.recorder.ignoreRelease || state.recorder.permissionPreparing) return;
-        state.recorder.holdActive = false;
-        finishMicrophoneRecording();
-      });
-      button.addEventListener("blur", () => {
-        if (!state.recorder.recording && !state.recorder.starting) return;
-        state.recorder.holdActive = false;
-        finishMicrophoneRecording();
-      });
+        return;
+      }
+      state.recorder.holdActive = true; // remains true until Stop is clicked
+      beginMicrophoneRecording();
     };
-
-    recorderButtons().forEach(bindRecordButton);
-    cancelRecordingButtons().forEach((button) => {
+    recorderButtons().forEach(button => button.addEventListener("click", clickRecorder));
+    elements.quickFinderButton?.addEventListener("click", event => {
+      event.preventDefault();
+      expandAnalysisCombo(true);
+      openQuickFinder();
+      if (!microphonePermissionIsReady()) prepareMicrophonePermission();
+      else elements.quickRecordStart?.focus({ preventScroll: true });
+    });
+    cancelRecordingButtons().forEach(button => {
       button.addEventListener("click", () => cancelMicrophoneRecording({ announce: true }));
     });
-
-    /* Pointer capture normally provides the release event. These document-level
-       fallbacks also protect the first-use permission flow, where a browser
-       permission prompt can interrupt the original pointer sequence. */
-    window.addEventListener("pointerup", () => {
-      if (state.recorder.ignoreRelease || state.recorder.permissionPreparing) return;
-      if (!state.recorder.holdActive) return;
-      state.recorder.holdActive = false;
-      finishMicrophoneRecording();
-    }, true);
-    window.addEventListener("blur", () => {
-      if (!state.recorder.recording && !state.recorder.starting) return;
-      state.recorder.holdActive = false;
-      if (state.recorder.recording) finishMicrophoneRecording();
+    window.addEventListener("pagehide", () => {
+      if (state.recorder.recording || state.recorder.starting) {
+        cancelMicrophoneRecording({ announce: false });
+      } else if (state.recorder.stream) {
+        stopMediaStream(state.recorder.stream);
+        state.recorder.stream = null;
+      }
     });
-    document.addEventListener("visibilitychange", () => {
-      if (!document.hidden || (!state.recorder.recording && !state.recorder.starting)) return;
-      state.recorder.holdActive = false;
-      if (state.recorder.recording) finishMicrophoneRecording();
-    });
+    // Switching tabs does not stop recording; only Stop, Cancel or
+    // page teardown ends capture. requestAnimationFrame may pause while hidden.
   }
 
   async function beginMicrophoneRecording() {
@@ -1171,12 +1143,8 @@
       return;
     }
 
-    /* Unlock the persistent Web Audio graph while this trusted pointer/keyboard
-       gesture is active. The decoded recording can then start automatically
-       after asynchronous analysis without relying on HTML-media autoplay. */
-    const playbackUnlock = ensureOriginalVisualizerGraph().catch((error) => {
-      console.warn("Could not unlock automatic recording playback:", error);
-    });
+    // MediaRecorder must not wait for audio playback graph initialization.
+    // The final analysis opens in its own drawer; autoplay is unnecessary.
 
     clearTimeout(state.autoCloseTimer);
     state.autoCloseTimer = 0;
@@ -1188,16 +1156,17 @@
     updateButtons();
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          channelCount: { ideal: 1 },
-          echoCancellation: { ideal: false },
-          noiseSuppression: { ideal: false },
-          autoGainControl: { ideal: false },
-        },
-        video: false,
-      });
-      await playbackUnlock;
+      const stream = recorder.stream?.getAudioTracks?.().some(track => track.readyState === "live")
+        ? recorder.stream
+        : await navigator.mediaDevices.getUserMedia({
+            audio: {
+              channelCount: { ideal: 1 },
+              echoCancellation: { ideal: false },
+              noiseSuppression: { ideal: false },
+              autoGainControl: { ideal: false },
+            },
+            video: false,
+          });
       setMicrophonePermissionState("granted");
 
       if (!recorder.holdActive || recorder.cancelled) {
@@ -1246,11 +1215,6 @@
       } catch (meterError) {
         console.warn("Microphone level meter was unavailable:", meterError);
       }
-      recorder.maximumTimerId = window.setTimeout(() => {
-        updateRecordingFeedback(t("recordingMaximum"), recorder.maximumSeconds, "processing");
-        recorder.holdActive = false;
-        finishMicrophoneRecording();
-      }, recorder.maximumSeconds * 1000);
       updateButtons();
     } catch (error) {
       console.error("Microphone access failed:", error);
@@ -1261,7 +1225,9 @@
       setRecorderButtonsState("ready", false);
       const denied = error?.name === "NotAllowedError" || error?.name === "SecurityError";
       if (denied) setMicrophonePermissionState("denied");
-      updateRecordingFeedback(t(denied ? "microphoneDenied" : "recordingFailed"), 0, "error");
+      updateRecordingFeedback(window.location.protocol === "file:"
+        ? t("localServerRequired")
+        : t(denied ? "microphoneDenied" : "recordingFailed"), 0, "error");
       updateButtons();
     }
   }
@@ -1272,6 +1238,7 @@
     if (recorder.starting) return;
     if (!recorder.recording || !recorder.mediaRecorder) return;
     recorder.duration = Math.max(0, (performance.now() - recorder.startedAt) / 1000);
+    recorder.recording = false; // Stop live highlighting immediately
     clearTimeout(recorder.maximumTimerId);
     recorder.maximumTimerId = 0;
     stopRecordingClock();
@@ -1399,25 +1366,113 @@
     state.recorder.timerId = 0;
   }
 
+  // Approximate predominant fundamental by YIN-style normalized
+  // difference on a downsampled, recent mono waveform. This deliberately
+  // runs only during MediaRecorder capture, never on permission activation.
+  function detectLiveFundamental(bytes, sampleRate) {
+    const stride = Math.max(1, Math.round(sampleRate / 12000));
+    const effectiveRate = sampleRate / stride;
+    const count = Math.min(2048, Math.floor(bytes.length / stride));
+    if (count < 512) return null;
+    const values = new Float32Array(count);
+    let energy = 0;
+    for (let i = 0; i < count; i++) {
+      const v = (bytes[i * stride] - 128) / 128;
+      values[i] = v;
+      energy += v * v;
+    }
+    if (Math.sqrt(energy / count) < 0.012) return null;
+
+    const minimumLag = Math.max(3, Math.floor(effectiveRate / 1400));
+    const maximumLag = Math.min(Math.floor(effectiveRate / 65), Math.floor(count / 3));
+    const compareCount = Math.min(960, count - maximumLag);
+    const scores = new Float32Array(maximumLag + 1);
+    let cumulative = 0;
+    for (let lag = 1; lag <= maximumLag; lag++) {
+      let difference = 0;
+      for (let i = 0; i < compareCount; i++) {
+        const delta = values[i] - values[i + lag];
+        difference += delta * delta;
+      }
+      cumulative += difference;
+      scores[lag] = cumulative > 0 ? difference * lag / cumulative : 1;
+    }
+    let bestLag = -1;
+    let lowest = 1;
+    for (let lag = minimumLag; lag < maximumLag; lag++) {
+      const score = scores[lag];
+      if (score < lowest) { lowest = score; bestLag = lag; }
+      if (score < 0.16 && score <= scores[lag + 1]) {
+        bestLag = lag;
+        lowest = score;
+        break; // first credible minimum, avoiding octave doubling
+      }
+    }
+    if (bestLag < 1 || lowest > 0.28) return null;
+    const prev = scores[bestLag - 1], now = scores[bestLag], next = scores[bestLag + 1];
+    const denom = prev - 2 * now + next;
+    const correction = Math.abs(denom) > 1e-6
+      ? clamp((prev - next) / (2 * denom), -0.5, 0.5) : 0;
+    const frequency = effectiveRate / (bestLag + correction);
+    return Number.isFinite(frequency) && frequency >= 65 && frequency <= 1400 ? frequency : null;
+  }
+
+  function clearLivePitch() {
+    $$("#circleContainer .analysis-live-pitch, #circleContainer .analysis-live-near")
+      .forEach(label => label.classList.remove("analysis-live-pitch", "analysis-live-near"));
+    if (elements.liveReadout) {
+      elements.liveReadout.hidden = true;
+      elements.liveReadout.textContent = "";
+    }
+    state.recorder.liveLabel = null;
+  }
+
+  function renderLivePitch(frequency) {
+    clearLivePitch();
+    if (!state.recorder.recording || !frequency) return;
+    // 24 equally spaced positions per octave; 50 cents per position.
+    // MIDI C maps to pitch-class zero even after octave transposition.
+    const semitones = 69 + 12 * Math.log2(frequency / 440);
+    const bin = mod(Math.round(semitones * 2), 24);
+    if (!state.labelBindings.length) rebuildLabelBindings();
+    const binding = nearestBinding(bin);
+    if (binding?.label && binding.distance <= 1) {
+      binding.label.classList.add(binding.distance === 0 ? "analysis-live-pitch" : "analysis-live-near");
+      state.recorder.liveLabel = binding.label;
+    }
+    if (elements.liveReadout) {
+      elements.liveReadout.textContent = `${pitchClassName(bin)} · ${frequency.toFixed(1)} Hz`;
+      elements.liveReadout.hidden = false;
+    }
+  }
+
   async function startMicrophoneMeter(stream) {
     stopMicrophoneMeter();
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (!AudioContextClass || !stream) return;
     const context = new AudioContextClass();
-    await context.resume().catch(() => {});
+    // Never block recording on AudioContext.resume(): on some mobile browsers
+    // it remains suspended until another user gesture.
+    context.resume().catch((error) => console.warn("Mic meter audio context:", error));
+    if (!state.recorder.recording) {
+      context.close().catch(() => {});
+      return;
+    }
     const source = context.createMediaStreamSource(stream);
     const analyser = context.createAnalyser();
-    analyser.fftSize = 256;
-    analyser.smoothingTimeConstant = 0.72;
+    analyser.fftSize = 8192;
+    analyser.smoothingTimeConstant = 0.5;
     source.connect(analyser);
     state.recorder.meterContext = context;
     state.recorder.meterSource = source;
     state.recorder.meterAnalyser = analyser;
     state.recorder.meterData = new Uint8Array(analyser.fftSize);
+    state.recorder.lastPitchAt = 0;
+    rebuildLabelBindings();
 
-    const draw = () => {
+    const draw = timestamp => {
       if (!state.recorder.recording || !state.recorder.meterAnalyser) return;
-      state.recorder.meterAnalyser.getByteTimeDomainData(state.recorder.meterData);
+      analyser.getByteTimeDomainData(state.recorder.meterData);
       let sum = 0;
       for (const sample of state.recorder.meterData) {
         const normalized = (sample - 128) / 128;
@@ -1425,16 +1480,21 @@
       }
       const rms = Math.sqrt(sum / state.recorder.meterData.length);
       const level = clamp(Math.pow(rms * 4.4, 0.72) * 100, 0, 100);
-      microphoneLevelElements().forEach((meter) => {
+      microphoneLevelElements().forEach(meter => {
         meter.style.width = `${level}%`;
         meter.classList.toggle("clipping", level > 92);
       });
+      if (timestamp - state.recorder.lastPitchAt >= 95) {
+        state.recorder.lastPitchAt = timestamp;
+        renderLivePitch(detectLiveFundamental(state.recorder.meterData, context.sampleRate));
+      }
       state.recorder.meterFrame = requestAnimationFrame(draw);
     };
-    draw();
+    state.recorder.meterFrame = requestAnimationFrame(draw);
   }
 
   function stopMicrophoneMeter() {
+    clearLivePitch();
     cancelAnimationFrame(state.recorder.meterFrame);
     state.recorder.meterFrame = 0;
     try { state.recorder.meterSource?.disconnect(); } catch (_) {}
@@ -1481,22 +1541,7 @@
       });
     }
 
-    if (["arming", "recording", "processing", "error", "playing"].includes(mode)) {
-      openQuickFinder();
-      if (mode === "error") {
-        window.setTimeout(() => {
-          if (!state.recorder.recording && !state.recorder.starting && !state.recorder.finalizing) {
-            closeQuickFinder({ restoreFocus: false, cancelRecording: false });
-          }
-        }, 4200);
-      }
-    } else if (!state.recorder.recording && !state.recorder.starting) {
-      window.setTimeout(() => {
-        if (!state.recorder.recording && !state.recorder.starting && !state.recorder.finalizing) {
-          closeQuickFinder({ restoreFocus: false, cancelRecording: false });
-        }
-      }, 900);
-    }
+    if (["arming", "recording", "processing", "error", "playing"].includes(mode)) openQuickFinder();
   }
 
   function formatRecordingTime(seconds) {
@@ -1517,6 +1562,7 @@
     });
 
     elements.launch.textContent = dictionary.launch;
+    if (elements.comboToggle) elements.comboToggle.textContent = dictionary.comboTitle;
     elements.analyze.textContent = dictionary.analyze;
     elements.playPause.textContent = (state.bufferPlayer.playing || !elements.audio.paused) ? dictionary.pause : dictionary.play;
     if (elements.melodyPlayPause) {
@@ -1782,8 +1828,14 @@
   }
 
   function throwWorkerError(message) {
-    setStatus(`${t("error")} ${message || ""}`.trim(), 0, true);
-    if (state.inputOrigin === "microphone") updateRecordingFeedback(t("recordingFailed"), 0, "error");
+    const localFile = window.location.protocol === "file:";
+    const explanation = localFile ? t("localServerRequired") : `${t("error")} ${message || ""}`.trim();
+    setStatus(explanation, 0, true);
+    if (state.inputOrigin === "microphone") {
+      updateRecordingFeedback(explanation, 0, "error");
+      closeQuickFinder({ restoreFocus: false, cancelRecording: false });
+      openDrawer();
+    }
     elements.analyze.disabled = false;
     updateButtons();
   }
@@ -1794,7 +1846,11 @@
 
     if (!result.events?.length || result.voicedFrameCount < 4) {
       setStatus(t("noVoiced"), 0, true);
-      if (state.inputOrigin === "microphone") updateRecordingFeedback(t("noVoiced"), 0, "error");
+      if (state.inputOrigin === "microphone") {
+        updateRecordingFeedback(t("noVoiced"), 0, "error");
+        closeQuickFinder({ restoreFocus: false, cancelRecording: false });
+        openDrawer(); // show the diagnostic instead of hiding the outcome
+      }
       updateButtons();
       return;
     }
@@ -1812,7 +1868,10 @@
     );
     updateButtons();
 
-    if (request.autoStart && request.loadGeneration === state.loadGeneration) {
+    if (request.loadGeneration === state.loadGeneration && state.inputOrigin === "microphone") {
+      closeQuickFinder({ restoreFocus: false, cancelRecording: false });
+      openDrawer(); // display ranked analysis, no automatic looping playback
+    } else if (request.autoStart && request.loadGeneration === state.loadGeneration) {
       startAutomaticPlaybackAndClose();
     }
   }

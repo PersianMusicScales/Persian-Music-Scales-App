@@ -1115,11 +1115,15 @@
       button.addEventListener("click", () => cancelMicrophoneRecording({ announce: true }));
     });
     window.addEventListener("pagehide", () => {
-      if (state.recorder.recording || state.recorder.starting) cancelMicrophoneRecording({ announce: false });
+      if (state.recorder.recording || state.recorder.starting) {
+        cancelMicrophoneRecording({ announce: false });
+      } else if (state.recorder.stream) {
+        stopMediaStream(state.recorder.stream);
+        state.recorder.stream = null;
+      }
     });
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden && state.recorder.recording) finishMicrophoneRecording();
-    });
+    // Switching tabs does not stop recording; only Stop, Cancel or
+    // page teardown ends capture. requestAnimationFrame may pause while hidden.
   }
 
   async function beginMicrophoneRecording() {

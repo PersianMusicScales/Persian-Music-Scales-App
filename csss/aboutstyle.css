@@ -20,7 +20,6 @@
 
 html {
   min-height: 100%;
-  background: #dad7ce;
 }
 
 body {
@@ -29,21 +28,19 @@ body {
   color: var(--about-ink);
   font-family: Arial, sans-serif;
   line-height: 1.65;
-  background-color: #ddd9cf;
   background-image: url('../assets/images/aboutBackground.png');
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
 }
 
-/* Matches the original application shell: the background image stays visible,
-   while a soft veil keeps the content readable. */
+/* Match the Scales section's background overlay in light and dark modes. */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -1;
-  background: rgba(255, 255, 255, 0.55);
+  background: rgba(50, 50, 50, 0.75);
   pointer-events: none;
 }
 
@@ -384,7 +381,7 @@ a {
 
 @media (prefers-color-scheme: dark) {
   body::before {
-    background: rgba(140, 140, 140, 0.72);
+    background: rgba(140, 140, 140, 0.75);
   }
 
   .hero-card,

@@ -1025,7 +1025,10 @@
   function bindEvents() {
     elements.launch.addEventListener("click", () => {
       closeQuickFinder({ restoreFocus: false, cancelRecording: false });
-      openDrawer({ preferResults: true });
+      // "Analyze Track" is the entry point for another upload. Always start
+      // at Section 1, even when an earlier track has analysis results.
+      // The separate Results shortcut continues to reopen Section 4.
+      openDrawer({ preferResults: false });
     });
     elements.badgeView?.addEventListener("click", (event) => {
       event.stopPropagation(); // Don't rotate the underlying circle.

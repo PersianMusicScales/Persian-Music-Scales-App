@@ -1299,3 +1299,71 @@ footer {
     padding-inline: 7px;
   }
 }
+
+
+/* === Avazha: keep both columns inside the viewport and out of the Notes row.
+   Expanded Avazha is a real toolbar grid row, not an absolutely positioned
+   floating panel. The existing compact header is unchanged when collapsed. === */
+.scale-controls.avazha-expanded > .avazha-container {
+  /* JS sets display:flex for Shur; the expanded layout must override it. */
+  display: contents !important;
+}
+.scale-controls.avazha-expanded > .avazha-container > .avazha-button {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  align-self: center;
+  position: relative;
+  z-index: 1111;
+}
+.scale-controls.avazha-expanded > .avazha-container > .avazha-columns {
+  position: static;
+  inset: auto;
+  grid-column: 1 / -1;
+  grid-row: 2;
+  justify-self: end; /* Logical inline-end: right in LTR, left in Persian RTL. */
+  align-self: start;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 8px;
+  display: flex;
+  flex-flow: row wrap;
+  gap: 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(72, 85, 101, .35);
+  background: rgba(247, 245, 254, .96);
+  box-shadow: 0 6px 16px rgba(18, 31, 43, .17);
+  z-index: 1110;
+}
+.scale-controls.avazha-expanded > .avazha-container > .avazha-columns .avazha-column {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  gap: 7px;
+  background: rgba(230, 230, 250, .75);
+  white-space: normal;
+}
+.scale-controls.avazha-expanded > .avazha-container > .avazha-columns .avazha-item {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+  font-size: clamp(.72rem, 2.5vw, .83rem);
+}
+.scale-controls.avazha-expanded > .scale-reference-row {
+  grid-row: 3;
+}
+/* Ultra-narrow phones: let each column share the available width. */
+@media (max-width: 350px) {
+  .scale-controls.avazha-expanded > .avazha-container > .avazha-columns {
+    width: 100%;
+    justify-self: stretch;
+    flex-wrap: nowrap;
+  }
+  .scale-controls.avazha-expanded > .avazha-container > .avazha-columns .avazha-column {
+    flex: 1 1 0;
+  }
+}

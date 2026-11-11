@@ -885,8 +885,22 @@ function updateAvazhaLabel() {
   );
   const tone = avazhaDynamicColumn.children[selectedIndex]?.textContent?.trim() || "";
   const name = localized.avazhaItems[activeAvazRole] || activeAvazRole;
-  avazhaLabel.textContent = tone ? name + " · " + tone : name;
-  avazhaButton.setAttribute("aria-label", avazhaLabel.textContent);
+
+  // Keep the selected name and its tonal on their own lines. A single growing
+  // text node used to widen the auto-sized toolbar column and shift the entire
+  // scale layout (especially in Persian RTL on narrow phones).
+  const nameLine = document.createElement("span");
+  nameLine.className = "avazha-selected-name";
+  nameLine.textContent = name;
+  const lines = [nameLine];
+  if (tone) {
+    const toneLine = document.createElement("span");
+    toneLine.className = "avazha-selected-tone";
+    toneLine.textContent = tone;
+    lines.push(toneLine);
+  }
+  avazhaLabel.replaceChildren(...lines);
+  avazhaButton.setAttribute("aria-label", tone ? name + " · " + tone : name);
 }
 
 function updatePopupContent() {

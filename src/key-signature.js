@@ -264,7 +264,6 @@
     document.getElementById("keySignatureCaveat").textContent = dictionary.caveat;
     document.getElementById("keySignatureCompound").textContent =
       result.hasCompound ? dictionary.compound : "";
-    document.getElementById("keySignatureSources").textContent = dictionary.source;
     document.getElementById("keySignaturePopover").setAttribute("dir", lang === "fa" ? "rtl" : "ltr");
     return result;
   }

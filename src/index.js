@@ -8,39 +8,13 @@ if ("serviceWorker" in navigator) {
   });
 }
 
-/* ========== 2) beforeinstallprompt (A2HS) Handling ========== */
-let deferredPrompt;
-
-// Listen for the `beforeinstallprompt` event
-window.addEventListener("beforeinstallprompt", (event) => {
-  console.log("beforeinstallprompt event fired");
-  // Prevent the mini-infobar from appearing
+/* ========== 2) Save native browser installation prompt ========== */
+let deferredPrompt = null;
+let installCompletedThisSession = false;
+window.addEventListener("beforeinstallprompt", event => {
   event.preventDefault();
-  // Save the event to use later
   deferredPrompt = event;
-
-  // Show the A2HS button after an interaction
-  const playScaleBtn = document.getElementById("playScale");
-  playScaleBtn.addEventListener("click", () => {
-    // Display the A2HS button after the "Play Scale" interaction
-    const a2hsButton = document.getElementById("add-to-home");
-    a2hsButton.style.display = "block";
-
-    // Add event listener to the A2HS button
-    a2hsButton.addEventListener("click", () => {
-      a2hsButton.style.display = "none"; // Hide the button
-      deferredPrompt.prompt(); // Show the A2HS prompt
-
-      deferredPrompt.userChoice.then((choiceResult) => {
-        if (choiceResult.outcome === "accepted") {
-          console.log("User accepted the A2HS prompt");
-        } else {
-          console.log("User dismissed the A2HS prompt");
-        }
-        deferredPrompt = null; // Clear the deferredPrompt
-      });
-    });
-  });
+  if (typeof refreshInstallInvitations === "function") refreshInstallInvitations();
 });
 
 /* ========== 3) Main Script (Scale + Avazha + Rotation logic) ========== */
@@ -861,6 +835,7 @@ function updateUIControls() {
 
   // Update Pop-up Content
   updatePopupContent();
+  updateInstallInvitationTranslations();
 
   // Update My App Label
   const myAppLabelElement = document.querySelector(".my-app-label");
@@ -941,35 +916,93 @@ scaleSelector.addEventListener("change", () => {
   if (navigator.vibrate) navigator.vibrate(100);
 });
 
-/* ========== My App Functionality ========== */
+/* ========== Installation invitations: mobile vs desktop ========== */
+const desktopInstallNotice = document.getElementById("desktopInstallNotice");
+const desktopInstallAction = document.getElementById("desktopInstallAction");
+const desktopInstallDismiss = document.getElementById("desktopInstallDismiss");
+const desktopInstallDismissKey = "persianMusicScales.desktopInstallDismissedAt.v1";
+const installTranslations = {
+  en: { title: "Install Persian Music Scales", action: "Install", native: "Install the app directly on your computer.", chrome: "Use the install icon in your browser address bar.", safari: "In Safari, choose File > Add to Dock.", other: "Check the browser menu for an install option.", close: "Dismiss installation tip", mobile: "Install on your phone" },
+  fr: { title: "Installer Persian Music Scales", action: "Installer", native: "Installez l'application sur votre ordinateur.", chrome: "Utilisez l'icône d'installation dans la barre d'adresse.", safari: "Dans Safari, choisissez Fichier > Ajouter au Dock.", other: "Consultez le menu du navigateur pour l'installation.", close: "Masquer le conseil d'installation", mobile: "Installer sur votre téléphone" },
+  fa: { title: "نصب گام‌های موسیقی ایرانی", action: "نصب", native: "برنامه را روی رایانه نصب کنید.", chrome: "از نماد نصب در نوار آدرس مرورگر استفاده کنید.", safari: "در Safari از منوی File گزینهٔ Add to Dock را انتخاب کنید.", other: "گزینهٔ نصب را در منوی مرورگر بررسی کنید.", close: "بستن پیشنهاد نصب", mobile: "نصب برنامه روی تلفن" }
+};
 function isPWAInstalled() {
-  return (
+  return installCompletedThisSession ||
     window.matchMedia("(display-mode: standalone)").matches ||
-    window.navigator.standalone === true
-  );
+    window.matchMedia("(display-mode: window-controls-overlay)").matches ||
+    navigator.standalone === true;
 }
-
-function toggleMyAppButton() {
-  if (!isPWAInstalled()) {
-    myAppContainer.style.display = "flex";
-  } else {
-    myAppContainer.style.display = "none";
+function isPhoneBrowser() {
+  // A narrow desktop window is not a phone; tablets are excluded as well.
+  const agent = navigator.userAgent || "";
+  return /iPhone|iPod/i.test(agent) ||
+    (/Android/i.test(agent) && /Mobile/i.test(agent)) ||
+    (navigator.userAgentData?.mobile === true && !/iPad|Tablet/i.test(agent));
+}
+function isDesktopInstallDismissed() {
+  try {
+    const value = Number(localStorage.getItem(desktopInstallDismissKey));
+    return value > 0 && Date.now() - value < 14 * 86400000;
+  } catch (_) { return false; }
+}
+function updateInstallInvitationTranslations() {
+  const copy = installTranslations[currentLanguage] || installTranslations.en;
+  document.getElementById("desktopInstallTitle").textContent = copy.title;
+  desktopInstallAction.textContent = copy.action;
+  desktopInstallDismiss.setAttribute("aria-label", copy.close);
+  myAppButton.setAttribute("aria-label", copy.mobile);
+  const agent = navigator.userAgent || "";
+  const message = deferredPrompt ? copy.native :
+    /Edg|Chrome|Chromium/i.test(agent) ? copy.chrome :
+    /Safari/i.test(agent) ? copy.safari : copy.other;
+  document.getElementById("desktopInstallDescription").textContent = message;
+  desktopInstallNotice.dir = currentLanguage === "fa" ? "rtl" : "ltr";
+}
+function refreshInstallInvitations() {
+  const installed = isPWAInstalled();
+  const phone = isPhoneBrowser();
+  myAppContainer.style.display = !installed && phone ? "flex" : "none";
+  desktopInstallNotice.hidden = installed || phone || isDesktopInstallDismissed();
+  desktopInstallAction.hidden = !deferredPrompt;
+  updateInstallInvitationTranslations();
+}
+async function promptPWAInstall() {
+  const prompt = deferredPrompt;
+  if (!prompt) return;
+  deferredPrompt = null;
+  try {
+    await prompt.prompt();
+    const choice = await prompt.userChoice;
+    if (choice?.outcome === "accepted") installCompletedThisSession = true;
+  } catch (error) {
+    console.warn("PWA install prompt unavailable:", error);
   }
+  refreshInstallInvitations();
 }
+function toggleMyAppButton() { refreshInstallInvitations(); }
+desktopInstallDismiss.addEventListener("click", () => {
+  try { localStorage.setItem(desktopInstallDismissKey, String(Date.now())); } catch (_) {}
+  refreshInstallInvitations();
+});
+desktopInstallAction.addEventListener("click", () => { void promptPWAInstall(); });
 myAppButton.addEventListener("click", () => {
-  installPopup.style.display = "flex";
+  if (isPWAInstalled() || !isPhoneBrowser()) return;
+  if (deferredPrompt) void promptPWAInstall();
+  else installPopup.style.display = "flex";
 });
-closePopupBtn.addEventListener("click", () => {
-  installPopup.style.display = "none";
-});
-dismissPopupBtn.addEventListener("click", () => {
-  installPopup.style.display = "none";
-});
-
+closePopupBtn.addEventListener("click", () => { installPopup.style.display = "none"; });
+dismissPopupBtn.addEventListener("click", () => { installPopup.style.display = "none"; });
 window.addEventListener("appinstalled", () => {
-  myAppContainer.style.display = "none";
-  console.log("PWA was installed");
+  installCompletedThisSession = true;
+  deferredPrompt = null;
+  installPopup.style.display = "none";
+  refreshInstallInvitations();
 });
+window.addEventListener("pageshow", refreshInstallInvitations);
+window.addEventListener("focus", refreshInstallInvitations);
+if (window.matchMedia("(display-mode: standalone)").addEventListener) {
+  window.matchMedia("(display-mode: standalone)").addEventListener("change", refreshInstallInvitations);
+}
 
 /* ========== Initial Setup Calls ========== */
 updateOuterScale("Shur");
@@ -1134,13 +1167,5 @@ langSelector.value = ["en", "fr", "fa"].includes(requestedLang) ? requestedLang 
 // Trigger language switch based on selection
 langSelector.dispatchEvent(new Event("change"));
 
-/* ========== 5) Add to Home Screen and My App Modal Scripts ========== */
-window.addEventListener("load", () => {
-  toggleMyAppButton();
-});
-
-function showInstallPopup() {
-  if (!isPWAInstalled()) {
-    installPopup.style.display = "flex";
-  }
-}
+/* ========== 5) Refresh installation invitation on load ========== */
+window.addEventListener("load", refreshInstallInvitations);

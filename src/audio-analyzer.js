@@ -1349,7 +1349,10 @@
     try {
       // iOS can leave a previously granted track alive but muted after an
       // audio-session change. Reacquire instead of recording a silent track.
-      const readyStream = recorder.stream?.getAudioTracks?.().some(track =>
+      // On iOS, a live-looking track can still produce silence after the
+      // browser changes audio sessions. Acquire a fresh native mic stream
+      // for each take; other platforms keep the existing reusable stream.
+      const readyStream = !IS_IOS && recorder.stream?.getAudioTracks?.().some(track =>
         track.readyState === "live" && track.enabled && !track.muted);
       if (!readyStream && recorder.stream) {
         stopMediaStream(recorder.stream);

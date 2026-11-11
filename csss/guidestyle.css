@@ -339,3 +339,20 @@ html[dir="rtl"] .guide-instruction {
 @media (prefers-reduced-motion: reduce) {
   .guide-topic-chevron { transition: none; }
 }
+
+/* Revised Stage 1: one progressive first lesson and a dedicated limitations note. */
+.guide-merged-circles {
+  margin-top: 24px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(42, 64, 74, .2);
+}
+.guide-merged-heading { margin-top: 5px !important; }
+.guide-model-boundaries {
+  margin-top: 22px;
+  padding: 15px 17px;
+  border: 1px solid rgba(42, 64, 74, .18);
+  border-radius: 10px;
+  background: rgba(237, 243, 244, .65);
+}
+.guide-model-boundaries h3 { margin-top: 0; }
+.guide-model-boundaries p { margin-bottom: 0; }

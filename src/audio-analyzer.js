@@ -26,7 +26,7 @@
       dismissFailure: "× Close",
       analysisFailedTitle: "No notes detected",
       analysisFailedAction: "Try again",
-      analysisFailedHelp: "No stable pitches could be identified. Record again in a quieter place, or move the iPhone nearer your instrument.",
+      analysisFailedHelp: "No stable pitches could be identified. Record again in a quieter place, or move your phone closer to your instrument.",
       retryRecording: "Try recording again",
       stopAndHide: "■ Stop & hide",
       resultsShortcut: "Results",
@@ -196,7 +196,7 @@
       dismissFailure: "× Fermer",
       analysisFailedTitle: "Aucune note détectée",
       analysisFailedAction: "Réessayer",
-      analysisFailedHelp: "Aucune hauteur stable détectée. Réenregistrez dans un lieu plus calme ou rapprochez l’iPhone de l’instrument.",
+      analysisFailedHelp: "Aucune hauteur stable détectée. Réenregistrez dans un lieu plus calme ou rapprochez votre téléphone de l’instrument.",
       retryRecording: "Réenregistrer",
       stopAndHide: "■ Arrêter et masquer",
       resultsShortcut: "Résultats",
@@ -366,7 +366,7 @@
       dismissFailure: "× بستن",
       analysisFailedTitle: "نتی شناسایی نشد",
       analysisFailedAction: "تلاش دوباره",
-      analysisFailedHelp: "نت پایداری پیدا نشد. در محیطی آرام‌تر دوباره ضبط کنید یا آیفون را به ساز نزدیک‌تر کنید.",
+      analysisFailedHelp: "نت پایداری پیدا نشد. در محیطی آرام‌تر دوباره ضبط کنید یا گوشی‌تان را به ساز نزدیک‌تر کنید.",
       retryRecording: "ضبط دوباره",
       stopAndHide: "■ توقف و بستن",
       resultsShortcut: "نتایج",
@@ -1047,13 +1047,16 @@
       if (state.analysis?.events?.length || state.analysisFailure) openDrawer({ preferResults: true });
     });
     elements.failureRetry?.addEventListener("click", () => {
+      const recorder = state.recorder;
+      if (!recorder.supported || recorder.starting || recorder.recording ||
+          recorder.finalizing || recorder.permissionPreparing || state.worker) return;
       closeDrawer({ restoreFocus: false });
-      state.analysisFailure = false;
-      updateBadgeVisibility();
-      updateRecordingFeedback(t("recordReady"), 0, "ready");
       expandAnalysisCombo(true);
-      const control = microphonePermissionIsReady() ? elements.quickRecordStart : elements.quickFinderButton;
-      control?.focus({ preventScroll: true });
+      // This is a direct, user-initiated retry. Request microphone permission
+      // inside beginMicrophoneRecording and start as soon as access is granted.
+      // No second tap of Microphone or Record is required.
+      recorder.holdActive = true;
+      beginMicrophoneRecording({ requestPermission: true });
     });
     // Prevent pointer gestures on these controls from reaching circle drag handlers.
     [elements.badgeView, elements.badgeStop, elements.badgeChip].forEach((button) => {
@@ -1323,10 +1326,10 @@
     });
   }
 
-  async function beginMicrophoneRecording() {
+  async function beginMicrophoneRecording({ requestPermission = false } = {}) {
     const recorder = state.recorder;
     if (!recorder.supported || recorder.starting || recorder.recording || state.worker) return;
-    if (!microphonePermissionIsReady()) {
+    if (!microphonePermissionIsReady() && !requestPermission) {
       prepareMicrophonePermission();
       return;
     }

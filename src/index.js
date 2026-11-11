@@ -710,6 +710,7 @@ avazItems.forEach((item) => {
     // Selection is complete; collapse the menu so its list no longer
     // covers the circle's accessible modal-note help control on mobile.
     setAvazhaOpen(false);
+    updateAvazhaLabel();
     updateModalRoleMarkers();
   };
   item.addEventListener("click", chooseAvaz);
@@ -750,6 +751,7 @@ function updateAvazhaVisibility() {
       item.setAttribute("aria-pressed", "false");
     });
     setAvazhaOpen(false);
+    updateAvazhaLabel();
     avazhaContainer.style.display = "none";
   }
 }
@@ -767,6 +769,7 @@ function populateAvazhaDynamicColumn() {
     itemDiv.innerHTML = displayText;
     avazhaDynamicColumn.appendChild(itemDiv);
   });
+  updateAvazhaLabel();
   if (!avazhaColumns.classList.contains("hidden")) positionAvazhaMenu();
 }
 
@@ -868,7 +871,22 @@ function updateUIControls() {
 
 function updateAvazhaLabel() {
   const avazhaLabel = document.getElementById("avazhaLabel");
-  avazhaLabel.textContent = translations[currentLanguage].avazha;
+  const localized = translations[currentLanguage];
+  if (!activeAvazRole || scaleSelector.value !== "Shur") {
+    avazhaLabel.textContent = localized.avazha;
+    avazhaButton.setAttribute("aria-label", localized.avazha);
+    return;
+  }
+
+  // The tonal is derived from the currently rotated/transposed outer scale,
+  // not a fixed note assigned to the modal name.
+  const selectedIndex = avazItems.findIndex(item =>
+    item.getAttribute("data-translate") === "avazha." + activeAvazRole
+  );
+  const tone = avazhaDynamicColumn.children[selectedIndex]?.textContent?.trim() || "";
+  const name = localized.avazhaItems[activeAvazRole] || activeAvazRole;
+  avazhaLabel.textContent = tone ? name + " · " + tone : name;
+  avazhaButton.setAttribute("aria-label", avazhaLabel.textContent);
 }
 
 function updatePopupContent() {

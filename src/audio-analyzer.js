@@ -2137,15 +2137,20 @@
       state.worker = worker;
 
       worker.onmessage = (event) => {
+        // A terminated worker may already have an event queued. Never allow
+        // the previous track's progress, completion or errors to overwrite
+        // a newer session (or clear a newer worker).
+        if (state.worker !== worker || request.loadGeneration !== state.loadGeneration) {
+          worker.terminate();
+          return;
+        }
         const message = event.data || {};
         if (message.type === "progress") {
           setStatus(t("analyzing"), message.progress);
         } else if (message.type === "complete") {
           state.worker = null;
-          if (request.loadGeneration === state.loadGeneration) {
-            handleAnalysisComplete(message.result, mode, request);
-          }
           worker.terminate();
+          handleAnalysisComplete(message.result, mode, request);
         } else if (message.type === "error") {
           state.worker = null;
           worker.terminate();
@@ -2154,6 +2159,10 @@
       };
 
       worker.onerror = (event) => {
+        if (state.worker !== worker || request.loadGeneration !== state.loadGeneration) {
+          worker.terminate();
+          return;
+        }
         console.error(event);
         state.worker = null;
         worker.terminate();

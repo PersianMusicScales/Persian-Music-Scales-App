@@ -1594,3 +1594,43 @@ footer {
 @media (max-width: 700px) {
   .desktop-install-notice { display: none !important; }
 }
+
+/* Avazha tonal index: a persistent color per Avaz, independent of note
+   spelling, language and transposition. These hues do NOT represent the
+   existing Shahed (gold) or Finalis (blue) musical functions. */
+[data-avaz-key="abuAta"]   { --avaz-color: #0d9488; --avaz-tint: #dbf5ef; }
+[data-avaz-key="bayatTork"] { --avaz-color: #8b5cf6; --avaz-tint: #ede5ff; }
+[data-avaz-key="afshari"]  { --avaz-color: #c37b0a; --avaz-tint: #fff0cb; }
+[data-avaz-key="dashti"]   { --avaz-color: #cc4076; --avaz-tint: #ffe4ef; }
+
+/* Color accents are internal to menu cells: no new column widths or rows. */
+#avazhaColumns.avazha-viewport-popover .avazha-item[data-avaz-key] {
+  background-color: #f3f0fc;
+  background-image: linear-gradient(to right, var(--avaz-color) 0 4px, transparent 4px);
+  background-repeat: no-repeat;
+  padding-inline: 12px 8px;
+}
+#avazhaColumns.avazha-viewport-popover .avazha-item[data-avaz-key].active-modal-avaz {
+  background-color: var(--avaz-tint);
+  font-weight: 700;
+}
+.scale-controls > .avazha-container .avazha-button[data-avaz-key] {
+  background: #faf9ff;
+  box-shadow: inset 0 0 0 3px var(--avaz-color), 0 3px 10px rgba(18,31,43,.13);
+}
+/* Keep the original note structure and its blue ◆ / gold ★ annotations.
+   A soft fill and inset ring indicate the selected Avaz's tonal degree,
+   without using the modal-marker outline or modifying the scale geometry. */
+#outerScale .dynamic-label.avaz-tonal-highlight {
+  background-color: var(--avaz-tint);
+  box-shadow: inset 0 0 0 3px var(--avaz-color), 0 0 8px rgba(0,0,0,.15);
+  filter: drop-shadow(0 0 2px var(--avaz-color));
+}
+#outerScale .dynamic-label.avaz-tonal-highlight.modal-shahed {
+  box-shadow: inset 0 0 0 3px var(--avaz-color), 0 0 9px rgba(244,189,45,.65);
+}
+@media (max-width: 480px) {
+  #avazhaColumns.avazha-viewport-popover .avazha-item[data-avaz-key] {
+    padding-inline: 8px 4px;
+  }
+}

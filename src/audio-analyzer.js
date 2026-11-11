@@ -832,7 +832,9 @@
         },
         video: false,
       });
-      stopMediaStream(stream);
+      // Permission activation keeps the stream ready without analysing it.
+      stopMediaStream(recorder.stream);
+      recorder.stream = stream;
       setMicrophonePermissionState("granted");
       setRecorderButtonsState("ready", false);
       updateRecordingFeedback(t("microphonePermissionReady"), 0, "ready");
@@ -886,6 +888,11 @@
     }
     elements.quickFinderPanel.classList.remove("open");
     elements.quickFinder?.classList.remove("status-open");
+    if (!state.recorder.recording && !state.recorder.starting &&
+        !state.recorder.finalizing && state.recorder.stream) {
+      stopMediaStream(state.recorder.stream);
+      state.recorder.stream = null;
+    }
     window.setTimeout(() => {
       if (!elements.quickFinderPanel.classList.contains("open")) elements.quickFinderPanel.hidden = true;
     }, 190);
@@ -1140,15 +1147,17 @@
     updateButtons();
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          channelCount: { ideal: 1 },
-          echoCancellation: { ideal: false },
-          noiseSuppression: { ideal: false },
-          autoGainControl: { ideal: false },
-        },
-        video: false,
-      });
+      const stream = recorder.stream?.getAudioTracks?.().some(track => track.readyState === "live")
+        ? recorder.stream
+        : await navigator.mediaDevices.getUserMedia({
+            audio: {
+              channelCount: { ideal: 1 },
+              echoCancellation: { ideal: false },
+              noiseSuppression: { ideal: false },
+              autoGainControl: { ideal: false },
+            },
+            video: false,
+          });
       await playbackUnlock;
       setMicrophonePermissionState("granted");
 
@@ -1198,11 +1207,6 @@
       } catch (meterError) {
         console.warn("Microphone level meter was unavailable:", meterError);
       }
-      recorder.maximumTimerId = window.setTimeout(() => {
-        updateRecordingFeedback(t("recordingMaximum"), recorder.maximumSeconds, "processing");
-        recorder.holdActive = false;
-        finishMicrophoneRecording();
-      }, recorder.maximumSeconds * 1000);
       updateButtons();
     } catch (error) {
       console.error("Microphone access failed:", error);
@@ -1224,6 +1228,7 @@
     if (recorder.starting) return;
     if (!recorder.recording || !recorder.mediaRecorder) return;
     recorder.duration = Math.max(0, (performance.now() - recorder.startedAt) / 1000);
+    recorder.recording = false; // Stop live highlighting immediately
     clearTimeout(recorder.maximumTimerId);
     recorder.maximumTimerId = 0;
     stopRecordingClock();
@@ -1433,22 +1438,7 @@
       });
     }
 
-    if (["arming", "recording", "processing", "error", "playing"].includes(mode)) {
-      openQuickFinder();
-      if (mode === "error") {
-        window.setTimeout(() => {
-          if (!state.recorder.recording && !state.recorder.starting && !state.recorder.finalizing) {
-            closeQuickFinder({ restoreFocus: false, cancelRecording: false });
-          }
-        }, 4200);
-      }
-    } else if (!state.recorder.recording && !state.recorder.starting) {
-      window.setTimeout(() => {
-        if (!state.recorder.recording && !state.recorder.starting && !state.recorder.finalizing) {
-          closeQuickFinder({ restoreFocus: false, cancelRecording: false });
-        }
-      }, 900);
-    }
+    if (["arming", "recording", "processing", "error", "playing"].includes(mode)) openQuickFinder();
   }
 
   function formatRecordingTime(seconds) {
@@ -1765,7 +1755,10 @@
     );
     updateButtons();
 
-    if (request.autoStart && request.loadGeneration === state.loadGeneration) {
+    if (request.loadGeneration === state.loadGeneration && state.inputOrigin === "microphone") {
+      closeQuickFinder({ restoreFocus: false, cancelRecording: false });
+      openDrawer(); // display ranked analysis, no automatic looping playback
+    } else if (request.autoStart && request.loadGeneration === state.loadGeneration) {
       startAutomaticPlaybackAndClose();
     }
   }

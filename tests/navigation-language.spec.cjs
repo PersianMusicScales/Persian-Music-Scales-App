@@ -13,6 +13,7 @@ test("bottom tabs retain geometry and icon sizes across pages and languages", as
         return {
           navHeight: bounds.height,
           navWidth: bounds.width,
+          viewportWidth: document.documentElement.clientWidth,
           iconSizes: [...nav.querySelectorAll(".nav-icon")].map(el => {
             const rect = el.getBoundingClientRect();
             return [rect.width, rect.height, getComputedStyle(el).fontSize];
@@ -27,9 +28,12 @@ test("bottom tabs retain geometry and icon sizes across pages and languages", as
   const first = measurements[0].result;
   for (const item of measurements) {
     expect(item.result.navHeight).toBeCloseTo(first.navHeight, 1);
-    expect(item.result.navWidth).toBeCloseTo(first.navWidth, 1);
+    // Scrollbars may reduce the layout viewport by approximately 15px.
+    expect(item.result.navWidth).toBeCloseTo(item.result.viewportWidth, 1);
     expect(item.result.iconSizes).toEqual(first.iconSizes);
-    expect(item.result.tabWidths).toEqual(first.tabWidths);
+    for (const tabWidth of item.result.tabWidths) {
+      expect(tabWidth).toBeCloseTo(item.result.navWidth / 4, 1);
+    }
     expect(item.result.labelSizes).toEqual(first.labelSizes);
   }
 });

@@ -94,3 +94,35 @@ The regression tests include 4 synthetic branch cases, 24-bin pitch notation che
 The tonic shown next to an experimental Āvāz result is the Shur **reference pitch**, **not** a claim to be the Āvāz's finalis or shāhed.
 
 Main branch has not been modified; this is still draft PR #35.
+
+## Experimental recurrent-motif channel (November 12: IRMA CSV evaluation)
+
+### Input-data audit — no IRMA content committed
+
+The user supplied a CSV table with **12 excerpts**, all from the **Karimi vocal Radif** segment of the [IRMA dataset](https://github.com/SepiSha/irma-dataset), comprising **3 references each** for Abu Ata, Bayat-e Tork, Afshari and Dashti (2 opening excerpts and 1 terminal excerpt per system). Each CSV excerpt holds 14 note tokens and 14 durations, for 168 note tokens total.
+
+**Important provenance limitations:**
+
+1. The four terminal excerpts are explicitly marked `NOT independently verified as Forud`, so they are NOT used as cadential ground truth.
+2. The hand-selected 14-note sequences are **not verbatim prefixes** of their longer source files in all cases. In the original IRMA `DoReMi` files, the Afshari Darāmad opening contains intermediate B-flat notes omitted by the CSV, and the Dashti Darāmad source starts with a B-flat anacrusis omitted by the CSV. Selection/filtering provenance is not specified.
+3. The source describes Karimi-derived notated and alignment material, **not 12 independently labeled performance recordings**. These 12 excerpts are correlated excerpts from a single tradition/performer; they are not a sufficient training/test population.
+4. Source note tokens include `Ek`, `Ak`, and `Bk` (koron signs) and octave indices. They must not be silently rounded to E-flat, A-flat or B-flat, or flattened across octaves if the future model needs register-sensitive information.
+5. The IRMA repository states that its author-generated material is **CC BY-NC 4.0**, and commercial source audio is not supplied. Original sequences and MIDI data have not been copied, bundled, modified or redistributed in this public application; seek appropriate permissions before distribution of dataset-derived templates.
+
+The *research insight* is that short note-to-note intervals are common across branches. A small exploratory count within these CSV excerpts showed many identical 2–3-note interval contours shared across different Āvāz labels. Therefore raw note-pair or fixed-scale matching alone is weak evidence of a unique Āvāz; longer and recurrent phrase boundaries deserve further investigation. These observations are **exploratory**, not empirical recognition accuracy results.
+
+### Implementation — no external templates
+
+The new `relativeMotifFromNotes` / `relativeMotifSimilarity` functions match *relative interval contours*. They are independent of tonic and octave transposition, require matching direction for substantive movements, and allow up to one 50-cent pitch bin of imprecision per step.
+
+`discoverRecurrentEndingMotifs` analyzes only the current user's extracted structural phrases. It detects 4-note ending contours recurring in **distinct** phrases and resolving to the **same** pitch class. Ornamental events are already removed by the existing `extractStructuralPhrases` function. The last 120 phrases cap pairwise work.
+
+`recurrentEndingMotifFit` adds at most **0.005** to the candidate's pre-logistic heuristic score; fewer than 3 eligible phrases or fewer than 2 corroborating phrase endings produces no contribution. The source's motifs are **not** used as templates, and these recurrent contours are **not asserted to be verified traditional Forud**.
+
+The result is an **experimental, source-neutral rhythmic/melodic feature**, not a trained IRMA classifier. It does not introduce new UI controls, alter displayed note labels, change playback, or replace the previous phrase/tuning evidence.
+
+### Tests and interpretation
+
+Added synthetic unit tests for transposition and octave invariance, microtonal tolerance, contour direction reversal, malformed patterns, matching distinct phrase endings, nonmatching endpoints, insufficient evidence, and the strict 0.005 score bound.
+
+The automated test suite passing does **not** show improved classification accuracy on annotated audio. Next step: build a legally usable, independently labeled and artist-separated audio benchmark; verify actual phrase boundaries and forud labels by ear/score; then run baseline-versus-branch comparison and potentially fit source-validated mode-specific motifs. Keep PR #35 draft and unmerged until that evaluation.

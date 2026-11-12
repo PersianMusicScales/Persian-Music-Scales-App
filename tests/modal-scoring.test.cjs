@@ -36,6 +36,7 @@ const names = [
 ];
 const context = {
   mod: (x, n) => ((x % n) + n) % n,
+  circularDistance: (a,b,n) => Math.min(((a-b)%n+n)%n,((b-a)%n+n)%n),
   clamp: (x, lo, hi) => Math.max(lo, Math.min(hi, x)),
   AVAZ_REFERENCE_MODELS: undefined,
   MODAL_SIGNATURES: {

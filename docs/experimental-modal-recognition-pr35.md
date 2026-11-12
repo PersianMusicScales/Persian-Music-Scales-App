@@ -151,3 +151,9 @@ The existing Dastgāh score values and ordering are preserved exactly. In partic
 **Testing:** Replaced the old four Shur-gated fixtures with independent reference-model tests, explicit reference-degree mappings, octave/transposition invariance, microtonal distinction, and short-clip abstention. Isolated scoring tests passed (28 tests) on commit `d072928ad32f3e8daba1d67b4471ff29dea620e0`. Browser tests should be reviewed independently. **No labeled real-recording accuracy study has yet been completed.**
 
 **Remaining concern:** The source's 340/835/905-cent theoretical pitches are not guaranteed to match every player's actual intonation. Distinctive motifs and forud cannot be treated as validated unless checked against labeled, gusheh-annotated performances. Do not merge into `main` without comparative recording-based validation.
+
+### Additional end-to-end synthetic validation
+
+The isolated `classifyShurAvaz` flow was exercised with **four independently invented synthetic examples** designed around the sourced shāhed / ist / finalis / āghāz rules. The tests for Abu Ata, Bayat-e Tork, Afshari and Dashti all pass. The 30-test suite passed at commit `776418eb6a272f08fd4711dd957f84f8934a8933`. **These synthetic examples are designed to fit the models; passing them is not evidence of real recording classification accuracy.**
+
+Comparison with the published main branch should include both (a) recognition of the four Āvāz systems and (b) regression checks on recordings that were already correctly identified as the original Dastgāh. Do not merge without that validation.

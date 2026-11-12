@@ -2401,121 +2401,217 @@
   }
 
 
-  // Experimental, abstaining Shur-family branch classifier. All offsets are
-  // 50-cent classes from the app's SHUR REFERENCE (G in the cited examples):
-  // G 0, A-koron 3, Bb 6, C 10, D-koron 13, D 14, Eb 16,
-  // E-koron 17, F 20. Eb is NOT E-koron; Ab is NOT A-koron.
+  // Independent Shur-family analysis, separate from legacy Dastgah scoring.
+  // The four models below use the *first named note C* of Ableton's exported
+  // example .scl files as the transposition reference. This is NOT the finalis.
   //
-  // Evidence: Tsuge, Abu Ata (Iranica, pp. 259-260); Caton, Bayat-e Tork
-  // (pp. 885-886); Farhat, Afshari (pp. 586-587); During, Dashti
-  // (pp. 107-108). Uses explicitly described tonal functions and variable
-  // notes, NOT illustrative motifs or unverified recording timestamps.
-  // Does NOT change the seven-note Shur circle or its transposition.
-  function classifyShurAvaz(tonicBin, features, familyCoverage) {
-    const empty = (reason) => ({ avazKey: null, reason, alternatives: [] });
-    const phrases = (features.structuralPhrases || []).filter(
-      (phrase) => phrase.notes?.length >= 3
-    );
-    const events = phrases.flatMap((phrase) => phrase.notes);
-    if (phrases.length < 2 || events.length < 10 || familyCoverage < 0.62) {
-      return empty("insufficient independent Shur-family melodic evidence");
-    }
+  // Positions are in cents from that C: D=205, E-koron=340, F=500,
+  // G=700, A-koron=835, A=905, B-flat=995. A-koron != A-flat.
+  // In the existing Shur circle, the corresponding reference/tonic is D,
+  // i.e. the source C reference + 200 cents (4 of the app's 50-cent bins).
+  //
+  // Sources (user-provided exports):
+  // https://tuning.ableton.com/persian-radif/dastgah-e-abuata/
+  // https://tuning.ableton.com/persian-radif/dastgah-e-bayat-e-tork/
+  // https://tuning.ableton.com/persian-radif/dastgah-e-afshari/
+  // https://tuning.ableton.com/persian-radif/dastgah-e-dashti/
+  // Degree functions are from the annotated examples, not universal rules
+  // across gushehs. No third-party MIDI/transcription is redistributed.
+  const AVAZ_REFERENCE_MODELS = Object.freeze([
+    {
+      key: "abuAta",
+      cents: [0, 205, 340, 500, 700, 905],
+      shahed: 700, ist: 340, finalis: 205, aghaz: [340, 700],
+      // Source's six-degree scale deliberately does not assert B-flat.
+      variable: null,
+    },
+    {
+      key: "bayatTork",
+      cents: [0, 205, 340, 500, 700, 905, 995],
+      shahed: 500, ist: 0, finalis: 500, aghaz: [0],
+      variable: null,
+    },
+    {
+      key: "afshari",
+      cents: [0, 205, 340, 500, 700, 835, 995],
+      shahed: 700, ist: 340, finalis: 0, aghaz: [700],
+      variable: [835, 905],
+    },
+    {
+      key: "dashti",
+      cents: [0, 205, 340, 500, 700, 905, 995],
+      shahed: 905, ist: null, finalis: 205, aghaz: [500],
+      // The site describes A as a variable tone. Unlike the former
+      // G-based heuristic this is A/A-koron, NOT D/D-koron.
+      variable: [905, 835],
+    },
+  ]);
 
-    const at = (offset) => mod(tonicBin + offset, 24);
-    const counts = new Array(24).fill(0);
-    events.forEach((note) => { counts[note.pitchClass] += 1; });
+  function avazPitchClass(referenceBin, cents) {
+    return mod(referenceBin + Math.round(cents / 50), 24);
+  }
+
+  function avazPitchMatch(note, expectedBin) {
+    if (!Number.isFinite(note)) return 0;
+    const distance = circularDistance(mod(note, 24), expectedBin, 24);
+    return distance === 0 ? 1 : distance === 1 ? 0.45 : 0;
+  }
+
+  // Source-specific *continuous-cent* pitch fit; the app's visible quarter-
+  // tone circle and Dastgah candidates continue to use their own pitch grid.
+  function avazContinuousPitchFit(model, referenceBin, features, profile) {
+    const observations = (features.pitchObservations || []).filter(
+      o => Number.isFinite(o.pitch) && o.weight > 0
+    );
+    const samples = observations.length >= 4 ? observations :
+      (profile || []).map((weight, bin) => ({ pitch: bin, weight }));
+    const sourceCents = model.cents.concat(model.variable || []);
+    let total = 0;
+    let matched = 0;
+    for (const sample of samples) {
+      if (!(sample.weight > 0)) continue;
+      const relative = mod((sample.pitch - referenceBin -
+        (features.pitchGridOffset || 0)) * 50, 1200);
+      let nearest = 600;
+      for (const cent of sourceCents) {
+        const delta = Math.abs(relative - cent);
+        nearest = Math.min(nearest, delta, 1200 - delta);
+      }
+      // Soft tolerance for non-50-cent traditional intonation; do not
+      // equate pitches separated by a semitone or force fixed 50c tuning.
+      matched += sample.weight * Math.exp(-0.5 * Math.pow(nearest / 55, 2));
+      total += sample.weight;
+    }
+    return total > 0 ? matched / total : 0;
+  }
+
+  function avazPhraseEvidence(model, referenceBin, features) {
+    const phrases = (features.structuralPhrases || []).filter(p => p.notes?.length >= 2);
+    const events = phrases.flatMap(p => p.notes);
+    const at = (cent) => avazPitchClass(referenceBin, cent);
+    if (!events.length) return null;
     const sustained = features.sustainedProfile || [];
-    const prominence = (offset) => clamp(
-      ((sustained[at(offset)] || 0) - 0.08) / 0.22, 0, 1
-    );
-    const occurrence = (offset) => clamp(counts[at(offset)] / 2, 0, 1);
-    const endingRate = (offsets, localPhrases = phrases) => {
-      if (!localPhrases.length) return 0;
-      return localPhrases.filter((phrase) =>
-        offsets.some((offset) =>
-          phrase.notes[phrase.notes.length - 1].pitchClass === at(offset)
-        )
-      ).length / localPhrases.length;
-    };
+    const shahedBin = at(model.shahed);
+    const primary = sustained[shahedBin] || 0;
+    const neighbor = Math.max(sustained[mod(shahedBin - 1, 24)] || 0,
+      sustained[mod(shahedBin + 1, 24)] || 0);
+    const shahed = clamp((primary + neighbor * 0.25 - 0.045) / 0.175, 0, 1);
+
     const internal = phrases.slice(0, -1);
-    const finalNote = phrases[phrases.length - 1].notes.slice(-1)[0];
-    const finalAt = (offsets) => offsets.some((offset) =>
-      finalNote.pitchClass === at(offset)
-    ) ? 1 : 0;
-
-    const abuShahed = prominence(10);
-    const abuIst = endingRate([3], internal);
-    const abuFinal = finalAt([0]);
-    const bayatShahed = prominence(6);
-    const bayatStops = endingRate([6, 20]);
-    const bayatFinal = finalAt([6, 20]);
-    const afshariShahed = prominence(0);
-    const afshariIst = endingRate([17], internal);
-    const afshariFinal = finalAt([10]);
-    const afshariMicrotone = occurrence(17);
-    const dNatural = occurrence(14);
-    const dKoron = occurrence(13);
-    // During describes movement between pentachord regions, not necessarily
-    // two adjacent D/D-koron notes. Require lowered D after natural D.
-    const firstD = events.findIndex((note) => note.pitchClass === at(14));
-    const laterDkoron = firstD >= 0 && events.slice(firstD + 1).some(
-      (note) => note.pitchClass === at(13)
-    ) ? 1 : 0;
-    const dashtiFinal = finalAt([0]);
-
-    const alternatives = [
-      {
-        key: "abuAta",
-        evidence: 0.48 * abuShahed + 0.36 * abuIst + 0.16 * abuFinal,
-        supported: abuShahed >= 0.55 && abuIst >= 0.5,
-        signals: { shahed: abuShahed, ist: abuIst, finalis: abuFinal },
-      },
-      {
-        key: "bayatTork",
-        evidence: 0.55 * bayatShahed + 0.30 * bayatStops + 0.15 * bayatFinal,
-        supported: bayatShahed >= 0.55 && bayatStops >= 0.5,
-        signals: { shahed: bayatShahed, cadenceTargets: bayatStops, finalis: bayatFinal },
-      },
-      {
-        key: "afshari",
-        evidence: 0.30 * afshariShahed + 0.40 * afshariIst +
-          0.18 * afshariFinal + 0.12 * afshariMicrotone,
-        supported: afshariShahed >= 0.35 && afshariIst >= 0.5 &&
-          afshariMicrotone >= 0.5,
-        signals: {
-          shahed: afshariShahed, ist: afshariIst,
-          finalis: afshariFinal, eKoron: afshariMicrotone,
-        },
-      },
-      {
-        key: "dashti",
-        evidence: 0.30 * dKoron + 0.22 * dNatural +
-          0.29 * laterDkoron + 0.19 * dashtiFinal,
-        supported: dKoron >= 1 && dNatural >= 0.5 && laterDkoron === 1,
-        signals: { dKoron, dNatural, laterDkoron, finalis: dashtiFinal },
-      },
-    ].map((candidate) => ({
-      ...candidate,
-      evidence: clamp(candidate.evidence, 0, 1),
-    })).sort((a, b) => b.evidence - a.evidence);
-
-    // Unsupported branches cannot block a well-supported one, but near-tied
-    // supported branches lead to abstention. Neither value is probability.
-    const supported = alternatives.filter((candidate) => candidate.supported);
-    const winner = supported[0];
-    const runnerUp = supported[1];
-    if (!winner || winner.evidence < 0.69) {
-      return { avazKey: null, reason: "no sufficiently distinctive branch evidence", alternatives };
+    const endingRate = (cent, list) => list.length
+      ? list.reduce((sum, p) =>
+        sum + avazPitchMatch(p.notes[p.notes.length - 1].pitchClass, at(cent)), 0) / list.length
+      : 0;
+    const ist = model.ist == null ? null : endingRate(model.ist, internal);
+    const finalNote = events[events.length - 1];
+    const finalis = Math.max(
+      avazPitchMatch(finalNote.pitchClass, at(model.finalis)),
+      endingRate(model.finalis, phrases) * 0.7
+    );
+    const firstThree = events.slice(0, 3);
+    let aghaz = 0;
+    for (let i = 0; i < firstThree.length; i += 1) {
+      for (const cent of model.aghaz) {
+        aghaz = Math.max(aghaz,
+          avazPitchMatch(firstThree[i].pitchClass, at(cent)) * [1, 0.5, 0.25][i]);
+      }
     }
-    if (runnerUp && winner.evidence - runnerUp.evidence < 0.12) {
-      return { avazKey: null, reason: "competing Shur-family branches", alternatives };
+    let variable = null;
+    if (model.variable) {
+      // Variable tones are supportive but not mandatory; a gusheh or short
+      // clip may not exhibit the full alternation.
+      const choices = model.variable.map(cent => at(cent));
+      const hits = events.filter(e => choices.some(bin =>
+        avazPitchMatch(e.pitchClass, bin) >= 0.9));
+      const varied = choices.every(bin => hits.some(e =>
+        avazPitchMatch(e.pitchClass, bin) >= 0.9));
+      variable = clamp(hits.length / Math.max(2, events.length * 0.18), 0, 1) *
+        (varied ? 1 : 0.7);
+    }
+    const recurring = recurrentEndingMotifFit(
+      features.recurrentEndingMotifs, at(model.finalis)
+    );
+    return { shahed, ist, finalis, aghaz, variable, recurring,
+      structuralNotes: events.length, phraseCount: phrases.length };
+  }
+
+  function scoreIndependentAvaz(model, referenceBin, features, profile) {
+    const phrase = avazPhraseEvidence(model, referenceBin, features);
+    if (!phrase || phrase.structuralNotes < 8) return null;
+    const pitch = avazContinuousPitchFit(model, referenceBin, features, profile);
+    if (pitch < 0.61) return null;
+    const components = [
+      [pitch, 0.20],
+      [phrase.shahed, 0.25],
+      [phrase.finalis, 0.20],
+      [phrase.aghaz, 0.10],
+      [phrase.recurring, 0.04],
+      [phrase.variable == null ? 0.5 : phrase.variable, 0.07],
+    ];
+    // Do not assume an ist for Dashti: reallocate, don't invent one.
+    if (phrase.ist == null) {
+      components.push([phrase.shahed, 0.08], [phrase.finalis, 0.06]);
+    } else {
+      components.push([phrase.ist, 0.14]);
+    }
+    const evidence = components.reduce((sum, [value, weight]) =>
+      sum + weight * value, 0);
+    const independentSignals = [
+      phrase.shahed >= 0.55,
+      phrase.finalis >= 0.80,
+      phrase.aghaz >= 0.75,
+      phrase.ist != null && phrase.ist >= 0.55,
+      phrase.variable != null && phrase.variable >= 0.65,
+    ].filter(Boolean).length;
+    const clearDistinctive = model.key === "dashti"
+      ? phrase.shahed >= 0.55 && phrase.aghaz >= 0.5
+      : model.key === "bayatTork"
+        ? phrase.shahed >= 0.55 && (phrase.ist >= 0.45 || phrase.finalis >= 0.8)
+        : (phrase.finalis >= 0.8 || (phrase.variable != null && phrase.variable >= 0.65)) &&
+          phrase.shahed >= 0.4;
+
+    return {
+      key: model.key, referenceBin, shurTonicBin: mod(referenceBin + 4, 24),
+      evidence: clamp(evidence, 0, 1), pitchCompatibility: pitch,
+      signals: phrase,
+      supported: clearDistinctive && independentSignals >= 2,
+      experimental: true,
+    };
+  }
+
+  function classifyShurAvaz(features, profile) {
+    const empty = reason => ({ avazKey: null, reason, alternatives: [] });
+    if (!(features.structuralPhrases || []).length) return empty("no structural phrases");
+    const results = [];
+    // Search every possible transposition of each model independently,
+    // including cases where the legacy Shur score is low.
+    for (let referenceBin = 0; referenceBin < 24; referenceBin += 1) {
+      for (const model of AVAZ_REFERENCE_MODELS) {
+        const result = scoreIndependentAvaz(model, referenceBin, features, profile);
+        if (result) results.push(result);
+      }
+    }
+    results.sort((a, b) => b.evidence - a.evidence);
+    const supported = results.filter(r => r.supported);
+    const winner = supported[0];
+    if (!winner || winner.evidence < 0.67) {
+      return { avazKey: null, reason: "insufficient distinctive Avaz evidence",
+        alternatives: results.slice(0, 5) };
+    }
+    // A one-bin (50c) difference in global tuning is uncertain, not a new
+    // modal candidate. Otherwise a nearby competitor triggers abstention.
+    const runner = supported.find(r => r !== winner && (
+      r.key !== winner.key ||
+      circularDistance(r.referenceBin, winner.referenceBin, 24) > 1
+    ));
+    if (runner && winner.evidence - runner.evidence < 0.075) {
+      return { avazKey: null, reason: "closely competing Avaz hypotheses",
+        alternatives: supported.slice(0, 5) };
     }
     return {
-      avazKey: winner.key,
-      evidence: winner.evidence,
-      signals: winner.signals,
-      alternatives,
-      reference: "Shur reference (G-based examples; transposable by tonicBin)",
+      avazKey: winner.key, referenceBin: winner.referenceBin,
+      shurTonicBin: winner.shurTonicBin, evidence: winner.evidence,
+      signals: winner.signals, alternatives: results.slice(0, 5),
       experimental: true,
     };
   }
@@ -2556,18 +2652,19 @@
       }
     });
 
-    // Preserve the original Dastgah candidate model and circle mapping.
-    // A tiny bonus may break a close Shur-family tie, but cannot override
-    // a clearly incompatible pitch collection.
-    candidates.forEach((candidate) => {
-      if (candidate.scaleName !== "Shur") return;
-      const avaz = classifyShurAvaz(candidate.tonicBin, features, candidate.pitchCoverage);
-      candidate.avazEvidence = avaz;
-      if (avaz.avazKey) {
-        candidate.avazKey = avaz.avazKey;
-        candidate.score += 0.015 * avaz.evidence;
-      }
-    });
+    // Independent Shur-family analysis does NOT adjust legacy Dastgah scores.
+    // Attach the experimental branch result to its correctly transposed Shur
+    // candidate, preserving all existing tonic/circle/playback behavior.
+    const avazDecision = classifyShurAvaz(features, profile);
+    state.avazDecision = avazDecision;
+    const avazCandidate = avazDecision.avazKey
+      ? candidates.find(c => c.scaleName === "Shur" &&
+        c.tonicBin === avazDecision.shurTonicBin)
+      : null;
+    if (avazCandidate) {
+      avazCandidate.avazKey = avazDecision.avazKey;
+      avazCandidate.avazEvidence = avazDecision;
+    }
     candidates.sort((a, b) => b.score - a.score);
     candidates.forEach((candidate) => {
       const logistic = 1 / (1 + Math.exp(-8.2 * (candidate.score - 0.5)));
@@ -2589,6 +2686,16 @@
       if (nearDuplicate) continue;
       diverse.push(candidate);
       if (diverse.length >= 6) break;
+    }
+    // If the independent model provides strong evidence but the legacy
+    // Dastgah ranking hides Shur, show the hypothesis among alternatives.
+    // Never displace the best legacy Dastgah result.
+    if (avazCandidate && diverse.length && !diverse.includes(avazCandidate)) {
+      const duplicate = diverse.findIndex(item => item.scaleName === "Shur" &&
+        circularDistance(item.tonicBin, avazCandidate.tonicBin, 24) <= 1);
+      if (duplicate > 0) diverse.splice(duplicate, 1);
+      diverse.splice(1, 0, avazCandidate);
+      diverse.length = Math.min(diverse.length, 6);
     }
     return diverse;
   }

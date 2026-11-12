@@ -49,3 +49,48 @@ Compare the SAME files and controls on `main` versus this branch:
 `node --test tests/modal-scoring.test.cjs`
 
 GitHub Actions also runs the repository's browser tests. Local Chrome testing requires `http://localhost:8000`, not `file://`.
+
+## Experimental Shur-family Āvāz branch recognition (November 12 update)
+
+**Added:** independent provisional branch hypotheses for Abu Ata, Bayat-e Tork, Afshari, and Dashti, implemented solely within `src/audio-analyzer.js`. The hypotheses appear in an existing result name as `Shur · [Avaz] (experimental) · [Shur reference pitch]` only when characteristic evidence is sufficient. The underlying candidate scale remains Shur and the circle, manual scale selection, audio Worker, raw note labels, playback, visualizer, and existing controls are unchanged.
+
+### Explicit pitch reference
+
+All offset classes are 50 cents, relative to the pre-existing Shur reference (G in the examples):
+
+| Relative offset | Pitch in G-reference |
+|---|---|
+| 0 | G |
+| 3 | A-koron |
+| 6 | B-flat |
+| 10 | C |
+| 13 | D-koron |
+| 14 | D natural |
+| 16 | E-flat |
+| 17 | E-koron |
+| 20 | F |
+
+The Shur circle's fixed scale excludes D-koron and E-koron. Therefore the classifier reads these from the detected note-event pitch classes as **additional variable-tone evidence** but never alters the circle's pitch collection. These are not equivalent to D-flat or E-flat.
+
+### Branch-specific evidence
+
+- **Abu Ata**: C shāhed emphasis, A-koron temporary ist in internal phrases, G finalis. Based on Tsuge's cited G reference.
+- **Bayat-e Tork**: B-flat shāhed emphasis and cadential attention to B-flat/F, with no asserted universal finalis. Based on Caton's F reference mapped into the shared G/Shur collection.
+- **Afshari**: G shāhed, E-koron phrase stops, C finalis, plus the actual presence of E-koron. Based on Farhat's example; this is an exceptionally important deviation from the fixed Shur circle.
+- **Dashti**: natural D and *later* D-koron in the melodic sequence (rather than the invalid D-flat substitution); G ending is corroborating but not mandatory. Based on During's two-pentachord description.
+
+### Abstention safeguards
+
+The classifier requires at least 2 usable structural phrases, 10 structural note events, and Shur pitch compatibility ≥0.62. A branch must have a model-specific pair of signals and heuristic evidence ≥0.69. Two supported, near-tied branch hypotheses (within 0.12) yield no branch classification. All results are **experimental hypotheses** and match percentages are **not calibrated probabilities**.
+
+A bounded score bonus of at most 0.015 is applied to an already compatible Shur candidate; this cannot generally overturn a strong parent-scale rejection but can reorder a close result. No automatic change to the displayed circle scale occurs.
+
+The particular branch-specific patterns came from explicit verbal tonal-function descriptions in Encyclopaedia Iranica (Tsuge, Caton, Farhat, During); the user-supplied motif sketches and unverified recording timestamps were **not** turned into recognition rules.
+
+### Test scope and limitations
+
+The regression tests include 4 synthetic branch cases, 24-bin pitch notation checks, and abstention and wrong-microtone controls. **Synthetic tests do not establish real-world audio accuracy.** Verify with independently classified recordings across traditions, gushehs, and performers before contemplating merge. Avoid forcing a branch decision from sparse or modulating clips. Shur remains a legitimate answer for uncertain Shur-family material.
+
+The tonic shown next to an experimental Āvāz result is the Shur **reference pitch**, **not** a claim to be the Āvāz's finalis or shāhed.
+
+Main branch has not been modified; this is still draft PR #35.

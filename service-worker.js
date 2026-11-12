@@ -103,7 +103,7 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (url.protocol === "blob:" || url.protocol === "data:") return;
   // Scope caching to the app and its explicitly used script CDN.
-  if (url.origin !== self.location.origin && url.origin !== "https://cdn.jsdelivr.net") return;
+  if (url.origin !== self.location.origin && !OPTIONAL_FILES.includes(url.href)) return;
 
   if (request.mode === "navigate") {
     event.respondWith(networkFirstNavigation(request));

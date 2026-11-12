@@ -1,0 +1,12 @@
+# Local dependencies and test artifacts
+node_modules/
+playwright-report/
+test-results/
+playwright/.cache/
+
+# Temporary files
+.DS_Store
+Thumbs.db
+__pycache__/
+*.py[cod]
+*.log

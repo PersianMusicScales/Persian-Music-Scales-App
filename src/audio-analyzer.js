@@ -2747,6 +2747,8 @@
     }
 
     const finalStructural = [...events].reverse().find((noteEvent) => noteEvent.role !== "ornament") || events[events.length - 1] || null;
+    const structuralPhrases = extractStructuralPhrases(events);
+    const recurrentEndingMotifs = discoverRecurrentEndingMotifs(structuralPhrases);
     return {
       structuralProfile,
       sustainedProfile,
@@ -2757,7 +2759,8 @@
       pitchObservations,
       pitchGridOffset: estimatePitchGridOffset(pitchObservations),
       phraseCadences,
-      structuralPhrases: extractStructuralPhrases(events),
+      structuralPhrases,
+      recurrentEndingMotifs,
       finalPitchClass: finalStructural?.pitchClass ?? null,
       phraseCount: events.filter((noteEvent) => noteEvent.phraseEnding).length,
     };
@@ -2911,6 +2914,80 @@
       resolution,
       score: clamp(0.55 * emphasis + 0.45 * resolution, 0, 1),
     };
+  }
+
+
+  // Transposition-invariant contour matcher. Operates on successive INTERVALS
+  // (not fixed notes) and therefore survives tonic and octave transposition.
+  // No third-party Radif phrase or melody is bundled in this source.
+  //
+  // A tolerance of 1 bin = 50 cents; direction must agree for intervals whose
+  // magnitude is >=2 bins. A motif is a sequence of >=3 structural notes.
+  function relativeMotifFromNotes(notes, length = 4) {
+    if (!Array.isArray(notes) || notes.length < length || length < 3) return null;
+    const tail = notes.slice(-length);
+    if (tail.some(note => !Number.isFinite(note.pitchIndex))) return null;
+    const origin = tail[0].pitchIndex;
+    return tail.map(note => note.pitchIndex - origin);
+  }
+
+  function relativeMotifSimilarity(left, right, toleranceBins = 1) {
+    if (!Array.isArray(left) || !Array.isArray(right) || left.length < 3 ||
+        left.length !== right.length || left.some(x => !Number.isFinite(x)) ||
+        right.some(x => !Number.isFinite(x))) return 0;
+    const tolerance = clamp(Number(toleranceBins) || 0, 0, 2);
+    let totalError = 0;
+    for (let i = 1; i < left.length; i += 1) {
+      const l = left[i] - left[i - 1];
+      const r = right[i] - right[i - 1];
+      // A large ascending step is not equivalent to a descending one.
+      if (Math.abs(l) >= 2 && Math.abs(r) >= 2 && Math.sign(l) !== Math.sign(r)) return 0;
+      const error = Math.abs(l - r);
+      if (error > tolerance) return 0;
+      totalError += error;
+    }
+    return clamp(1 - totalError / ((left.length - 1) * (tolerance + 1)), 0, 1);
+  }
+
+  // Identify phrase-final 4-note contours that recur across DISTINCT phrases
+  // and resolve to the SAME observed pitch class. No copyrighted external
+  // examples are embedded; motifs are discovered within the current recording.
+  // Limit comparisons to the last 120 phrases to bound processing time.
+  function discoverRecurrentEndingMotifs(phrases) {
+    const eligible = (phrases || []).filter(p => p.notes?.length >= 4).slice(-120)
+      .map(p => {
+        const relative = relativeMotifFromNotes(p.notes, 4);
+        const last = p.notes[p.notes.length - 1];
+        return relative && Number.isFinite(last?.pitchClass)
+          ? { relative, finalBin: mod(last.pitchClass, 24) }
+          : null;
+      }).filter(Boolean);
+    const support = new Array(24).fill(0);
+    if (eligible.length < 3) return { phraseCount: eligible.length, support };
+    // Only count each phrase once even if it matches several other phrases.
+    const matched = new Array(eligible.length).fill(false);
+    for (let i = 0; i < eligible.length; i += 1) {
+      for (let j = i + 1; j < eligible.length; j += 1) {
+        if (eligible[i].finalBin !== eligible[j].finalBin) continue;
+        if (relativeMotifSimilarity(eligible[i].relative, eligible[j].relative, 1) >= 0.7) {
+          matched[i] = true;
+          matched[j] = true;
+        }
+      }
+    }
+    for (let i = 0; i < matched.length; i += 1) {
+      if (matched[i]) support[eligible[i].finalBin] += 1;
+    }
+    return { phraseCount: eligible.length, support };
+  }
+
+  function recurrentEndingMotifFit(recurrent, targetPitchClass) {
+    if (!recurrent || recurrent.phraseCount < 3 ||
+        !Array.isArray(recurrent.support)) return 0;
+    const supporting = recurrent.support[mod(targetPitchClass, 24)] || 0;
+    return supporting >= 2
+      ? clamp(supporting / recurrent.phraseCount, 0, 1)
+      : 0;
   }
 
   // This score checks whether the final directed motion of an observed
@@ -3108,6 +3185,9 @@
     const cadenceDirection = scoreCadenceDirection(
       features.structuralPhrases || [], signature.cadences || [], tonicBin
     );
+    const recurrentMotifEvidence = recurrentEndingMotifFit(
+      features.recurrentEndingMotifs, tonicBin
+    );
     const tonalRoleEvidence = scoreTonalRoleBehavior(
       features.structuralPhrases || [], features.sustainedProfile || [],
       scaleName, tonicBin, offsets
@@ -3127,6 +3207,9 @@
       // Kept below 2.5% so unvalidated phrase priors cannot dominate pitch
       // and tonic evidence. Independent source-labeled testing is needed.
       phraseBehavior.score * 0.02 +
+      // Small, source-neutral repeated-cadence evidence; maximum 0.005.
+      // This is a hypothesis pending independent audio validation.
+      recurrentMotifEvidence * 0.005 +
       (cadenceDirection.available ? (cadenceDirection.score - 0.5) * 0.01 : 0) +
       // Zero-centered maximum effect ±1% of the score, avoiding a built-in
       // advantage for only the modes with a verified-enough role model.
@@ -3144,6 +3227,7 @@
       phraseCadenceEvidence,
       phraseBehavior,
       cadenceDirection,
+      recurrentMotifEvidence,
       tonalRoleEvidence,
       outsideEnergy,
       degreeCoverage,

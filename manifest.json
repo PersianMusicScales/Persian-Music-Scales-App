@@ -80,43 +80,15 @@
     "music",
     "entertainment"
   ],
-  "iarc_rating_id": "/",
   "prefer_related_applications": false,
   "related_applications": [],
   "launch_handler": {
     "client_mode": "navigate-new"
-  },
-  "background_sync": {
-    "periodic_sync": true
   },
   "scope_extensions": [
     {
       "origin": "https://persianmusicscales.github.io",
       "scope": "/"
     }
-  ],
-  "permissions": [
-    "background-sync",
-    "push-notifications"
-  ],
-  "push_notification": {
-    "enabled": true,
-    "options": {
-      "vibrate": [
-        100,
-        50,
-        100
-      ],
-      "actions": [
-        {
-          "action": "explore",
-          "title": "Explore Scales",
-          "icon": "assets/icons/icon-192x192.png"
-        }
-      ]
-    }
-  },
-  "background_fetch": {
-    "enabled": true
-  }
+  ]
 }

@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-message: "Please cite Persian Music Scales when referring to this work. Reuse of source code or project components requires prior written permission from the author; see LICENSE."
+message: "Please cite Persian Music Scales when referring to this work. Reuse of the author's original proprietary code requires prior written permission; third-party components follow their own licenses. See LICENSE and THIRD_PARTY_NOTICES.md."
 title: "Persian Music Scales"
 type: software
 authors:

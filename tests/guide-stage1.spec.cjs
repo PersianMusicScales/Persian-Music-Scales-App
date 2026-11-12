@@ -23,7 +23,7 @@ test("guide offers five topic cards in every language and keeps diagrams in the 
     await expect(circles.locator("img")).toHaveCount(3);
     const images = circles.locator("img");
     for (let i = 0; i < 3; i++) {
-      expect(await images.nth(i).evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
+      await expect.poll(() => images.nth(i).evaluate(img => img.complete && img.naturalWidth > 0), { timeout: 15000 }).toBe(true);
     }
     const refs = panel.locator('[data-guide-topic="5"]');
     await refs.locator("summary").click();

@@ -10,6 +10,12 @@ async function ready(page) {
   return errors;
 }
 
+async function openAnalyzer(page) {
+  await page.locator("#analysisComboToggle").click();
+  await expect(page.locator("#openAudioAnalyzer")).toBeVisible();
+  await page.locator("#openAudioAnalyzer").click();
+}
+
 test("all nine scale choices retain seven labeled pitches and role panel", async ({ page }) => {
   const errors = await ready(page);
   for (const name of ["Shur", "nava", "segah", "homayoun", "esfahan", "chahargah", "mahur", "rastPanjgah", "minor"]) {
@@ -71,7 +77,7 @@ test("playback and analyzer drawer do not destroy modal markers", async ({ page 
   await page.locator("#scaleSelector").selectOption("segah");
   await page.locator("#playScale").click();
   await expect(page.locator("#outerScale .dynamic-label").nth(2)).toHaveClass(/modal-shahed/);
-  await page.locator("#openAudioAnalyzer").click();
+  await openAnalyzer(page);
   await expect(page.locator("#audioAnalyzerDrawer")).toHaveClass(/open/);
   await expect(page.locator("#outerScale .dynamic-label").nth(2)).toHaveClass(/modal-shahed/);
   await page.locator("#closeAudioAnalyzer").click();
@@ -84,7 +90,7 @@ test("short synthesized recording passes through analyzer and preserves modal ma
   test.setTimeout(120000);
   const errors = await ready(page);
   await page.locator("#scaleSelector").selectOption("segah");
-  await page.locator("#openAudioAnalyzer").click();
+  await openAnalyzer(page);
   const sampleRate = 16000;
   const seconds = 6;
   const sampleCount = sampleRate * seconds;
@@ -187,7 +193,7 @@ test("modal citations and model limitations are accessible for provisional conte
 
 test("audio analyzer manual modes include Rast-Panjgah without false automatic certainty", async ({ page }) => {
   const errors = await ready(page);
-  await page.locator("#openAudioAnalyzer").click();
+  await openAnalyzer(page);
   await expect(page.locator("#manualScaleSelect")).toHaveCount(0);
   const options = await page.locator("#manualScale").locator("option").allTextContents();
   expect(options.some(name => name.includes("Rast"))).toBeTruthy();
@@ -244,7 +250,7 @@ test("modal information popover stays out of layout and does not rotate the circ
   const errors = await ready(page);
   const circle = page.locator("#circleContainer");
   const play = page.locator("#playScale");
-  const microphone = page.locator("#quickScaleFinderButton");
+  const microphone = page.locator("#analysisComboToggle");
   const labelBefore = await page.locator("#outerScale .dynamic-label").first().getAttribute("data-single-note");
   const circleBox = await circle.boundingBox();
   const playBefore = await play.boundingBox();

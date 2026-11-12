@@ -1,0 +1,27 @@
+name: Modal analysis regression tests
+
+on:
+  pull_request:
+    paths:
+      - 'src/audio-analyzer.js'
+      - 'tests/modal-scoring.test.cjs'
+      - '.github/workflows/modal-analysis-tests.yml'
+  push:
+    branches:
+      - feature/continuous-pitch-phrase-evidence-v1
+
+permissions:
+  contents: read
+
+jobs:
+  modal-scoring:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check analyzer syntax
+        run: node --check src/audio-analyzer.js
+      - name: Run scoring regression tests
+        run: node --test tests/modal-scoring.test.cjs

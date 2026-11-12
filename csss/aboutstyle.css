@@ -109,7 +109,8 @@ a {
 .hero-card,
 .projects-section,
 .info-card,
-.support-card {
+.support-card,
+.documentation-card {
   border: 1px solid var(--about-border);
   border-radius: 16px;
   background: var(--about-panel);
@@ -311,7 +312,8 @@ a {
   outline: none;
 }
 
-.support-card {
+.support-card,
+.documentation-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -385,7 +387,8 @@ a {
 .hero-card,
   .projects-section,
   .info-card,
-  .support-card {
+  .support-card,
+  .documentation-card {
     background: rgba(245, 245, 242, 0.88);
   }
 }
@@ -396,7 +399,8 @@ a {
     grid-template-columns: 1fr;
   }
 
-  .support-card {
+  .support-card,
+  .documentation-card {
     align-items: flex-start;
     flex-direction: column;
   }

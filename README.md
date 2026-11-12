@@ -536,7 +536,7 @@ IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, LOSS, DAMAGE, OR
 Automatic pitch, tonic, scale, and modal-analysis results are provided for educational and exploratory purposes and should not be treated as definitive musicological, academic, or professional determinations.
 
 
-### Shahed and Finalis (modal function annotations; draft PR)
+### Shahed and Finalis (modal function annotations)
 
 The Persian scale circle highlights **Shahed (شاهد)** with ★ and **Finalis
 (نت پایان / خاتمه)** with ◆, which may occur together on one note. A Western
@@ -570,8 +570,7 @@ Finalis assignment in the current reference context.
 
 **Languages:** the Shahed/Finalis legend and the entire “About these notes” reference panel — context, limitations, verification status, and bibliography labels — are available in English, French, and Persian for all nine scale selections and all four Shur-related āvāzha. Source links retain their original scholarly URLs.\n\n**Definitions, degree mappings, cautions, source bibliography and future
 verification requirements:** [Modal roles research](docs/modal-roles-research.md).
-Do not merge this draft before browser tests pass and the role defaults have
-been reviewed for source accuracy.
+Role assignments remain subject to the source-verification requirements documented in the modal-roles research notes.
 
 ### Compact modal information and iOS installation
 
@@ -588,7 +587,7 @@ uses the repository-relative identity, scope and start URL appropriate to
 GitHub Pages. Existing Home Screen installations may need to be **removed and
 re-added from Safari** for the icon to refresh.
 
-### Dynamic Persian scale-notation preview (draft feature)
+### Dynamic Persian scale-notation preview
 
 A compact treble-clef staff, beside Play Scale, shows the current seven-degree
 pitch spelling with traditional Koron/Sori and Western accidentals. It updates

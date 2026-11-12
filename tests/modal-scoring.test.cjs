@@ -25,7 +25,9 @@ function extractFunction(name) {
 }
 const names = [
   'estimatePitchGridOffset', 'continuousPitchCoverage',
-  'phraseEndingCadenceFit', 'scoreScaleCandidate'
+  'phraseEndingCadenceFit', 'extractStructuralPhrases', 'scorePhraseBehavior',
+  'scoreCadenceDirection', 'analysisRoleHypotheses',
+  'scoreTonalRoleBehavior', 'scoreScaleCandidate'
 ];
 const context = {
   mod: (x, n) => ((x % n) + n) % n,
@@ -91,4 +93,68 @@ test('continuous microtonal evidence changes ranking without altering note ident
   assert.ok(result.pitchCoverage < result.exactCoverage);
   assert.equal(result.tonicBin,0);
   assert.equal(result.notes[0],0);
+});
+
+function event(pitchIndex, startTime, duration = 0.3, options = {}) {
+  return {
+    pitchIndex,
+    pitchClass: ((pitchIndex % 24) + 24) % 24,
+    startTime,
+    endTime: startTime + duration,
+    duration,
+    confidence: 0.95,
+    role: 'structural',
+    phraseEnding: false,
+    ...options,
+  };
+}
+test('structural phrase segmentation excludes ornaments and preserves boundaries', () => {
+  const events = [
+    event(3, 0),event(6,0.3),
+    event(8,0.6,0.1,{role:'ornament'}),
+    event(0,0.8,0.3,{phraseEnding:true}),
+    event(3,1.2),event(6,1.5),event(0,1.8,0.3,{phraseEnding:true}),
+  ];
+  const p=context.extractStructuralPhrases(events);
+  assert.equal(p.length,2);
+  assert.equal(p[0].notes.length,3);
+  assert.equal(p[1].notes.length,3);
+});
+test('phrase behavior requires multiple phrases of at least three notes', () => {
+  const p=[{notes:[event(3,0),event(6,0.2),event(0,0.4)]}];
+  assert.equal(context.scorePhraseBehavior(p,'Shur',0).available,false);
+  assert.equal(context.scorePhraseBehavior([...p,...p],'Shur',0).available,true);
+});
+test('directed cadence matching distinguishes descent from octave reversal', () => {
+  const descent=[{notes:[event(6,0),event(3,0.2),event(0,0.4)]}];
+  const ascending=[{notes:[event(6,0),event(3,0.2),event(24,0.4)]}];
+  const template=[[3,0,1]];
+  assert.equal(context.scoreCadenceDirection(descent,template,0).score,1);
+  assert.equal(context.scoreCadenceDirection(ascending,template,0).available,false);
+});
+test('tonal roles are unavailable for unverified modes or insufficient phrases', () => {
+  const p=[{notes:[event(3,0),event(0,0.3)]}];
+  const profile=Array(24).fill(0);
+  assert.equal(context.scoreTonalRoleBehavior(p,profile,'esfahan',0,[0,4,6,10,14,17,22]).available,false);
+  assert.equal(context.scoreTonalRoleBehavior(p,profile,'Shur',0,[0,3,6,10,14,16,20]).available,false);
+});
+test('role hypotheses reject impossible pitch offsets and remain bounded', () => {
+  const p=[
+    {notes:[event(3,0),event(0,0.3)]},
+    {notes:[event(3,1),event(0,1.3)]},
+  ];
+  const profile=Array(24).fill(0);profile[0]=1;
+  const valid=context.scoreTonalRoleBehavior(p,profile,'Shur',0,[0,3,6,10,14,16,20]);
+  assert.equal(valid.available,true);
+  assert.ok(valid.score>=0 && valid.score<=1);
+  const invalid=context.scoreTonalRoleBehavior(p,profile,'segah',0,[0,4,6,10,14,17,20]);
+  assert.equal(invalid.available,false);
+});
+test('new phrase channels leave empty-input scoring finite and compatible', () => {
+  const profile=Array(24).fill(0);profile[0]=1;
+  const score=context.scoreScaleCandidate('Shur',0,[0,3,6],profile,features());
+  assert.ok(Number.isFinite(score.score));
+  assert.equal(score.phraseBehavior.available,false);
+  assert.equal(score.cadenceDirection.available,false);
+  assert.equal(score.tonalRoleEvidence.available,false);
 });

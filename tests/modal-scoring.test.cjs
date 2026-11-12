@@ -27,7 +27,10 @@ const names = [
   'estimatePitchGridOffset', 'continuousPitchCoverage',
   'phraseEndingCadenceFit', 'extractStructuralPhrases', 'scorePhraseBehavior',
   'scoreCadenceDirection', 'analysisRoleHypotheses',
-  'scoreTonalRoleBehavior', 'classifyShurAvaz', 'scoreScaleCandidate'
+  'scoreTonalRoleBehavior', 'classifyShurAvaz',
+  'relativeMotifFromNotes', 'relativeMotifSimilarity',
+  'discoverRecurrentEndingMotifs', 'recurrentEndingMotifFit',
+  'scoreScaleCandidate'
 ];
 const context = {
   mod: (x, n) => ((x % n) + n) % n,
@@ -228,4 +231,79 @@ test('shur family offsets preserve correct microtone distinctions on 24-bin grid
   assert.equal(rel(3),17); // A koron, not A flat (16)
   assert.equal(rel(13),3); // D koron, not D flat (2)
   assert.equal(rel(17),7); // E koron, not E flat (6)
+});
+
+
+// No IRMA melodies are copied into these tests: all examples are invented
+// scalar pitch-index fixtures, not published Radif transcriptions.
+function syntheticPhrase(pitches, onset = 0) {
+  return {notes:pitches.map((pitch,i)=>event(pitch,onset+i*0.3))};
+}
+test('motif contour is invariant to tonic and octave transposition',()=>{
+  const a=context.relativeMotifFromNotes(syntheticPhrase([0,4,7,10]).notes);
+  const b=context.relativeMotifFromNotes(syntheticPhrase([19,23,26,29]).notes);
+  const c=context.relativeMotifFromNotes(syntheticPhrase([24,28,31,34]).notes);
+  assert.equal(JSON.stringify(a),JSON.stringify(b));
+  assert.equal(JSON.stringify(a),JSON.stringify(c));
+  assert.equal(context.relativeMotifSimilarity(a,b),1);
+});
+test('minor quantization jitter is tolerated but reversed direction is not',()=>{
+  const exact=[0,4,7,10], slight=[0,4,8,11], contrary=[0,-4,-7,-10];
+  assert.ok(context.relativeMotifSimilarity(exact,slight,1)>=0.7);
+  assert.equal(context.relativeMotifSimilarity(exact,contrary,1),0);
+  assert.equal(context.relativeMotifSimilarity(exact,slight,0),0);
+});
+test('motif matching rejects incomplete, malformed or too-short patterns',()=>{
+  assert.equal(context.relativeMotifFromNotes(syntheticPhrase([0,3]).notes),null);
+  assert.equal(context.relativeMotifSimilarity([0,4],[0,4]),0);
+  assert.equal(context.relativeMotifSimilarity([0,3,6],[0,3,NaN]),0);
+});
+test('recurrent cadence requires same pitch-class ending across distinct phrases',()=>{
+  const phrases=[
+    syntheticPhrase([0,4,7,10],0),
+    syntheticPhrase([24,28,31,34],2),
+    syntheticPhrase([2,6,9,12],4)
+  ];
+  const discovered=context.discoverRecurrentEndingMotifs(phrases);
+  assert.equal(discovered.phraseCount,3);
+  assert.equal(discovered.support[10],2);
+  assert.equal(discovered.support[12],0);
+  assert.ok(context.recurrentEndingMotifFit(discovered,10)>0.6);
+  assert.equal(context.recurrentEndingMotifFit(discovered,12),0);
+});
+test('matching relative contour ending on DIFFERENT pitch is not treated as resolution',()=>{
+  const phrases=[
+    syntheticPhrase([0,4,7,10]),
+    syntheticPhrase([1,5,8,11],2),
+    syntheticPhrase([2,6,9,12],4),
+  ];
+  const discovered=context.discoverRecurrentEndingMotifs(phrases);
+  assert.equal(discovered.support.reduce((a,b)=>a+b,0),0);
+});
+test('repeated terminal notes with conflicting contours do not count',()=>{
+  const phrases=[
+    syntheticPhrase([0,4,7,10]),
+    syntheticPhrase([10,4,2,10],2),
+    syntheticPhrase([2,5,8,12],4),
+  ];
+  const discovered=context.discoverRecurrentEndingMotifs(phrases);
+  assert.equal(context.recurrentEndingMotifFit(discovered,10),0);
+});
+test('less than three usable phrases contributes no motif bonus',()=>{
+  const discovered=context.discoverRecurrentEndingMotifs([
+    syntheticPhrase([0,4,7,10]),syntheticPhrase([0,4,7,10],2)
+  ]);
+  assert.equal(context.recurrentEndingMotifFit(discovered,10),0);
+  assert.equal(context.recurrentEndingMotifFit(null,10),0);
+});
+test('recurrent motif scoring is bounded to half a percentage point',()=>{
+  const p=Array(24).fill(0); p[0]=0.75;p[3]=0.25;
+  const base=context.scoreScaleCandidate('Shur',0,[0,3,6],p,features());
+  const supporting=Array(24).fill(0);supporting[0]=9;
+  const extra=context.scoreScaleCandidate('Shur',0,[0,3,6],p,
+    features({recurrentEndingMotifs:{phraseCount:10,support:supporting}}));
+  assert.ok(extra.recurrentMotifEvidence>0);
+  assert.ok(extra.score>base.score);
+  assert.ok(extra.score-base.score<=0.005000001);
+  assert.equal(base.recurrentMotifEvidence,0);
 });

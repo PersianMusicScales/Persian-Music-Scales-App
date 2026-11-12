@@ -15,8 +15,13 @@ const Application = function () {
 
 Application.prototype.initA4 = function () {
   this.$a4 = document.querySelector(".a4 span");
-  this.a4 = parseInt(localStorage.getItem("a4")) || 440;
-  this.$a4.innerHTML = this.a4;
+  let storedFrequency = 440;
+  try {
+    const saved = Number(localStorage.getItem("a4"));
+    if (Number.isFinite(saved) && saved >= 100 && saved <= 1000) storedFrequency = saved;
+  } catch (_) { /* Storage may be disabled in private browsing. */ }
+  this.a4 = storedFrequency;
+  this.$a4.textContent = String(this.a4);
 };
 
 Application.prototype.start = function () {
@@ -41,11 +46,11 @@ Application.prototype.start = function () {
     swal
       .fire({ input: "number", inputValue: self.a4 })
       .then(function ({ value: a4 }) {
-        if (!parseInt(a4) || a4 === self.a4) {
-          return;
-        }
-        self.a4 = a4;
-        self.$a4.innerHTML = a4;
+        if (a4 === undefined || a4 === null || String(a4).trim() === "") return;
+        const frequency = Number(a4);
+        if (!Number.isFinite(frequency) || frequency < 100 || frequency > 1000 || frequency === self.a4) return;
+        self.a4 = frequency;
+        self.$a4.textContent = String(frequency);
         self.tuner.middleA = a4;
         self.notes.createNotes();
         self.update({
@@ -55,7 +60,7 @@ Application.prototype.start = function () {
           value: 69,
           cents: 0,
         });
-        localStorage.setItem("a4", a4);
+        try { localStorage.setItem("a4", String(frequency)); } catch (_) { /* Storage may be unavailable. */ }
       });
   });
 

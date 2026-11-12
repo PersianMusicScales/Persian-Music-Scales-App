@@ -1,7 +1,7 @@
 /* Persian Music Scales PWA service worker — iOS playback + on-demand example audio v5.5 */
 "use strict";
 
-const CACHE_VERSION = "v38-transactional-analyzer-cleanup";
+const CACHE_VERSION = "v39-audit-remediation";
 const CACHE_NAME = `persian-music-scales-${CACHE_VERSION}`;
 
 /* These files are required for the main application and analyzer shell. */
@@ -35,6 +35,9 @@ const OPTIONAL_FILES = [
   "./csss/aboutstyle.css",
   "./src/tuner.js",
   "./src/app.js",
+  "./src/notes.js",
+  "./src/meter.js",
+  "./src/frequency-bars.js",
   "./reference/index.html",
   "./reference/reference.css",
   "./reference/shur.html",
@@ -53,7 +56,9 @@ const OPTIONAL_FILES = [
   "./reference/glossary.html",
   "./reference/dataset.html",
   "./reference/sources.html",
-  "./data/persian-scales.json"
+  "./data/persian-scales.json",
+  "https://cdn.jsdelivr.net/npm/sweetalert2@9.17.4",
+  "https://cdn.jsdelivr.net/npm/aubiojs@0.1.1/build/aubio.min.js"
 ];
 
 self.addEventListener("install", (event) => {
@@ -97,6 +102,8 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
   if (url.protocol === "blob:" || url.protocol === "data:") return;
+  // Scope caching to the app and its explicitly used script CDN.
+  if (url.origin !== self.location.origin && url.origin !== "https://cdn.jsdelivr.net") return;
 
   if (request.mode === "navigate") {
     event.respondWith(networkFirstNavigation(request));
@@ -119,8 +126,7 @@ async function networkFirstNavigation(request) {
     return response;
   } catch (error) {
     return (
-      (await cache.match(request)) ||
-      (await cache.match("./index.html")) ||
+      (await cache.match(request, { ignoreSearch: true })) ||
       (await cache.match("./htmls/offline.html")) ||
       new Response("Offline", { status: 503, headers: { "Content-Type": "text/plain" } })
     );
@@ -135,13 +141,13 @@ async function networkFirstAsset(request) {
     if (response.ok) await cache.put(request, response.clone());
     return response;
   } catch (error) {
-    return (await cache.match(request)) || new Response("Offline", { status: 503 });
+    return (await cache.match(request, { ignoreSearch: true })) || new Response("Offline", { status: 503 });
   }
 }
 
 async function staleWhileRevalidate(request) {
   const cache = await caches.open(CACHE_NAME);
-  const cached = await cache.match(request);
+  const cached = await cache.match(request, { ignoreSearch: true });
   const networkPromise = fetch(request)
     .then(async (response) => {
       if (response.ok) await cache.put(request, response.clone());
@@ -153,7 +159,7 @@ async function staleWhileRevalidate(request) {
 
 async function cacheFirst(request) {
   const cache = await caches.open(CACHE_NAME);
-  const cached = await cache.match(request);
+  const cached = await cache.match(request, { ignoreSearch: true });
   if (cached) return cached;
 
   try {

@@ -2625,6 +2625,7 @@
       pitchObservations,
       pitchGridOffset: estimatePitchGridOffset(pitchObservations),
       phraseCadences,
+      structuralPhrases: extractStructuralPhrases(events),
       finalPitchClass: finalStructural?.pitchClass ?? null,
       phraseCount: events.filter((noteEvent) => noteEvent.phraseEnding).length,
     };
@@ -2695,6 +2696,128 @@
       totalWeight += phrase.weight;
     }
     return totalWeight > 0 ? weightedMatch / totalWeight : 0;
+  }
+
+
+  // Phrase representation is derived from the note events already produced by
+  // the Worker. Only structural notes are used; no playback / circle state is
+  // modified. Distinguish ordinary phrase ends from the end of the recording.
+  function extractStructuralPhrases(events) {
+    const phrases = [];
+    let notes = [];
+    function flush() {
+      if (notes.length >= 2) {
+        phrases.push({ notes, startsAt: notes[0].startTime, endsAt: notes[notes.length - 1].endTime });
+      }
+      notes = [];
+    }
+    for (const event of events || []) {
+      if (event.role !== "ornament" && Number.isFinite(event.pitchIndex) &&
+          Number.isFinite(event.pitchClass)) {
+        notes.push({
+          pitchIndex: event.pitchIndex,
+          pitchClass: event.pitchClass,
+          startTime: event.startTime,
+          endTime: event.endTime,
+          duration: Math.max(0, event.duration || 0),
+          confidence: clamp(Number(event.confidence) || 0, 0, 1),
+        });
+      }
+      if (event.phraseEnding) flush();
+    }
+    flush();
+    return phrases;
+  }
+
+  // A second, deliberately small scoring channel measures *repeated phrase
+  // behavior*, rather than repeating the global pitch-class histogram.
+  // It uses existing heuristic characteristic tones, not invented motifs.
+  // It is silent for clips with insufficient phrase evidence.
+  function scorePhraseBehavior(phrases, scaleName, tonicBin) {
+    const usable = (phrases || []).filter((phrase) => phrase.notes?.length >= 3);
+    if (usable.length < 2) {
+      return { available: false, emphasis: 0, resolution: 0, score: 0 };
+    }
+    const signature = MODAL_SIGNATURES[scaleName] || { emphasis: [] };
+    const targets = (signature.emphasis || []).map(([offset, weight]) => ({
+      pitchClass: mod(tonicBin + offset, 24),
+      weight: clamp(weight, 0, 1),
+    }));
+    let emphasized = 0;
+    let resolutions = 0;
+    let resolutionCount = 0;
+    for (const phrase of usable) {
+      const notes = phrase.notes;
+      let loudest = null;
+      for (const note of notes) {
+        if (!loudest || note.duration * note.confidence > loudest.duration * loudest.confidence) {
+          loudest = note;
+        }
+      }
+      if (loudest) {
+        for (const target of targets) {
+          if (loudest.pitchClass === target.pitchClass) {
+            emphasized += target.weight;
+            break;
+          }
+        }
+      }
+      const last = notes[notes.length - 1];
+      const before = notes[notes.length - 2];
+      // Only a genuine change into the anchor counts as local resolution.
+      // Avoid crediting consecutive repeats, which may be a drone.
+      if (before.pitchClass !== last.pitchClass) {
+        resolutions += last.pitchClass === tonicBin ? 1 : 0;
+        resolutionCount += 1;
+      }
+    }
+    const emphasis = targets.length ? emphasized / usable.length : 0;
+    const resolution = resolutionCount ? resolutions / resolutionCount : 0;
+    return {
+      available: true,
+      emphasis,
+      resolution,
+      score: clamp(0.55 * emphasis + 0.45 * resolution, 0, 1),
+    };
+  }
+
+  // Literature-supported *clues*, not an automatic Avaz classifier. These
+  // refer to relative Shur scale indices (G-based reference) and should NOT
+  // replace the visible Shur circle or be called classification probabilities.
+  // E.g. Abu Ata: degree 2 -> 4 ascent, Afshari: degree 4 descent,
+  // Dashti: degree 3 -> 5 ascent (Miller; Tsuge in Iranica).
+  function scoreShurAvazClues(phrases, tonicBin) {
+    const specs = [
+      { name: "abuAta", start: 3, target: 10, direction: 1 },
+      { name: "afshari", start: 10, target: 3, direction: -1 },
+      { name: "dashti", start: 6, target: 14, direction: 1 },
+      { name: "bayatTork", start: 6, target: null, direction: 0 },
+    ];
+    const usable = (phrases || []).filter((p) => p.notes?.length >= 3);
+    return specs.map((spec) => {
+      let matching = 0;
+      for (const phrase of usable) {
+        const first = phrase.notes[0];
+        if (first.pitchClass !== mod(tonicBin + spec.start, 24)) continue;
+        const following = phrase.notes.slice(1, Math.min(5, phrase.notes.length));
+        if (!spec.direction) {
+          matching += 0.5;
+          continue;
+        }
+        const match = following.some((note) =>
+          note.pitchClass === mod(tonicBin + spec.target, 24) &&
+          Math.sign(note.pitchIndex - first.pitchIndex) === spec.direction
+        );
+        if (match) matching += 1;
+      }
+      return {
+        name: spec.name,
+        supportingPhrases: matching,
+        eligiblePhrases: usable.length,
+        // Not a calibrated certainty; sparse evidence is deliberately weak.
+        evidence: usable.length >= 2 ? matching / usable.length : 0,
+      };
+    });
   }
 
   function scoreScaleCandidate(scaleName, tonicBin, offsets, profile, features) {
@@ -2778,6 +2901,10 @@
     const phraseCadenceEvidence = phraseEndingCadenceFit(
       features.phraseCadences || [], signature.cadences || [], tonicBin
     );
+    const phraseBehavior = scorePhraseBehavior(features.structuralPhrases || [], scaleName, tonicBin);
+    const shurAvazClues = scaleName === "Shur"
+      ? scoreShurAvazClues(features.structuralPhrases || [], tonicBin)
+      : [];
     const score =
       pitchCoverage * 0.46 +
       neighboringCoverage * 0.035 +
@@ -2789,7 +2916,10 @@
       phraseCadenceEvidence * 0.02 +
       degreeCoverage * 0.045 +
       openingEvidence * 0.02 -
-      outsideEnergy * 0.12;
+      outsideEnergy * 0.12 +
+      // Kept below 2.5% so unvalidated phrase priors cannot dominate pitch
+      // and tonic evidence. Independent source-labeled testing is needed.
+      phraseBehavior.score * 0.025;
 
     return {
       scaleName,
@@ -2801,6 +2931,8 @@
       pitchCoverage,
       continuousCoverage,
       phraseCadenceEvidence,
+      phraseBehavior,
+      shurAvazClues,
       outsideEnergy,
       degreeCoverage,
       tonicEvidence,

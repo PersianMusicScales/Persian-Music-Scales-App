@@ -2265,6 +2265,11 @@
       })}`,
       100
     );
+    // Restore the normal Record button when microphone analysis completes.
+    // Clear only its stale "Analyzing..." overlay, not the results or playback.
+    if (state.inputOrigin === "microphone") {
+      updateRecordingFeedback(t("recordReady"), 0, "ready");
+    }
     updateButtons();
 
     // Recording, uploaded audio and the example all follow the same path.

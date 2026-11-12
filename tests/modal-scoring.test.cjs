@@ -74,7 +74,7 @@ test('phrase cadence rewards only a matching final transition', () => {
   const observed = [{from:3,to:0,weight:1},{from:5,to:2,weight:1}];
   assert.equal(context.phraseEndingCadenceFit(observed,[[3,0,1]],0),0.5);
   assert.equal(context.phraseEndingCadenceFit(observed,[],0),0);
-  assert.equal(context.phraseEndingCadenceFit(observed,[[3,0,1]],2),0);
+  assert.equal(context.phraseEndingCadenceFit(observed,[[3,0,1]],7),0);
 });
 test('legacy profile scoring remains functional without continuous observations', () => {
   const profile = Array(24).fill(0); profile[0] = 0.75;profile[3]=0.25;

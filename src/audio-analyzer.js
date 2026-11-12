@@ -2656,6 +2656,13 @@
     outcome.margin = margin;
     outcome.legacyGap = legacyGap;
 
+    // A Shur candidate that is already first needs no rank adjustment.
+    // Avoid artificially inflating its displayed heuristic percentage.
+    if (bestLegacy === selected) {
+      outcome.reason = "independently supported; already top legacy candidate";
+      return outcome;
+    }
+
     if (decision.evidence < 0.74 || margin < 0.11 || legacyGap > 0.05) {
       outcome.reason = "insufficiently distinctive or incompatible with legacy modal ranking";
       return outcome;

@@ -28,6 +28,8 @@ const names = [
   'phraseEndingCadenceFit', 'extractStructuralPhrases', 'scorePhraseBehavior',
   'scoreCadenceDirection', 'analysisRoleHypotheses',
   'scoreTonalRoleBehavior', 'classifyShurAvaz',
+  'avazPitchClass', 'avazPitchMatch', 'avazContinuousPitchFit',
+  'avazPhraseEvidence', 'scoreIndependentAvaz',
   'relativeMotifFromNotes', 'relativeMotifSimilarity',
   'discoverRecurrentEndingMotifs', 'recurrentEndingMotifFit',
   'scoreScaleCandidate'
@@ -35,12 +37,16 @@ const names = [
 const context = {
   mod: (x, n) => ((x % n) + n) % n,
   clamp: (x, lo, hi) => Math.max(lo, Math.min(hi, x)),
+  AVAZ_REFERENCE_MODELS: undefined,
   MODAL_SIGNATURES: {
     Shur: { emphasis: [[3, 1]], cadences: [[3, 0, 1]] },
     other: { emphasis: [], cadences: [] },
   },
 };
-vm.runInNewContext(names.map(extractFunction).join('\n'), context);
+const avazModels = source.match(/const AVAZ_REFERENCE_MODELS = Object\.freeze\(\[[\s\S]*?\]\);/);
+assert.ok(avazModels,'Avaz reference model table is present');
+vm.runInNewContext(avazModels[0]+'\n'+names.map(extractFunction).join('\n')+
+  '\nthis.AVAZ_REFERENCE_MODELS=AVAZ_REFERENCE_MODELS;', context);
 
 function features(overrides = {}) {
   const zeros = () => Array(24).fill(0);
@@ -163,76 +169,106 @@ test('new phrase channels leave empty-input scoring finite and compatible', () =
 });
 
 
-// Synthesized reference-pitch examples exercise exact quarter-tone offsets.
-// They are unit fixtures, not mislabeled real-world audio validation.
-const shurG = 14; // G pitch class in app, C=0 (24 half-semitone bins)
-const rel = (x) => ((shurG+x)%24+24)%24;
-function phrase(offsets, t=0, longOffset=null) {
-  return {notes:offsets.map((offset,i)=>event(rel(offset),t+i*.25,
-    offset===longOffset?0.7:0.25))};
+// Source examples are translated into abstract *functional* synthetic fixtures.
+// No copyrighted IRMA note sequences are included.
+const refC=0;
+const atCent = cent => Math.round(cent/50);
+function phraseC(offsets, t=0) {
+  return {notes:offsets.map((offset,i)=>event(atCent(offset),t+i*0.25))};
 }
-function avazFeatures(phrases, emphasisOffsets=[]) {
-  const sustainedProfile=Array(24).fill(0);
-  for (const [offset,value] of emphasisOffsets) sustainedProfile[rel(offset)]=value;
-  return {structuralPhrases:phrases,sustainedProfile};
+function avazFixture(phraseOffsets,shahedCent,weight=0.28) {
+  const phrases=phraseOffsets.map((p,i)=>phraseC(p,i*4));
+  const sustained=Array(24).fill(0);sustained[atCent(shahedCent)]=weight;
+  const profile=Array(24).fill(0);
+  const observations=[];
+  for (const p of phrases) for(const e of p.notes) {
+    profile[e.pitchClass]+=1;
+    observations.push({pitch:e.pitchClass,weight:1});
+  }
+  const n=profile.reduce((a,b)=>a+b,0);
+  return {features:{structuralPhrases:phrases,sustainedProfile:sustained,
+    pitchObservations:observations,pitchGridOffset:0},profile:profile.map(v=>v/n)};
 }
-function classify(phrases,emphasis=[]) {
-  return context.classifyShurAvaz(shurG,avazFeatures(phrases,emphasis),0.93);
-}
-test('Abu Ata: C shahed, A-koron ist, G finalis yield provisional branch',()=>{
-  const phrases=[
-    phrase([10,6,3]), phrase([0,10,3]), phrase([14,10,3]),
-    phrase([10,6,3,0]), 
-  ];
-  const result=classify(phrases,[[10,0.35]]);
-  assert.equal(result.avazKey,'abuAta');
-  assert.equal(result.experimental,true);
+const models = context.AVAZ_REFERENCE_MODELS;
+test('the four sources are represented by independent reference models',()=>{
+  assert.equal(models.length,4);
+  assert.deepEqual(Array.from(models.map(m=>m.key)),
+    ['abuAta','bayatTork','afshari','dashti']);
+  assert.equal(models.find(m=>m.key==='bayatTork').finalis,500);
+  assert.equal(models.find(m=>m.key==='dashti').finalis,205);
+  assert.equal(models.find(m=>m.key==='afshari').ist,340);
 });
-test('Bayat-e Tork: Bb prominence and Bb/F phrase rests with no microtone confusion',()=>{
-  const phrases=[
-    phrase([0,3,6]),phrase([10,14,6]),phrase([20,14,6]),
-    phrase([3,0,20])
-  ];
-  const result=classify(phrases,[[6,0.36]]);
-  assert.equal(result.avazKey,'bayatTork');
+test('independent tonal evidence does not need a prior Shur candidate',()=>{
+  const f=avazFixture([
+    [700,500,340],[700,205,340],[700,500,340],[700,500,205,0],
+  ],700);
+  const af=models.find(m=>m.key==='afshari');
+  const candidate=context.scoreIndependentAvaz(af,0,f.features,f.profile);
+  assert.ok(candidate);
+  assert.equal(candidate.key,'afshari');
+  assert.equal(candidate.referenceBin,0);
+  assert.equal(candidate.shurTonicBin,4);
+  assert.ok(candidate.pitchCompatibility>0.61);
 });
-test('Afshari: E-koron ist is NOT Eb; G shahed and C finalis',()=>{
-  const phrases=[
-    phrase([0,20,17]),phrase([14,20,17]),phrase([0,16,17]),
-    phrase([0,17,10])
-  ];
-  const result=classify(phrases,[[0,0.32]]);
-  assert.equal(result.avazKey,'afshari');
-  const wrong=classify([
-    phrase([0,20,16]),phrase([14,20,16]),phrase([0,20,16]),
-    phrase([0,16,10])
-  ],[[0,0.32]]);
-  assert.notEqual(wrong.avazKey,'afshari');
+test('Abu Ata tonal roles are evaluated from the sourced C-reference',()=>{
+  const f=avazFixture([
+    [700,500,340],[700,205,340],[700,500,340],[700,340,205]
+  ],700);
+  const result=context.scoreIndependentAvaz(models[0],0,f.features,f.profile);
+  assert.ok(result);
+  assert.ok(result.signals.ist>0.8);
+  assert.ok(result.signals.finalis>0.8);
 });
-test('Dashti: natural D, later D-koron and G finalis are independently distinguishable',()=>{
-  const p=[phrase([14,20,0]),phrase([14,10,13]),phrase([10,14,13]),phrase([20,13,0])];
-  const result=classify(p);
-  assert.equal(result.avazKey,'dashti');
-  const noLowered=classify([
-    phrase([14,20,0]),phrase([14,10,14]),
-    phrase([10,14,20]),phrase([20,14,0])
-  ]);
-  assert.notEqual(noLowered.avazKey,'dashti');
+test('Bayat-e Tork distinguishes F finalis and C ist from Bb finalis',()=>{
+  const f=avazFixture([
+    [0,205,0],[700,500,0],[0,700,0],[0,340,500]
+  ],500,0.35);
+  const result=context.scoreIndependentAvaz(models[1],0,f.features,f.profile);
+  assert.ok(result);
+  assert.equal(result.signals.ist,1);
+  assert.equal(result.signals.finalis,1);
 });
-test('classifier abstains with a short clip, poor scale coverage, or a single clue',()=>{
-  const p=[phrase([10,6,3])];
-  assert.equal(classify(p,[[10,.4]]).avazKey,null);
-  const many=[phrase([10,6,3]),phrase([0,10,3]),phrase([14,10,3]),phrase([10,6,3,0])];
-  assert.equal(context.classifyShurAvaz(shurG,avazFeatures(many,[[10,.4]]),.3).avazKey,null);
-  const oneClue=[phrase([0,3,6]),phrase([10,14,6]),phrase([20,14,6]),phrase([10,14,6])];
-  assert.equal(classify(oneClue).avazKey,null);
+test('Dashti uses A/A-koron alteration, not an invented D/D-koron rule',()=>{
+  const m=models.find(x=>x.key==='dashti');
+  assert.deepEqual(Array.from(m.variable),[905,835]);
+  const f=avazFixture([[500,700,905],[500,835,905],[500,995,905],[500,905,205]],
+    905,0.38);
+  const result=context.scoreIndependentAvaz(m,0,f.features,f.profile);
+  assert.ok(result);
+  assert.ok(result.signals.variable>0.5);
+  assert.equal(result.signals.finalis,1);
 });
-test('shur family offsets preserve correct microtone distinctions on 24-bin grid',()=>{
-  assert.equal(rel(3),17); // A koron, not A flat (16)
-  assert.equal(rel(13),3); // D koron, not D flat (2)
-  assert.equal(rel(17),7); // E koron, not E flat (6)
+test('all Avaz reference matches are invariant under octave and tonic transposition',()=>{
+  const base=avazFixture([[500,700,905],[500,835,905],[500,995,905],[500,905,205]],
+    905,0.38);
+  const model=models[3];
+  const score=context.scoreIndependentAvaz(model,0,base.features,base.profile);
+  const shift=7;
+  const shifted={
+    ...base.features,
+    structuralPhrases:base.features.structuralPhrases.map(p=>({notes:p.notes.map(e=>event(
+      e.pitchIndex+24+shift,e.startTime,e.duration))})),
+    sustainedProfile:base.features.sustainedProfile.map((_,i,a)=>a[(i-shift+24)%24]),
+    pitchObservations:base.features.pitchObservations.map(o=>({pitch:(o.pitch+shift)%24,weight:o.weight}))
+  };
+  const shiftedProfile=base.profile.map((_,i,a)=>a[(i-shift+24)%24]);
+  const out=context.scoreIndependentAvaz(model,shift,shifted,shiftedProfile);
+  assert.ok(Math.abs(out.evidence-score.evidence)<1e-10);
 });
-
+test('unpitched or very short clips abstain',()=>{
+  const no=context.classifyShurAvaz({structuralPhrases:[]},Array(24).fill(0));
+  assert.equal(no.avazKey,null);
+  const f=avazFixture([[0,205,500]],500);
+  const tooShort=context.scoreIndependentAvaz(models[1],0,f.features,f.profile);
+  assert.equal(tooShort,null);
+});
+test('recognition uses independent C source pitch and does not conflate E-koron with Eb',()=>{
+  assert.equal(context.avazPitchClass(0,340),7);  // E koron
+  assert.equal(context.avazPitchClass(0,835),17); // A koron
+  assert.equal(context.avazPitchClass(0,995),20); // B flat
+  assert.equal(context.avazPitchMatch(6,7),0.45); // Eb differs 50 cents
+  assert.equal(context.avazPitchMatch(7,7),1);
+});
 
 // No IRMA melodies are copied into these tests: all examples are invented
 // scalar pitch-index fixtures, not published Radif transcriptions.

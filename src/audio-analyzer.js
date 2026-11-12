@@ -2820,6 +2820,79 @@
     });
   }
 
+
+  // Analysis-only role hypotheses. Indices are 50-cent offsets from the
+  // existing scaleData angle-zero reference, not universally defined Persian
+  // "tonics". Do not modify the independently curated educational markers.
+  //
+  // Shur: During (Iranica): G center; Segah: E-koron final/shahed as mapped
+  // to the app's C-referenced collection (offset 7). Homayoun: G final,
+  // A-koron shahed, F temporary ist, mapped to G as the zero reference.
+  // Bayat-e Esfahan is intentionally absent: documented gusheh-dependent
+  // functions disagree with a single fixed reference assignment.
+  // All hypotheses are provisional for recognition until recordings confirm.
+  function analysisRoleHypotheses(scaleName) {
+    if (scaleName === "Shur") {
+      return [{ shahed: 0, finalis: 0, source: "During: Shur modal center" }];
+    }
+    if (scaleName === "segah") {
+      return [{ shahed: 7, finalis: 7, source: "Segah: E-koron reference" }];
+    }
+    if (scaleName === "homayoun") {
+      return [{
+        shahed: 3, finalis: 0, ist: 20,
+        source: "During and annotated Homayoun example: G/A-koron/F",
+      }];
+    }
+    return [];
+  }
+
+  function scoreTonalRoleBehavior(phrases, sustainedProfile, scaleName, tonicBin, offsets) {
+    const usable = (phrases || []).filter((phrase) => phrase.notes?.length >= 2);
+    const hypotheses = analysisRoleHypotheses(scaleName);
+    if (usable.length < 2 || !hypotheses.length) {
+      return { available: false, score: 0, selected: null };
+    }
+    let chosen = null;
+    for (const model of hypotheses) {
+      // Reject a literature-to-app mapping if its target degree is absent
+      // from the particular model's seven-note pitch collection.
+      if ([model.shahed, model.finalis, model.ist].some(
+        (offset) => offset != null && !offsets.includes(offset)
+      )) continue;
+      const shahedBin = mod(tonicBin + model.shahed, 24);
+      const finalisBin = mod(tonicBin + model.finalis, 24);
+      const shahed = clamp((sustainedProfile?.[shahedBin] || 0) * 4.5, 0, 1);
+      const finalPhrase = usable[usable.length - 1];
+      const finalNote = finalPhrase.notes[finalPhrase.notes.length - 1];
+      const finalis = finalNote.pitchClass === finalisBin ? 1 : 0;
+      // Other phrase endings can support ist, without requiring every phrase
+      // to stop there; a truncated or modulating excerpt may not contain it.
+      let ist = 0;
+      if (model.ist != null) {
+        const istBin = mod(tonicBin + model.ist, 24);
+        const prior = usable.slice(0, -1);
+        const stopping = prior.filter(p => p.notes[p.notes.length - 1].pitchClass === istBin);
+        ist = prior.length ? clamp(stopping.length / prior.length * 3, 0, 1) : 0;
+      }
+      const evidence = model.ist == null
+        ? 0.55 * shahed + 0.45 * finalis
+        : 0.45 * shahed + 0.4 * finalis + 0.15 * ist;
+      if (!chosen || evidence > chosen.score) {
+        chosen = {
+          score: clamp(evidence, 0, 1),
+          shahed,
+          finalis,
+          ist,
+          source: model.source,
+        };
+      }
+    }
+    return chosen
+      ? { available: true, score: chosen.score, selected: chosen }
+      : { available: false, score: 0, selected: null };
+  }
+
   function scoreScaleCandidate(scaleName, tonicBin, offsets, profile, features) {
     const notes = offsets.map((offset) => mod(tonicBin + offset, 24));
     const noteSet = new Set(notes);
@@ -2902,6 +2975,10 @@
       features.phraseCadences || [], signature.cadences || [], tonicBin
     );
     const phraseBehavior = scorePhraseBehavior(features.structuralPhrases || [], scaleName, tonicBin);
+    const tonalRoleEvidence = scoreTonalRoleBehavior(
+      features.structuralPhrases || [], features.sustainedProfile || [],
+      scaleName, tonicBin, offsets
+    );
     const shurAvazClues = scaleName === "Shur"
       ? scoreShurAvazClues(features.structuralPhrases || [], tonicBin)
       : [];
@@ -2919,7 +2996,10 @@
       outsideEnergy * 0.12 +
       // Kept below 2.5% so unvalidated phrase priors cannot dominate pitch
       // and tonic evidence. Independent source-labeled testing is needed.
-      phraseBehavior.score * 0.025;
+      phraseBehavior.score * 0.025 +
+      // Zero-centered maximum effect ±1% of the score, avoiding a built-in
+      // advantage for only the modes with a verified-enough role model.
+      (tonalRoleEvidence.available ? (tonalRoleEvidence.score - 0.5) * 0.02 : 0);
 
     return {
       scaleName,
@@ -2932,6 +3012,7 @@
       continuousCoverage,
       phraseCadenceEvidence,
       phraseBehavior,
+      tonalRoleEvidence,
       shurAvazClues,
       outsideEnergy,
       degreeCoverage,

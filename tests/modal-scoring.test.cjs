@@ -256,6 +256,16 @@ test('all Avaz reference matches are invariant under octave and tonic transposit
   const out=context.scoreIndependentAvaz(model,shift,shifted,shiftedProfile);
   assert.ok(Math.abs(out.evidence-score.evidence)<1e-10);
 });
+
+test('full independent classifier surfaces a Bayat-e Tork synthetic tonal example',()=>{
+  const f=avazFixture([
+    [0,205,0],[700,500,0],[0,700,0],[0,340,500],
+  ],500,0.35);
+  const result=context.classifyShurAvaz(f.features,f.profile);
+  assert.equal(result.avazKey,'bayatTork',
+    'winner='+JSON.stringify({reason:result.reason,top:result.alternatives.slice(0,4).map(
+      c=>({key:c.key,reference:c.referenceBin,score:c.evidence,supported:c.supported}))}));
+});
 test('unpitched or very short clips abstain',()=>{
   const no=context.classifyShurAvaz({structuralPhrases:[]},Array(24).fill(0));
   assert.equal(no.avazKey,null);

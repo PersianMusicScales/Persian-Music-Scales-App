@@ -1297,8 +1297,15 @@
       activePointer = null;
       track.classList.remove("dragging");
       resetMicSwipePosition();
-      if (action === "analyze") finishMicrophoneRecording();
-      else if (action === "cancel") cancelMicrophoneRecording({ announce: true });
+      if (action === "analyze") {
+        finishMicrophoneRecording();
+        // Unlock output while the mobile user's Analyze gesture is active.
+        // The recorded clip is decoded/analyzed asynchronously, after the
+        // gesture expires; without this iOS may suspend automatic playback.
+        // Do this after requesting MediaRecorder.stop() to avoid disturbing
+        // the live microphone and leave desktop recording untouched.
+        if (IS_MOBILE) primeOriginalAudioOutputFromGesture();
+      } else if (action === "cancel") cancelMicrophoneRecording({ announce: true });
     }
     handle?.addEventListener("pointerdown", event => {
       if (!state.recorder.recording || (event.pointerType === "mouse" && event.button !== 0)) return;

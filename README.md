@@ -333,7 +333,7 @@ Microphone access is requested only after user interaction and remains under the
 
 The built-in example is downloaded from the public GitHub Pages application when selected.
 
-The application does not initialize Google Analytics. The optional tuner loads two JavaScript dependencies from jsDelivr; visiting that page can result in network requests to the CDN. The service worker attempts to cache those libraries for future offline use, but offline operation depends on successful caching during an earlier online visit.
+The main application page loads Google Analytics for visitor-traffic reporting. Analytics is separate from local audio analysis; uploaded files and recorded audio are processed in the browser. The optional tuner loads two JavaScript dependencies from jsDelivr; visiting that page can result in network requests to the CDN. The service worker attempts to cache those libraries for future offline use, but offline operation depends on successful caching during an earlier online visit.
 
 ---
 

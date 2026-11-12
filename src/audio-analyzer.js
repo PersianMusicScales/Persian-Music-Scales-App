@@ -2557,6 +2557,9 @@
     const phraseEndProfile = new Array(24).fill(0);
     const transitionMatrix = Array.from({ length: 24 }, () => new Array(24).fill(0));
     const duration = Math.max(0.001, result.duration || 0);
+    const pitchObservations = [];
+    const phraseCadences = [];
+    let previousStructural = null;
     let transitionTotal = 0;
 
     events.forEach((noteEvent, index) => {
@@ -2564,6 +2567,14 @@
       const roleWeight = noteEvent.role === "ornament" ? 0.26 : 1;
       const baseWeight = Math.pow(Math.max(0.025, noteEvent.duration || 0), 0.88) *
         clamp(noteEvent.confidence || 0.5, 0.12, 1) * roleWeight;
+      // Keep the frequency-derived pitch continuous for scoring; the rounded
+      // pitchClass remains unchanged for the circle, timeline, and playback.
+      if (Number.isFinite(noteEvent.frequency) && noteEvent.frequency > 0) {
+        pitchObservations.push({
+          pitch: mod(138 + 24 * Math.log2(noteEvent.frequency / 440), 24),
+          weight: baseWeight,
+        });
+      }
       structuralProfile[noteEvent.pitchClass] += baseWeight;
       sustainedProfile[noteEvent.pitchClass] += baseWeight * Math.pow(Math.max(0.04, noteEvent.duration || 0), 0.55);
 
@@ -2571,7 +2582,19 @@
       const phraseEnding = Boolean(noteEvent.phraseEnding) || !next || gap >= 0.22 ||
         ((noteEvent.duration || 0) >= 0.42 && gap >= 0.09) || noteEvent.endTime >= duration * 0.96;
       noteEvent.phraseEnding = phraseEnding;
-      if (phraseEnding) phraseEndProfile[noteEvent.pitchClass] += baseWeight * (1 + Math.min(1.2, gap * 1.5));
+      if (phraseEnding) {
+        phraseEndProfile[noteEvent.pitchClass] += baseWeight * (1 + Math.min(1.2, gap * 1.5));
+        // A cadence at a phrase boundary is more informative than the same
+        // note-to-note transition occurring somewhere inside a phrase.
+        if (previousStructural && noteEvent.role !== "ornament" &&
+            Math.max(0, noteEvent.startTime - previousStructural.endTime) < 0.35) {
+          phraseCadences.push({
+            from: previousStructural.pitchClass,
+            to: noteEvent.pitchClass,
+            weight: Math.sqrt(baseWeight * Math.max(0.025, previousStructural.duration || 0)),
+          });
+        }
+      }
 
       if (next && gap < 1.15) {
         const nextRoleWeight = next.role === "ornament" ? 0.38 : 1;
@@ -2579,6 +2602,7 @@
         transitionMatrix[noteEvent.pitchClass][next.pitchClass] += weight;
         transitionTotal += weight;
       }
+      if (noteEvent.role !== "ornament") previousStructural = noteEvent;
     });
 
     normalizeArrayInPlace(structuralProfile);
@@ -2598,9 +2622,79 @@
       openingProfile: normalizeProfile(opening),
       endingProfile: normalizeProfile(ending),
       transitionMatrix,
+      pitchObservations,
+      pitchGridOffset: estimatePitchGridOffset(pitchObservations),
+      phraseCadences,
       finalPitchClass: finalStructural?.pitchClass ?? null,
       phraseCount: events.filter((noteEvent) => noteEvent.phraseEnding).length,
     };
+  }
+
+  // Estimate only a *coherent* recording-wide detuning relative to the 50-cent
+  // reference grid. When intonation varies widely, avoid imposing a global shift.
+  // This offset affects modal scoring only, never displayed/detected note labels.
+  function estimatePitchGridOffset(observations) {
+    if (!observations || observations.length < 4) return 0;
+    let weightedSum = 0;
+    let totalWeight = 0;
+    for (const observation of observations) {
+      if (!Number.isFinite(observation.pitch) || !(observation.weight > 0)) continue;
+      const residual = observation.pitch - Math.round(observation.pitch);
+      weightedSum += residual * observation.weight;
+      totalWeight += observation.weight;
+    }
+    if (totalWeight <= 0) return 0;
+    const mean = weightedSum / totalWeight;
+    let variance = 0;
+    for (const observation of observations) {
+      if (!Number.isFinite(observation.pitch) || !(observation.weight > 0)) continue;
+      const residual = observation.pitch - Math.round(observation.pitch);
+      variance += observation.weight * Math.pow(residual - mean, 2);
+    }
+    const spread = Math.sqrt(variance / totalWeight);
+    // Offsets near half a bin (25 cents) are ambiguous with adjacent bins.
+    return spread <= 0.19 && Math.abs(mean) <= 0.4 ? mean : 0;
+  }
+
+  // Soft matching is continuous across 50-cent quantization boundaries.
+  // A one-bin error (50 cents) is still strongly disfavored.
+  function continuousPitchCoverage(notes, observations, tuningOffset) {
+    if (!observations?.length || !notes?.length) return 0;
+    let totalWeight = 0;
+    let coveredWeight = 0;
+    for (const observation of observations) {
+      if (!Number.isFinite(observation.pitch) || !(observation.weight > 0)) continue;
+      let nearestDistance = 12;
+      for (const note of notes) {
+        const distance = Math.abs(mod(observation.pitch - tuningOffset - note + 12, 24) - 12);
+        if (distance < nearestDistance) nearestDistance = distance;
+      }
+      // Half a 50-cent bin is one Gaussian standard deviation.
+      coveredWeight += observation.weight * Math.exp(-0.5 * Math.pow(nearestDistance / 0.5, 2));
+      totalWeight += observation.weight;
+    }
+    return totalWeight > 0 ? coveredWeight / totalWeight : 0;
+  }
+
+  // Use only observed phrase-final transitions, not all global transitions,
+  // for this modest extra cadence bonus. Signatures remain curated separately.
+  function phraseEndingCadenceFit(phraseCadences, templates, tonicBin) {
+    if (!phraseCadences?.length || !templates?.length) return 0;
+    let weightedMatch = 0;
+    let totalWeight = 0;
+    for (const phrase of phraseCadences) {
+      if (!(phrase.weight > 0)) continue;
+      let bestMatch = 0;
+      for (const [fromOffset, toOffset, templateWeight] of templates) {
+        if (phrase.from === mod(tonicBin + fromOffset, 24) &&
+            phrase.to === mod(tonicBin + toOffset, 24)) {
+          bestMatch = Math.max(bestMatch, clamp(templateWeight, 0, 1));
+        }
+      }
+      weightedMatch += phrase.weight * bestMatch;
+      totalWeight += phrase.weight;
+    }
+    return totalWeight > 0 ? weightedMatch / totalWeight : 0;
   }
 
   function scoreScaleCandidate(scaleName, tonicBin, offsets, profile, features) {
@@ -2672,14 +2766,27 @@
     );
 
     const degreeCoverage = occupiedDegrees / Math.max(1, offsets.length);
+    const pitchObservations = features.pitchObservations || [];
+    const continuousCoverage = continuousPitchCoverage(
+      notes, pitchObservations, features.pitchGridOffset || 0
+    );
+    // Retain the original histogram-based score as the dominant term.
+    // Use the continuous refinement only with enough melodic observations.
+    const pitchCoverage = pitchObservations.length >= 4
+      ? exactCoverage * 0.72 + continuousCoverage * 0.28
+      : exactCoverage;
+    const phraseCadenceEvidence = phraseEndingCadenceFit(
+      features.phraseCadences || [], signature.cadences || [], tonicBin
+    );
     const score =
-      exactCoverage * 0.46 +
+      pitchCoverage * 0.46 +
       neighboringCoverage * 0.035 +
       tonicEvidence * 0.1 +
       endingEvidence * 0.09 +
       characteristicEvidence * 0.085 +
       cadenceEvidence * 0.07 +
-      transitionFit * 0.045 +
+      transitionFit * 0.025 +
+      phraseCadenceEvidence * 0.02 +
       degreeCoverage * 0.045 +
       openingEvidence * 0.02 -
       outsideEnergy * 0.12;
@@ -2691,6 +2798,9 @@
       offsets,
       notes,
       exactCoverage,
+      pitchCoverage,
+      continuousCoverage,
+      phraseCadenceEvidence,
       outsideEnergy,
       degreeCoverage,
       tonicEvidence,

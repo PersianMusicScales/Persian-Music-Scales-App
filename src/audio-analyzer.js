@@ -2781,45 +2781,41 @@
     };
   }
 
-  // Literature-supported *clues*, not an automatic Avaz classifier. These
-  // refer to relative Shur scale indices (G-based reference) and should NOT
-  // replace the visible Shur circle or be called classification probabilities.
-  // E.g. Abu Ata: degree 2 -> 4 ascent, Afshari: degree 4 descent,
-  // Dashti: degree 3 -> 5 ascent (Miller; Tsuge in Iranica).
-  function scoreShurAvazClues(phrases, tonicBin) {
-    const specs = [
-      { name: "abuAta", start: 3, target: 10, direction: 1 },
-      { name: "afshari", start: 10, target: 3, direction: -1 },
-      { name: "dashti", start: 6, target: 14, direction: 1 },
-      { name: "bayatTork", start: 6, target: null, direction: 0 },
-    ];
-    const usable = (phrases || []).filter((p) => p.notes?.length >= 3);
-    return specs.map((spec) => {
-      let matching = 0;
-      for (const phrase of usable) {
-        const first = phrase.notes[0];
-        if (first.pitchClass !== mod(tonicBin + spec.start, 24)) continue;
-        const following = phrase.notes.slice(1, Math.min(5, phrase.notes.length));
-        if (!spec.direction) {
-          matching += 0.5;
-          continue;
-        }
-        const match = following.some((note) =>
-          note.pitchClass === mod(tonicBin + spec.target, 24) &&
-          Math.sign(note.pitchIndex - first.pitchIndex) === spec.direction
-        );
-        if (match) matching += 1;
+  // This score checks whether the final directed motion of an observed
+  // phrase agrees with the direction between endpoints of an EXISTING
+  // curated cadence template. It does not invent new Persian motifs.
+  // A jump across an octave is ignored since octave register is ambiguous.
+  function scoreCadenceDirection(phrases, templates, tonicBin) {
+    if (!Array.isArray(phrases) || !templates?.length) return { available: false, score: 0 };
+    let matches = 0;
+    let comparisons = 0;
+    for (const phrase of phrases) {
+      const notes = phrase.notes || [];
+      if (notes.length < 3) continue;
+      const last = notes[notes.length - 1];
+      const before = notes[notes.length - 2];
+      const actualStep = last.pitchIndex - before.pitchIndex;
+      if (actualStep === 0 || Math.abs(actualStep) >= 12) continue;
+      let best = null;
+      for (const [from, to, weight] of templates) {
+        if (before.pitchClass !== mod(tonicBin + from, 24) ||
+            last.pitchClass !== mod(tonicBin + to, 24)) continue;
+        // End-point pitch classes define the magnitude only modulo 24,
+        // so infer the smallest directed interval (rather than octave).
+        const directed = mod(to - from + 12, 24) - 12;
+        if (directed === 0 || Math.abs(directed) >= 12) continue;
+        const agree = Math.sign(directed) === Math.sign(actualStep) ? 1 : 0;
+        best = Math.max(best || 0, agree * clamp(weight, 0, 1));
       }
-      return {
-        name: spec.name,
-        supportingPhrases: matching,
-        eligiblePhrases: usable.length,
-        // Not a calibrated certainty; sparse evidence is deliberately weak.
-        evidence: usable.length >= 2 ? matching / usable.length : 0,
-      };
-    });
+      if (best !== null) {
+        matches += best;
+        comparisons++;
+      }
+    }
+    return comparisons
+      ? { available: true, score: matches / comparisons }
+      : { available: false, score: 0 };
   }
-
 
   // Analysis-only role hypotheses. Indices are 50-cent offsets from the
   // existing scaleData angle-zero reference, not universally defined Persian
@@ -2975,13 +2971,13 @@
       features.phraseCadences || [], signature.cadences || [], tonicBin
     );
     const phraseBehavior = scorePhraseBehavior(features.structuralPhrases || [], scaleName, tonicBin);
+    const cadenceDirection = scoreCadenceDirection(
+      features.structuralPhrases || [], signature.cadences || [], tonicBin
+    );
     const tonalRoleEvidence = scoreTonalRoleBehavior(
       features.structuralPhrases || [], features.sustainedProfile || [],
       scaleName, tonicBin, offsets
     );
-    const shurAvazClues = scaleName === "Shur"
-      ? scoreShurAvazClues(features.structuralPhrases || [], tonicBin)
-      : [];
     const score =
       pitchCoverage * 0.46 +
       neighboringCoverage * 0.035 +
@@ -2996,7 +2992,8 @@
       outsideEnergy * 0.12 +
       // Kept below 2.5% so unvalidated phrase priors cannot dominate pitch
       // and tonic evidence. Independent source-labeled testing is needed.
-      phraseBehavior.score * 0.025 +
+      phraseBehavior.score * 0.02 +
+      (cadenceDirection.available ? (cadenceDirection.score - 0.5) * 0.01 : 0) +
       // Zero-centered maximum effect ±1% of the score, avoiding a built-in
       // advantage for only the modes with a verified-enough role model.
       (tonalRoleEvidence.available ? (tonalRoleEvidence.score - 0.5) * 0.02 : 0);
@@ -3012,8 +3009,8 @@
       continuousCoverage,
       phraseCadenceEvidence,
       phraseBehavior,
+      cadenceDirection,
       tonalRoleEvidence,
-      shurAvazClues,
       outsideEnergy,
       degreeCoverage,
       tonicEvidence,

@@ -2616,6 +2616,70 @@
     };
   }
 
+  // Second-stage decision fusion. The ordinary Dastgah scores and pitch
+  // features remain untouched except for a bounded increase to one Shur
+  // candidate *only* when independent Avaz evidence is both distinctive and
+  // already broadly compatible with the existing modal ranking.
+  //
+  // This makes a well-supported Avaz recognizable as the primary answer
+  // instead of permanently relegating it to a secondary suggestion.
+  // Thresholds are deliberately provisional until held-out audio is measured.
+  function integrateIndependentAvaz(candidates, decision) {
+    const outcome = {
+      candidate: null, promoted: false, boost: 0,
+      reason: decision?.reason || "no Avaz hypothesis",
+    };
+    if (!Array.isArray(candidates) || !candidates.length ||
+        !decision?.avazKey || !Number.isFinite(decision.evidence) ||
+        !Number.isFinite(decision.shurTonicBin)) return outcome;
+    const selected = candidates.find(candidate =>
+      candidate.scaleName === "Shur" && candidate.tonicBin === decision.shurTonicBin
+    );
+    if (!selected) return { ...outcome, reason: "missing Shur reference candidate" };
+    selected.avazKey = decision.avazKey;
+    selected.avazEvidence = decision;
+    outcome.candidate = selected;
+    outcome.reason = "eligible as alternate hypothesis";
+
+    // Only compare distinct Avaz *models*, not the same model with a tonic
+    // shifted by a single quantization bin. A close rival is a reason to
+    // abstain from promotion, never a reason to raise arbitrary certainty.
+    const competitor = (decision.alternatives || []).find(other =>
+      other.supported && other.key !== decision.avazKey &&
+      Number.isFinite(other.evidence)
+    );
+    const margin = competitor ? decision.evidence - competitor.evidence : 1;
+    const bestLegacy = candidates.reduce((best, item) =>
+      item.score > best.score ? item : best, candidates[0]);
+    const legacyGap = Math.max(0, bestLegacy.score - selected.score);
+    outcome.evidence = decision.evidence;
+    outcome.margin = margin;
+    outcome.legacyGap = legacyGap;
+
+    if (decision.evidence < 0.74 || margin < 0.11 || legacyGap > 0.05) {
+      outcome.reason = "insufficiently distinctive or incompatible with legacy modal ranking";
+      return outcome;
+    }
+    const bonus = Math.min(0.065,
+      0.02 + 0.25 * Math.max(0, decision.evidence - 0.74) +
+      0.08 * Math.max(0, margin - 0.11));
+    // Avoid changing the ranking when the independently supported evidence
+    // is insufficient to make a difference. This is an *optional* rerank.
+    if (bonus <= legacyGap + 0.002) {
+      outcome.reason = "source evidence not strong enough to change first rank";
+      return outcome;
+    }
+    selected.score += bonus;
+    selected.avazPromotion = {
+      evidence: decision.evidence, margin, legacyGap, boost: bonus,
+      experimental: true,
+    };
+    outcome.promoted = true;
+    outcome.boost = bonus;
+    outcome.reason = "strong independent evidence; bounded ranking adjustment";
+    return outcome;
+  }
+
   function matchScales(result, mode) {
     if (typeof scaleData === "undefined") {
       throw new Error("The existing scaleData object is not available.");
@@ -2652,19 +2716,16 @@
       }
     });
 
-    // Independent Shur-family analysis does NOT adjust legacy Dastgah scores.
-    // Attach the experimental branch result to its correctly transposed Shur
-    // candidate, preserving all existing tonic/circle/playback behavior.
+    // Independent Avaz evidence is evaluated regardless of the legacy
+    // Shur rank. A guarded fusion step can elevate a strongly supported
+    // Avaz; ambiguous results never change the legacy winner.
     const avazDecision = classifyShurAvaz(features, profile);
-    state.avazDecision = avazDecision;
-    const avazCandidate = avazDecision.avazKey
-      ? candidates.find(c => c.scaleName === "Shur" &&
-        c.tonicBin === avazDecision.shurTonicBin)
-      : null;
-    if (avazCandidate) {
-      avazCandidate.avazKey = avazDecision.avazKey;
-      avazCandidate.avazEvidence = avazDecision;
-    }
+    const avazIntegration = integrateIndependentAvaz(candidates, avazDecision);
+    state.avazDecision = { ...avazDecision, integration: {
+      promoted: avazIntegration.promoted, boost: avazIntegration.boost,
+      reason: avazIntegration.reason,
+    } };
+    const avazCandidate = avazIntegration.candidate;
     candidates.sort((a, b) => b.score - a.score);
     candidates.forEach((candidate) => {
       const logistic = 1 / (1 + Math.exp(-8.2 * (candidate.score - 0.5)));
@@ -2687,10 +2748,10 @@
       diverse.push(candidate);
       if (diverse.length >= 6) break;
     }
-    // If the independent model provides strong evidence but the legacy
-    // Dastgah ranking hides Shur, show the hypothesis among alternatives.
-    // Never displace the best legacy Dastgah result.
-    if (avazCandidate && diverse.length && !diverse.includes(avazCandidate)) {
+    // If strong Avaz evidence is not enough to alter the winning ranking,
+    // include it as a secondary experimental alternative for evaluation.
+    if (avazCandidate && !avazIntegration.promoted &&
+        diverse.length && !diverse.includes(avazCandidate)) {
       const duplicate = diverse.findIndex(item => item.scaleName === "Shur" &&
         circularDistance(item.tonicBin, avazCandidate.tonicBin, 24) <= 1);
       if (duplicate > 0) diverse.splice(duplicate, 1);

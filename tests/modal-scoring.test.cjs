@@ -266,6 +266,21 @@ test('full independent classifier surfaces a Bayat-e Tork synthetic tonal exampl
     'winner='+JSON.stringify({reason:result.reason,top:result.alternatives.slice(0,4).map(
       c=>({key:c.key,reference:c.referenceBin,score:c.evidence,supported:c.supported}))}));
 });
+
+test('full independent classifier can surface all four source-conditioned Avaz hypotheses',()=>{
+  const examples=[
+    ['abuAta',[[700,500,340],[700,205,340],[700,500,340],[700,340,205]],700,0.35],
+    ['afshari',[[700,500,340],[700,205,340],[700,500,340],[700,340,0]],700,0.35],
+    ['dashti',[[500,700,905],[500,835,905],[500,995,905],[500,905,205]],905,0.4],
+  ];
+  for(const [name,pitches,shahed,weight] of examples){
+    const f=avazFixture(pitches,shahed,weight);
+    const out=context.classifyShurAvaz(f.features,f.profile);
+    assert.equal(out.avazKey,name,
+      name+': '+JSON.stringify({reason:out.reason,top:out.alternatives.slice(0,4).map(
+      r=>({key:r.key,reference:r.referenceBin,score:r.evidence,supported:r.supported}))}));
+  }
+});
 test('unpitched or very short clips abstain',()=>{
   const no=context.classifyShurAvaz({structuralPhrases:[]},Array(24).fill(0));
   assert.equal(no.avazKey,null);

@@ -2821,23 +2821,25 @@
   // existing scaleData angle-zero reference, not universally defined Persian
   // "tonics". Do not modify the independently curated educational markers.
   //
-  // Shur: During (Iranica): G center; Segah: E-koron final/shahed as mapped
-  // to the app's C-referenced collection (offset 7). Homayoun: G final,
-  // A-koron shahed, F temporary ist, mapped to G as the zero reference.
-  // Bayat-e Esfahan is intentionally absent: documented gusheh-dependent
-  // functions disagree with a single fixed reference assignment.
+  // Shur: first-degree center in the existing modal-role reference.
+  // Segah: third displayed degree (offset 7), as in modal-roles.js.
+  // Homayoun: second displayed degree (offset 3) as shahed and first
+  // displayed degree as finalis, as in modal-roles.js.
+  // Bayat-e Esfahan is deliberately omitted because its documented
+  // gusheh-dependent and historical finalis varies across sources.
+  // No ist position is assumed without a verified, matching reference.
   // All hypotheses are provisional for recognition until recordings confirm.
   function analysisRoleHypotheses(scaleName) {
     if (scaleName === "Shur") {
-      return [{ shahed: 0, finalis: 0, source: "During: Shur modal center" }];
+      return [{ shahed: 0, finalis: 0, source: "Existing Shur modal-role reference (darāmad)" }];
     }
     if (scaleName === "segah") {
-      return [{ shahed: 7, finalis: 7, source: "Segah: E-koron reference" }];
+      return [{ shahed: 7, finalis: 7, source: "Existing Segah modal-role reference (darāmad)" }];
     }
     if (scaleName === "homayoun") {
       return [{
-        shahed: 3, finalis: 0, ist: 20,
-        source: "During and annotated Homayoun example: G/A-koron/F",
+        shahed: 3, finalis: 0,
+        source: "Existing Homayoun modal-role reference (darāmad)",
       }];
     }
     return [];

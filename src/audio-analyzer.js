@@ -2400,6 +2400,126 @@
     return mod(getSelectedTonicBin() + Math.round(slot), 24);
   }
 
+
+  // Experimental, abstaining Shur-family branch classifier. All offsets are
+  // 50-cent classes from the app's SHUR REFERENCE (G in the cited examples):
+  // G 0, A-koron 3, Bb 6, C 10, D-koron 13, D 14, Eb 16,
+  // E-koron 17, F 20. Eb is NOT E-koron; Ab is NOT A-koron.
+  //
+  // Evidence: Tsuge, Abu Ata (Iranica, pp. 259-260); Caton, Bayat-e Tork
+  // (pp. 885-886); Farhat, Afshari (pp. 586-587); During, Dashti
+  // (pp. 107-108). Uses explicitly described tonal functions and variable
+  // notes, NOT illustrative motifs or unverified recording timestamps.
+  // Does NOT change the seven-note Shur circle or its transposition.
+  function classifyShurAvaz(tonicBin, features, familyCoverage) {
+    const empty = (reason) => ({ avazKey: null, reason, alternatives: [] });
+    const phrases = (features.structuralPhrases || []).filter(
+      (phrase) => phrase.notes?.length >= 3
+    );
+    const events = phrases.flatMap((phrase) => phrase.notes);
+    if (phrases.length < 2 || events.length < 10 || familyCoverage < 0.62) {
+      return empty("insufficient independent Shur-family melodic evidence");
+    }
+
+    const at = (offset) => mod(tonicBin + offset, 24);
+    const counts = new Array(24).fill(0);
+    events.forEach((note) => { counts[note.pitchClass] += 1; });
+    const sustained = features.sustainedProfile || [];
+    const prominence = (offset) => clamp(
+      ((sustained[at(offset)] || 0) - 0.08) / 0.22, 0, 1
+    );
+    const occurrence = (offset) => clamp(counts[at(offset)] / 2, 0, 1);
+    const endingRate = (offsets, localPhrases = phrases) => {
+      if (!localPhrases.length) return 0;
+      return localPhrases.filter((phrase) =>
+        offsets.some((offset) =>
+          phrase.notes[phrase.notes.length - 1].pitchClass === at(offset)
+        )
+      ).length / localPhrases.length;
+    };
+    const internal = phrases.slice(0, -1);
+    const finalNote = phrases[phrases.length - 1].notes.slice(-1)[0];
+    const finalAt = (offsets) => offsets.some((offset) =>
+      finalNote.pitchClass === at(offset)
+    ) ? 1 : 0;
+
+    const abuShahed = prominence(10);
+    const abuIst = endingRate([3], internal);
+    const abuFinal = finalAt([0]);
+    const bayatShahed = prominence(6);
+    const bayatStops = endingRate([6, 20]);
+    const bayatFinal = finalAt([6, 20]);
+    const afshariShahed = prominence(0);
+    const afshariIst = endingRate([17], internal);
+    const afshariFinal = finalAt([10]);
+    const afshariMicrotone = occurrence(17);
+    const dNatural = occurrence(14);
+    const dKoron = occurrence(13);
+    // During describes movement between pentachord regions, not necessarily
+    // two adjacent D/D-koron notes. Require lowered D after natural D.
+    const firstD = events.findIndex((note) => note.pitchClass === at(14));
+    const laterDkoron = firstD >= 0 && events.slice(firstD + 1).some(
+      (note) => note.pitchClass === at(13)
+    ) ? 1 : 0;
+    const dashtiFinal = finalAt([0]);
+
+    const alternatives = [
+      {
+        key: "abuAta",
+        evidence: 0.48 * abuShahed + 0.36 * abuIst + 0.16 * abuFinal,
+        supported: abuShahed >= 0.55 && abuIst >= 0.5,
+        signals: { shahed: abuShahed, ist: abuIst, finalis: abuFinal },
+      },
+      {
+        key: "bayatTork",
+        evidence: 0.55 * bayatShahed + 0.30 * bayatStops + 0.15 * bayatFinal,
+        supported: bayatShahed >= 0.55 && bayatStops >= 0.5,
+        signals: { shahed: bayatShahed, cadenceTargets: bayatStops, finalis: bayatFinal },
+      },
+      {
+        key: "afshari",
+        evidence: 0.30 * afshariShahed + 0.40 * afshariIst +
+          0.18 * afshariFinal + 0.12 * afshariMicrotone,
+        supported: afshariShahed >= 0.35 && afshariIst >= 0.5 &&
+          afshariMicrotone >= 0.5,
+        signals: {
+          shahed: afshariShahed, ist: afshariIst,
+          finalis: afshariFinal, eKoron: afshariMicrotone,
+        },
+      },
+      {
+        key: "dashti",
+        evidence: 0.30 * dKoron + 0.22 * dNatural +
+          0.29 * laterDkoron + 0.19 * dashtiFinal,
+        supported: dKoron >= 1 && dNatural >= 0.5 && laterDkoron === 1,
+        signals: { dKoron, dNatural, laterDkoron, finalis: dashtiFinal },
+      },
+    ].map((candidate) => ({
+      ...candidate,
+      evidence: clamp(candidate.evidence, 0, 1),
+    })).sort((a, b) => b.evidence - a.evidence);
+
+    // Unsupported branches cannot block a well-supported one, but near-tied
+    // supported branches lead to abstention. Neither value is probability.
+    const supported = alternatives.filter((candidate) => candidate.supported);
+    const winner = supported[0];
+    const runnerUp = supported[1];
+    if (!winner || winner.evidence < 0.69) {
+      return { avazKey: null, reason: "no sufficiently distinctive branch evidence", alternatives };
+    }
+    if (runnerUp && winner.evidence - runnerUp.evidence < 0.12) {
+      return { avazKey: null, reason: "competing Shur-family branches", alternatives };
+    }
+    return {
+      avazKey: winner.key,
+      evidence: winner.evidence,
+      signals: winner.signals,
+      alternatives,
+      reference: "Shur reference (G-based examples; transposable by tonicBin)",
+      experimental: true,
+    };
+  }
+
   function matchScales(result, mode) {
     if (typeof scaleData === "undefined") {
       throw new Error("The existing scaleData object is not available.");
@@ -2436,6 +2556,18 @@
       }
     });
 
+    // Preserve the original Dastgah candidate model and circle mapping.
+    // A tiny bonus may break a close Shur-family tie, but cannot override
+    // a clearly incompatible pitch collection.
+    candidates.forEach((candidate) => {
+      if (candidate.scaleName !== "Shur") return;
+      const avaz = classifyShurAvaz(candidate.tonicBin, features, candidate.pitchCoverage);
+      candidate.avazEvidence = avaz;
+      if (avaz.avazKey) {
+        candidate.avazKey = avaz.avazKey;
+        candidate.score += 0.015 * avaz.evidence;
+      }
+    });
     candidates.sort((a, b) => b.score - a.score);
     candidates.forEach((candidate) => {
       const logistic = 1 / (1 + Math.exp(-8.2 * (candidate.score - 0.5)));
@@ -2506,7 +2638,7 @@
     elements.bestMatch.classList.add("visible");
     const tonicName = pitchClassName(selected.tonicBin);
     const sourceLabel = state.selectionSource === "automatic" ? t("automaticChoice") : t("userChoice");
-    elements.bestMatchName.textContent = `${scaleDisplayName(selected.scaleName)} · ${tonicName}`;
+    elements.bestMatchName.textContent = `${candidateDisplayName(selected)} · ${tonicName}`;
     elements.bestMatchSubtitle.textContent = `${sourceLabel} · ${t("pitchEnergy", { n: Math.round(selected.exactCoverage * 100) })}`;
     elements.confidenceText.textContent = `${selected.matchPercent}%`;
     elements.confidenceRing.style.setProperty("--confidence-angle", `${selected.matchPercent * 3.6}deg`);
@@ -2528,7 +2660,7 @@
       button.innerHTML = `
         <span class="candidate-rank">${index + 1}</span>
         <span class="candidate-label">
-          <strong>${escapeHtml(scaleDisplayName(candidate.scaleName))} · ${escapeHtml(pitchClassName(candidate.tonicBin))}</strong>
+          <strong>${escapeHtml(candidateDisplayName(candidate))} · ${escapeHtml(pitchClassName(candidate.tonicBin))}</strong>
           <small>${escapeHtml(evidence)}${index === 0 ? ` · ${escapeHtml(t("autoLabel"))}` : ""}</small>
         </span>
         <span class="candidate-score">${candidate.matchPercent}%</span>
@@ -2540,12 +2672,12 @@
     renderAnalysisExplanation(selected, candidates);
     syncManualControls(selected);
 
-    elements.badgeText.textContent = `${state.selectionSource === "automatic" ? t("badge") : t("selectedLabel")}: ${scaleDisplayName(selected.scaleName)} · ${tonicName} (${selected.matchPercent}%)`;
+    elements.badgeText.textContent = `${state.selectionSource === "automatic" ? t("badge") : t("selectedLabel")}: ${candidateDisplayName(selected)} · ${tonicName} (${selected.matchPercent}%)`;
     if (elements.badgeStop) elements.badgeStop.textContent = t("stopAndHide");
     updateBadgeAccessibility();
     updateBadgeVisibility();
     if (elements.quickFinderHelp) {
-      elements.quickFinderHelp.textContent = `${state.selectionSource === "automatic" ? t("badge") : t("selectedLabel")}: ${scaleDisplayName(selected.scaleName)} · ${tonicName}`;
+      elements.quickFinderHelp.textContent = `${state.selectionSource === "automatic" ? t("badge") : t("selectedLabel")}: ${candidateDisplayName(selected)} · ${tonicName}`;
     }
     elements.quickFinderButton?.classList.add("has-result");
   }
@@ -3125,7 +3257,7 @@
       ? t("gapClose", { gap })
       : t("gapClear", { gap });
     elements.explanation.textContent = t("explanationTemplate", {
-      scale: scaleDisplayName(candidate.scaleName),
+      scale: candidateDisplayName(candidate),
       tonic: pitchClassName(candidate.tonicBin),
       coverage: Math.round(candidate.exactCoverage * 100),
       tonicEvidence: Math.round(candidate.tonicEvidence * 100),
@@ -4288,6 +4420,22 @@
       state.worker.terminate();
       state.worker = null;
     }
+  }
+
+  function candidateDisplayName(candidate) {
+    const scale = scaleDisplayName(candidate.scaleName);
+    if (candidate.scaleName !== "Shur" || !candidate.avazKey) return scale;
+    const label = (typeof translations !== "undefined"
+      ? translations[state.currentLanguage]?.avazhaItems?.[candidate.avazKey]
+      : null) || {
+      abuAta: "Abu Ata", bayatTork: "Bayat-e Tork",
+      afshari: "Afshari", dashti: "Dashti",
+    }[candidate.avazKey];
+    // The following tonic is the SHUR reference pitch, not necessarily the
+    // Avaz finalis. The result remains a provisional hypothesis.
+    const qualifier = state.currentLanguage === "fa" ? "آزمایشی"
+      : state.currentLanguage === "fr" ? "expérimental" : "experimental";
+    return label ? scale + " · " + label + " (" + qualifier + ")" : scale;
   }
 
   function scaleDisplayName(scaleName) {

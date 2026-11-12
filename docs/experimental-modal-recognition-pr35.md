@@ -126,3 +126,28 @@ The result is an **experimental, source-neutral rhythmic/melodic feature**, not 
 Added synthetic unit tests for transposition and octave invariance, microtonal tolerance, contour direction reversal, malformed patterns, matching distinct phrase endings, nonmatching endpoints, insufficient evidence, and the strict 0.005 score bound.
 
 The automated test suite passing does **not** show improved classification accuracy on annotated audio. Next step: build a legally usable, independently labeled and artist-separated audio benchmark; verify actual phrase boundaries and forud labels by ear/score; then run baseline-versus-branch comparison and potentially fit source-validated mode-specific motifs. Keep PR #35 draft and unmerged until that evaluation.
+
+## Independent Shur-family Āvāz redesign — supersedes the earlier Shur-gated classifier
+
+**Status:** Experimental and **not yet validated against real performance audio**. PR #35 stays draft. The old Shur-gated `classifyShurAvaz(tonicBin, features, familyCoverage)` classifier and its G-based fixed offsets are **removed**. References to those rules above describe earlier implementation history and are not active.
+
+The independent classifier now evaluates each of Abu Ata, Bayat-e Tork, Afshari, and Dashti in all 24 possible pitch transpositions, **regardless of the ranking or coverage assigned to the legacy Shur candidate**. It reads the user's original Ableton Scala exports as the theoretical basis, normalized to **C = the first named pitch in the exported source**, which is *not* necessarily the mode's finalis.
+
+| Model | Source C-based mode degrees (cents) | Shāhed | Ist | Finalis | Āghāz | Variable tones |
+|---|---|---|---|---|---|---|
+| Abu Ata | 0, 205, 340, 500, 700, 905 | G (700) | E-koron (340) | D (205) | E-koron / G | Not assigned |
+| Bayat-e Tork | 0, 205, 340, 500, 700, 905, 995 | F (500) | C (0) | F (500) | C | Not assigned |
+| Afshari | 0, 205, 340, 500, 700, 835, 995 | G (700) | E-koron (340) | C (0) | G | A-koron / A |
+| Dashti | 0, 205, 340, 500, 700, 905, 995 | A (905) | **Not assigned** | D (205) | F (500) | A / A-koron |
+
+**Sources:** User-uploaded Ableton `.scl` files and their annotated Sequence screenshots: https://tuning.ableton.com/persian-radif/ . The musical-function assignments are **source-example-specific**. They do not claim universality across different Radif traditions or gushehs.
+
+**Transposition and circle:** In this scheme, the source C reference maps to an existing Shur-circle D reference (+200 cents / four 50-cent bins); an observed transposition by `r` bins therefore maps to `Shur tonic = r + 4`. This is an output-mapping convention, **not a claim that the Shur reference note equals an Āvāz finalis**. The original Shur scale angles/labels/colors, Worker, audio playback, controls, original Dastgāh scoring and ranking are not modified. Strong Āvāz evidence may be surfaced as the second result for comparison; the best original Dastgāh candidate is never displaced.
+
+**Method:** Independent continuous-cent pitch compatibility (soft ~55-cent tolerance), duration-weighted shāhed, internal-phrase ist, finalis/phrase endings, opening-note āghāz, optional variable tones, and recurrent user-audio phrase resolutions. Each candidate must contain at least eight structural note events and ≥0.61 pitch compatibility. Multiple independent cues are required; a maximum-evidence comparison across all transpositions abstains below 0.67 or when a competitor is within 0.075. The two modes with near-identical pitch sets (Bayat-e Tork and Dashti) are differentiated mainly by tonal roles, not by pitch-set membership alone. All scores are **heuristics, not statistical confidence**.
+
+The existing Dastgāh score values and ordering are preserved exactly. In particular, this revision removes the former +0.015 boost given to Shur upon an Āvāz hypothesis. Shur-family classification may be reported as **uncertain** when evidence is insufficient rather than forcing a label.
+
+**Testing:** Replaced the old four Shur-gated fixtures with independent reference-model tests, explicit reference-degree mappings, octave/transposition invariance, microtonal distinction, and short-clip abstention. Isolated scoring tests passed (28 tests) on commit `d072928ad32f3e8daba1d67b4471ff29dea620e0`. Browser tests should be reviewed independently. **No labeled real-recording accuracy study has yet been completed.**
+
+**Remaining concern:** The source's 340/835/905-cent theoretical pitches are not guaranteed to match every player's actual intonation. Distinctive motifs and forud cannot be treated as validated unless checked against labeled, gusheh-annotated performances. Do not merge into `main` without comparative recording-based validation.

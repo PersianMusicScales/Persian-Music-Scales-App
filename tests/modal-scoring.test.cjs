@@ -29,7 +29,7 @@ const names = [
   'scoreCadenceDirection', 'analysisRoleHypotheses',
   'scoreTonalRoleBehavior', 'classifyShurAvaz',
   'avazPitchClass', 'avazPitchMatch', 'avazContinuousPitchFit',
-  'avazPhraseEvidence', 'scoreIndependentAvaz',
+  'avazPhraseEvidence', 'scoreIndependentAvaz', 'integrateIndependentAvaz',
   'relativeMotifFromNotes', 'relativeMotifSimilarity',
   'discoverRecurrentEndingMotifs', 'recurrentEndingMotifFit',
   'scoreScaleCandidate'
@@ -368,4 +368,73 @@ test('recurrent motif scoring is bounded to half a percentage point',()=>{
   assert.ok(extra.score>base.score);
   assert.ok(extra.score-base.score<=0.005000001);
   assert.equal(base.recurrentMotifEvidence,0);
+});
+
+
+// Synthetic decision-fusion fixtures. These do not establish accuracy on
+// KDC recordings or redistribute restricted Radif MIDI material.
+function legacyCandidates(avazScore=0.69,otherScore=0.73) {
+  return [
+    {scaleName:'Shur',tonicBin:4,score:avazScore},
+    {scaleName:'segah',tonicBin:7,score:otherScore},
+    {scaleName:'mahur',tonicBin:0,score:0.50},
+  ];
+}
+function decision({evidence=.95,rival=.60,avazKey='bayatTork',tonicBin=4}={}) {
+  return {avazKey,shurTonicBin:tonicBin,evidence,experimental:true,
+    alternatives:[
+      {key:avazKey,referenceBin:0,evidence,supported:true},
+      {key:'dashti',referenceBin:0,evidence:rival,supported:true},
+    ]};
+}
+test('independent strong Avaz decision can become first rank via bounded fusion',()=>{
+  const candidates=legacyCandidates(.69,.73);
+  const out=context.integrateIndependentAvaz(candidates,decision());
+  assert.equal(out.promoted,true);
+  assert.equal(out.candidate,candidates[0]);
+  assert.ok(out.boost>0 && out.boost<=.065);
+  assert.ok(candidates[0].score>candidates[1].score);
+  assert.equal(candidates[1].score,.73);
+  assert.equal(candidates[0].avazKey,'bayatTork');
+});
+test('weak or ambiguous Avaz remains alternative and does not affect other scores',()=>{
+  for(const d of [decision({evidence:.70}),decision({evidence:.82,rival:.76}),
+    decision({evidence:.95,tonicBin:11})]){
+    const c=legacyCandidates();
+    const scores=c.map(x=>x.score);
+    const out=context.integrateIndependentAvaz(c,d);
+    assert.equal(out.promoted,false);
+    assert.equal(JSON.stringify(c.map(x=>x.score)),JSON.stringify(scores));
+  }
+});
+test('large legacy gap blocks accidental takeover by an otherwise strong Avaz',()=>{
+  const c=legacyCandidates(.50,.73);
+  const out=context.integrateIndependentAvaz(c,decision());
+  assert.equal(out.promoted,false);
+  assert.equal(c[0].score,.50);
+  assert.equal(c[1].score,.73);
+});
+test('supported Avaz already ranked first does not inflate heuristic match score',()=>{
+  const c=legacyCandidates(.80,.73);
+  const out=context.integrateIndependentAvaz(c,decision());
+  assert.equal(out.promoted,false);
+  assert.equal(c[0].score,.80);
+  assert.equal(c[0].avazKey,'bayatTork');
+});
+test('same branch in nearby reference pitch does not count as another competing Avaz',()=>{
+  const c=legacyCandidates(.69,.73);
+  const d=decision();
+  d.alternatives.splice(1,1,
+    {key:'bayatTork',referenceBin:1,evidence:.94,supported:true});
+  const out=context.integrateIndependentAvaz(c,d);
+  assert.equal(out.promoted,true);
+});
+test('fusion never creates an Avaz from missing or nonfinite evidence',()=>{
+  for(const input of [null,{},decision({evidence:NaN}),
+    {avazKey:'dashti',shurTonicBin:4,evidence:Infinity}]){
+    const c=legacyCandidates();
+    const out=context.integrateIndependentAvaz(c,input);
+    assert.equal(out.promoted,false);
+    assert.equal(c[0].avazKey,undefined);
+  }
 });

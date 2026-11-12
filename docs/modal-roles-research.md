@@ -1,6 +1,6 @@
 # Shahed and Finalis: evidence and limits of the educational models
 
-**Status:** pre-publication reference annotations, for the Mirza Abdollah / Nur-Ali Boroumand instrumental-radif tradition as an organizing framework. Research sources from other traditions do not necessarily prove direct correspondence to each exact Mirza Abdollah gusheh. Distinctions between `documented`, `partial` and `provisional` must remain visible in the interface.
+**Scope:** educational reference annotations, using the Mirza Abdollah / Nur-Ali Boroumand instrumental-radif tradition as an organizing framework. Research sources from other traditions do not necessarily prove direct correspondence to each exact Mirza Abdollah gusheh. Distinctions between `documented`, `partial` and `provisional` must remain visible in the interface.
 
 ## Interpretation
 

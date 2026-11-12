@@ -1,4 +1,4 @@
-# Dynamic Persian staff notation — proposed educational feature
+# Dynamic Persian staff notation — educational model
 
 The feature is a **calculated spelling of the currently selected seven-note pitch collection**, not an independently sourced traditional signature for every dastgāh and transposition.
 
@@ -10,7 +10,7 @@ The feature is a **calculated spelling of the currently selected seven-note pitc
 - Because the app permits all 24 rotations, some uncommon positions have no established **conventional** Persian key signature. All Persian-mode displays in this first version are expressly labeled **Calculated scale alterations**, not canonical key signatures.
 - Conventional Western-key-signature labeling is used for simple ordinary accidental spellings of the Mahur and natural-minor comparison models; the pitches are still independent of the musical mode's finalis/Shahed.
 - The displayed staff is anchored beside the Play Scale control. Opening it provides seven spelled notes, the reference spelling, a notation caveat and source/attribution information.
-- The Sornaz key-signature examples supplied by the application creator are useful evidence that Iranian notation distinguishes **bemol-koron** and **diez-sori** families and uses written staff positions. They are NOT copied as a generalized transcription table: those diagrams show particular *māyeh* and conventions, while the application must also handle 24 computational transpositions. The source PDF supplied to this conversation was incomplete and was not used as a reliable authority.
+- Published Sornaz key-signature examples illustrate the distinction between **bemol-koron** and **diez-sori** accidentals and their placement on the staff. These examples cover particular *māyeh* and notation conventions; they are not treated as a generalized transcription table for all 24 computational transpositions.
 
 ## Algorithm and its limits
 
@@ -39,8 +39,8 @@ The original authentic vector symbol paths were supplied by the app creator from
 
 The files are reproduced without shape modification in `assets/notation/sori.svg` and `assets/notation/koron.svg`. Their attribution and license should be preserved with redistributed copies; the application's code licensing is separate.
 
-**Engraving update:** to avoid staff-line misalignment due to mixed fonts and SVG viewBox centering, the exact Koron and Sori outlines are also embedded (without modifying their path data) in `src/key-signature.js`. The renderer places their musical focal points directly on the appropriate staff step. Standard flat, sharp, and natural glyph outlines are from Noto Music (SIL OFL 1.1), rather than platform-dependent Unicode text rendering; the treble clef already uses that music-font source. No font files are included.
+**Notation rendering:** to avoid staff-line misalignment due to mixed fonts and SVG viewBox centering, the exact Koron and Sori outlines are also embedded (without modifying their path data) in `src/key-signature.js`. The renderer places their musical focal points directly on the appropriate staff step. Standard flat, sharp, and natural glyph outlines are from Noto Music (SIL OFL 1.1), rather than platform-dependent Unicode text rendering; the treble clef already uses that music-font source. No font files are included.
 
 The treble clef is an embedded outline extracted from **Google Noto Music** (glyph U+1D11E), distributed under the **SIL Open Font License 1.1**. This is a vector path, not a redistributed font file. License: https://openfontlicense.org/open-font-license-official-text/ . Font source: https://github.com/notofonts/music .
 
-For key-signature conventions see [LilyPond, Persian classical music](https://lilypond.org/doc/v2.26/Documentation/notation/persian-classical-music.html), and the Sornaz examples provided by the app creator at https://sornaz.com/analytics/article-details?id=21 . Those sources inform the principles; the full conventional source-specific tables remain future work.
+For key-signature conventions see [LilyPond, Persian classical music](https://lilypond.org/doc/v2.26/Documentation/notation/persian-classical-music.html), and the published Sornaz examples at https://sornaz.com/analytics/article-details?id=21. Those sources inform the principles; the full conventional source-specific tables remain future work.

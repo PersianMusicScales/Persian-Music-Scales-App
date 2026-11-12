@@ -27,7 +27,7 @@ const names = [
   'estimatePitchGridOffset', 'continuousPitchCoverage',
   'phraseEndingCadenceFit', 'extractStructuralPhrases', 'scorePhraseBehavior',
   'scoreCadenceDirection', 'analysisRoleHypotheses',
-  'scoreTonalRoleBehavior', 'scoreScaleCandidate'
+  'scoreTonalRoleBehavior', 'classifyShurAvaz', 'scoreScaleCandidate'
 ];
 const context = {
   mod: (x, n) => ((x % n) + n) % n,
@@ -157,4 +157,75 @@ test('new phrase channels leave empty-input scoring finite and compatible', () =
   assert.equal(score.phraseBehavior.available,false);
   assert.equal(score.cadenceDirection.available,false);
   assert.equal(score.tonalRoleEvidence.available,false);
+});
+
+
+// Synthesized reference-pitch examples exercise exact quarter-tone offsets.
+// They are unit fixtures, not mislabeled real-world audio validation.
+const shurG = 14; // G pitch class in app, C=0 (24 half-semitone bins)
+const rel = (x) => ((shurG+x)%24+24)%24;
+function phrase(offsets, t=0, longOffset=null) {
+  return {notes:offsets.map((offset,i)=>event(rel(offset),t+i*.25,
+    offset===longOffset?0.7:0.25))};
+}
+function avazFeatures(phrases, emphasisOffsets=[]) {
+  const sustainedProfile=Array(24).fill(0);
+  for (const [offset,value] of emphasisOffsets) sustainedProfile[rel(offset)]=value;
+  return {structuralPhrases:phrases,sustainedProfile};
+}
+function classify(phrases,emphasis=[]) {
+  return context.classifyShurAvaz(shurG,avazFeatures(phrases,emphasis),0.93);
+}
+test('Abu Ata: C shahed, A-koron ist, G finalis yield provisional branch',()=>{
+  const phrases=[
+    phrase([10,6,3]), phrase([0,10,3]), phrase([14,10,3]),
+    phrase([10,6,3,0]), 
+  ];
+  const result=classify(phrases,[[10,0.35]]);
+  assert.equal(result.avazKey,'abuAta');
+  assert.equal(result.experimental,true);
+});
+test('Bayat-e Tork: Bb prominence and Bb/F phrase rests with no microtone confusion',()=>{
+  const phrases=[
+    phrase([0,3,6]),phrase([10,14,6]),phrase([20,14,6]),
+    phrase([3,0,20])
+  ];
+  const result=classify(phrases,[[6,0.36]]);
+  assert.equal(result.avazKey,'bayatTork');
+});
+test('Afshari: E-koron ist is NOT Eb; G shahed and C finalis',()=>{
+  const phrases=[
+    phrase([0,20,17]),phrase([14,20,17]),phrase([0,16,17]),
+    phrase([0,17,10])
+  ];
+  const result=classify(phrases,[[0,0.32]]);
+  assert.equal(result.avazKey,'afshari');
+  const wrong=classify([
+    phrase([0,20,16]),phrase([14,20,16]),phrase([0,20,16]),
+    phrase([0,16,10])
+  ],[[0,0.32]]);
+  assert.notEqual(wrong.avazKey,'afshari');
+});
+test('Dashti: natural D, later D-koron and G finalis are independently distinguishable',()=>{
+  const p=[phrase([14,20,0]),phrase([14,10,13]),phrase([10,14,13]),phrase([20,13,0])];
+  const result=classify(p);
+  assert.equal(result.avazKey,'dashti');
+  const noLowered=classify([
+    phrase([14,20,0]),phrase([14,10,14]),
+    phrase([10,14,20]),phrase([20,14,0])
+  ]);
+  assert.notEqual(noLowered.avazKey,'dashti');
+});
+test('classifier abstains with a short clip, poor scale coverage, or a single clue',()=>{
+  const p=[phrase([10,6,3])];
+  assert.equal(classify(p,[[10,.4]]).avazKey,null);
+  const many=[phrase([10,6,3]),phrase([0,10,3]),phrase([14,10,3]),phrase([10,6,3,0])];
+  assert.equal(context.classifyShurAvaz(shurG,avazFeatures(many,[[10,.4]]),.3).avazKey,null);
+  const oneClue=[phrase([0,3,6]),phrase([10,14,6]),phrase([20,14,6]),phrase([10,14,6])];
+  assert.equal(classify(oneClue).avazKey,null);
+});
+test('shur family offsets preserve correct microtone distinctions on 24-bin grid',()=>{
+  assert.equal(rel(3),17); // A koron, not A flat (16)
+  assert.equal(rel(13),3); // D koron, not D flat (2)
+  assert.equal(rel(17),7); // E koron, not E flat (6)
 });

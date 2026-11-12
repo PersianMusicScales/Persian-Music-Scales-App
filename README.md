@@ -333,6 +333,8 @@ Microphone access is requested only after user interaction and remains under the
 
 The built-in example is downloaded from the public GitHub Pages application when selected.
 
+The application does not initialize Google Analytics. The optional tuner currently loads two JavaScript dependencies from jsDelivr; visiting that page can result in network requests to the CDN.
+
 ---
 
 ## Browser and Device Notes
@@ -509,9 +511,11 @@ For permissions, collaboration, or other inquiries:
 
 Copyright © 2024–2026 Pouya Hosseini. All rights reserved.
 
-This project, its source code, interface, visual design, documentation, audio-analysis methods, associated materials, and other contents are the intellectual property of **Seyed Pouya Hosseini Yazdeli**, also professionally known as **Pouya Hosseini**.
+The proprietary terms below apply to the original project material. Separately licensed third-party components are identified in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and remain subject to their own licenses, including any permission to use or redistribute those components.
 
-No rights are granted except through prior written permission from the copyright holder.
+The original project source code, interface, visual design, documentation, audio-analysis methods, and associated materials are the intellectual property of **Seyed Pouya Hosseini Yazdeli**, also professionally known as **Pouya Hosseini**, except where separately licensed third-party contributions are identified.
+
+No rights to the original proprietary components are granted except through prior written permission from their copyright holder. Third-party licenses grant their own permissions independently.
 
 ### You may not, without prior written consent:
 

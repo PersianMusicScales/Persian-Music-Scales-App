@@ -18,6 +18,22 @@
 
   const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
     (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const IS_MOBILE = IS_IOS || /Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+  // The Tuner uses default microphone constraints successfully on phones.
+  // Keep the existing music-oriented constraints on desktop browsers.
+  function microphoneCaptureConstraints() {
+    return IS_MOBILE ? { audio: true, video: false } : {
+      audio: {
+        channelCount: { ideal: 1 },
+        echoCancellation: { ideal: false },
+        noiseSuppression: { ideal: false },
+        autoGainControl: { ideal: false },
+      },
+      video: false,
+    };
+  }
+
   const IS_STANDALONE = window.matchMedia?.("(display-mode: standalone)")?.matches ||
     window.navigator.standalone === true;
 
@@ -918,15 +934,7 @@
     try {
       /* Request microphone permission directly. On iOS, awaiting AudioContext
          setup before getUserMedia can leave the permission state stuck. */
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          channelCount: { ideal: 1 },
-          echoCancellation: { ideal: false },
-          noiseSuppression: { ideal: false },
-          autoGainControl: { ideal: false },
-        },
-        video: false,
-      });
+      const stream = await navigator.mediaDevices.getUserMedia(microphoneCaptureConstraints());
       // Permission activation keeps the stream ready without analysing it.
       stopMediaStream(recorder.stream);
       recorder.stream = stream;
@@ -1057,6 +1065,7 @@
       // inside beginMicrophoneRecording and start as soon as access is granted.
       // No second tap of Microphone or Record is required.
       recorder.holdActive = true;
+      if (microphonePermissionIsReady()) primeIOSMicrophoneMeter();
       beginMicrophoneRecording({ requestPermission: true });
     });
     // Prevent pointer gestures on these controls from reaching circle drag handlers.
@@ -1231,6 +1240,22 @@
     elements.micSwipe?.classList.remove("toward-cancel", "toward-analyze", "dragging");
   }
 
+  // Create/resume the iOS live-meter AudioContext inside the Record tap.
+  // Creating it after an awaited getUserMedia call can miss user activation.
+  // Capture is allowed to continue even if the optional live meter fails.
+  function primeIOSMicrophoneMeter() {
+    if (!IS_IOS || state.recorder.meterContext) return;
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    try {
+      const context = new AudioContextClass();
+      state.recorder.meterContext = context;
+      context.resume().catch(error => console.warn("Mic meter activation:", error));
+    } catch (error) {
+      console.warn("Mic meter initialization:", error);
+    }
+  }
+
   function bindMicrophoneRecorderEvents() {
     elements.quickFinderButton?.addEventListener("click", event => {
       event.preventDefault();
@@ -1243,6 +1268,7 @@
       if (state.recorder.starting || state.recorder.recording ||
           state.recorder.finalizing || state.recorder.permissionPreparing || state.worker) return;
       state.recorder.holdActive = true;
+      primeIOSMicrophoneMeter();
       beginMicrophoneRecording();
     });
 
@@ -1354,12 +1380,10 @@
     updateButtons();
 
     try {
-      // iOS can leave a previously granted track alive but muted after an
-      // audio-session change. Reacquire instead of recording a silent track.
-      // On iOS, a live-looking track can still produce silence after the
-      // browser changes audio sessions. Acquire a fresh native mic stream
-      // for each take; other platforms keep the existing reusable stream.
-      const readyStream = !IS_IOS && recorder.stream?.getAudioTracks?.().some(track =>
+      // Reuse a healthy permission stream on mobile. Stopping and immediately
+      // reacquiring a second stream can disrupt Safari's native audio session.
+      // Muted/ended tracks are still rejected; later takes start fresh.
+      const readyStream = recorder.stream?.getAudioTracks?.().some(track =>
         track.readyState === "live" && track.enabled && !track.muted);
       if (!readyStream && recorder.stream) {
         stopMediaStream(recorder.stream);
@@ -1367,15 +1391,7 @@
       }
       const stream = readyStream
         ? recorder.stream
-        : await navigator.mediaDevices.getUserMedia({
-            audio: {
-              channelCount: { ideal: 1 },
-              echoCancellation: { ideal: false },
-              noiseSuppression: { ideal: false },
-              autoGainControl: { ideal: false },
-            },
-            video: false,
-          });
+        : await navigator.mediaDevices.getUserMedia(microphoneCaptureConstraints());
       setMicrophonePermissionState("granted");
 
       if (!recorder.holdActive || recorder.cancelled) {
@@ -1549,7 +1565,15 @@
   }
 
   function selectRecordingMimeType() {
-    const candidates = [
+    // Prefer native MP4/AAC for Safari's recorder and decoder. Other browsers
+    // retain their existing WebM/Opus preference.
+    const candidates = IS_IOS ? [
+      "audio/mp4;codecs=mp4a.40.2",
+      "audio/mp4",
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "audio/ogg;codecs=opus",
+    ] : [
       "audio/webm;codecs=opus",
       "audio/ogg;codecs=opus",
       "audio/mp4;codecs=mp4a.40.2",
@@ -1707,10 +1731,13 @@
   }
 
   async function startMicrophoneMeter(stream) {
-    stopMicrophoneMeter();
+    // Preserve the context already resumed by the direct iOS Record gesture.
+    const primedContext = state.recorder.meterContext && !state.recorder.meterSource
+      ? state.recorder.meterContext : null;
+    if (!primedContext) stopMicrophoneMeter();
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (!AudioContextClass || !stream) return;
-    const context = new AudioContextClass();
+    const context = primedContext || new AudioContextClass();
     // Never block recording on AudioContext.resume(): on some mobile browsers
     // it remains suspended until another user gesture.
     context.resume().catch((error) => console.warn("Mic meter audio context:", error));

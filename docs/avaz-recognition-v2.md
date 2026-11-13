@@ -69,3 +69,11 @@ Previously the `alternatives.slice(0,5)` shortlist could be dominated by near-du
 The Homayoun/Esfahan issue remains unresolved: no validated pairwise phrase model has been built, and their collections overlap after transposition. Avoid hard-coded guessed roles and further unvalidated score changes; first compare real independent recordings and Worker-extracted notes.
 
 **No audio-driven accuracy claims are made. PR remains draft/unmerged, and `main` is unchanged.**
+
+## Nov 13: Debug initialization fix (PR #36)
+
+The browser previously returned `undefined` for `window.__persianModalDiagnostics` despite having `?avazDebug=1`. The earlier implementation created the global **only inside `matchScales` after successful analysis**, so testers could not distinguish an old script from incomplete processing. Changing the port did not resolve the case in user screenshots.
+
+A small opt-in initialization marker now creates the diagnostic object **immediately when `src/audio-analyzer.js` executes** with the debug query flag. It changes its `status` from `ready` → `analyzing` → `complete`. The report is still local to the browser and no audio is transmitted. Normal app behavior without the query flag is unchanged.
+
+To test: download the **updated ZIP of PR #36**, extract, start the local Python server, open `http://localhost:8000/?avazDebug=1`, then run `window.__persianModalDiagnostics` in Chrome's DevTools Console *before analyzing*. It should show `{diagnosticVersion: 2, status: 'ready', ...}`. After analyzing, inspect the same variable and copy its full object. If it still returns `undefined` before analysis, the browser is not executing this updated script. The syntax and modal-scoring CI workflow passed on commit `fa8aa74333d97c9baecdb44fa9eb779a0e39c2e6`; the browser suite is separate.

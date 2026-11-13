@@ -29,6 +29,61 @@
   }
   updateModalDiagnosticStatus("ready", "Analyzer loaded; analyze a track to generate evidence");
 
+  // PR #37 temporary collector: only active when launched by the bundled
+  // localhost diagnostic helper. No network requests leave localhost; no
+  // audio waveform or extracted note sequences are sent or persisted.
+  const LOCAL_AUTO_SAVE = DEBUG_MODAL_ANALYSIS &&
+    new URLSearchParams(window.location.search).get("autoSave") === "1" &&
+    ["localhost", "127.0.0.1"].includes(window.location.hostname);
+  async function saveLocalDiagnostic(report, status = "complete", reason = null) {
+    if (!LOCAL_AUTO_SAVE) return;
+    const fileName = state.file?.name || "unknown-recording";
+    const payload = {
+      ...report,
+      status,
+      reason: reason || report?.reason || "Analysis completed",
+      fileName,
+      knownMode: window.__localAvazGroundTruth || "unknown",
+      inputOrigin: state.inputOrigin || "file",
+    };
+    let outcome = { ok: false, fileName, reason: "Collector is unavailable" };
+    try {
+      const response = await fetch("/__avaz_diagnostics", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        cache: "no-store",
+      });
+      const data = await response.json();
+      outcome = {
+        ok: response.ok && data.saved === true,
+        fileName,
+        savedFile: data.file || null,
+        reason: data.error || null,
+      };
+    } catch (error) {
+      outcome.reason = String(error?.message || error);
+    }
+    window.dispatchEvent(new CustomEvent("persian-avaz-diagnostic-finished", {
+      detail: outcome,
+    }));
+  }
+  function saveLocalFailure(message) {
+    if (!LOCAL_AUTO_SAVE) return;
+    const report = window.__persianModalDiagnostics || {};
+    updateModalDiagnosticStatus("failed", String(message || "No pitched content"));
+    void saveLocalDiagnostic({
+      diagnosticVersion: 2,
+      noteEvents: state.analysis?.events?.length || 0,
+      durationSeconds: Math.round((state.analysis?.duration || state.audioBuffer?.duration || 0) * 10) / 10,
+      structuralPhrases: 0,
+      unmodifiedDastgahRanking: [],
+      avazDecision: { avazKey: null, reason: String(message || "No pitched content"), alternatives: [] },
+      displayedCandidates: [],
+    }, "failed", String(message || "Analysis failed"));
+  }
+
+
 
   const EXAMPLE_TRACK = Object.freeze({
     url: "assets/audio/jane-oshagh.mp3",
@@ -2166,6 +2221,9 @@
     stopPlayback();
     resetAnalysisResult(true);
     updateModalDiagnosticStatus("analyzing", "Analysis started; report will follow successful completion");
+    if (LOCAL_AUTO_SAVE) window.dispatchEvent(new CustomEvent("persian-avaz-diagnostic-started", {
+      detail: { fileName: state.file?.name || "unknown-recording" }
+    }));
     const request = { autoStart, loadGeneration };
     state.analysisRequest = request;
     setStatus(t("analyzing"), 1);
@@ -2250,6 +2308,7 @@
     const localFile = window.location.protocol === "file:";
     const explanation = localFile ? t("localServerRequired") : `${t("error")} ${message || ""}`.trim();
     setStatus(explanation, 0, true);
+    saveLocalFailure(explanation);
     if (state.inputOrigin === "microphone") {
       updateRecordingFeedback(explanation, 0, "error");
       closeQuickFinder({ restoreFocus: false, cancelRecording: false });
@@ -2266,6 +2325,7 @@
     if (!result.events?.length || result.voicedFrameCount < 4) {
       setStatus(t("noVoiced"), 0, true);
       showAnalysisFailure();
+      saveLocalFailure("Insufficient voiced notes");
       if (state.inputOrigin === "microphone") {
         updateRecordingFeedback(t("noVoiced"), 0, "error");
         closeQuickFinder({ restoreFocus: false, cancelRecording: false });
@@ -2296,7 +2356,8 @@
     // Recording, uploaded audio and the example all follow the same path.
     // selectCandidate() has already updated the circle and Key Signature via
     // applyCandidateToCircle() before synchronized playback begins.
-    if (request.autoStart && request.loadGeneration === state.loadGeneration) {
+    if (request.autoStart && request.loadGeneration === state.loadGeneration &&
+        !window.__localAvazBatchRunning) {
       if (state.inputOrigin === "microphone") {
         closeQuickFinder({ restoreFocus: false, cancelRecording: false });
       }
@@ -2833,6 +2894,9 @@
         },
         displayedCandidates: diverse.map(slim),
       };
+      if (LOCAL_AUTO_SAVE) {
+        void saveLocalDiagnostic(window.__persianModalDiagnostics);
+      }
     }
     return diverse;
   }
@@ -4852,5 +4916,10 @@
       .replaceAll("'", "&#039;");
   }
 
+  // The optional panel injects a separate batch selector. It calls this
+  // existing file-decoding / Worker-analysis path, not a second pitch model.
+  if (LOCAL_AUTO_SAVE) {
+    window.__localAvazAnalyzeFile = (file) => loadFile(file, { origin: "file" });
+  }
   initialize();
 })();

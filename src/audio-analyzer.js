@@ -2593,10 +2593,17 @@
     }
     results.sort((a, b) => b.evidence - a.evidence);
     const supported = results.filter(r => r.supported);
+    // Compare distinct Avaz branches. Otherwise up to five transpositions of
+    // one branch can hide all other branches in a truncated alternatives list.
+    // Prefer each branch's best supported model when one is available.
+    const branchAlternatives = AVAZ_REFERENCE_MODELS.map(model =>
+      supported.find(r => r.key === model.key) ||
+      results.find(r => r.key === model.key)
+    ).filter(Boolean).sort((a, b) => b.evidence - a.evidence);
     const winner = supported[0];
     if (!winner || winner.evidence < 0.67) {
       return { avazKey: null, reason: "insufficient distinctive Avaz evidence",
-        alternatives: results.slice(0, 5) };
+        alternatives: branchAlternatives };
     }
     // A one-bin (50c) difference in global tuning is uncertain, not a new
     // modal candidate. Otherwise a nearby competitor triggers abstention.
@@ -2606,12 +2613,12 @@
     ));
     if (runner && winner.evidence - runner.evidence < 0.075) {
       return { avazKey: null, reason: "closely competing Avaz hypotheses",
-        alternatives: supported.slice(0, 5) };
+        alternatives: branchAlternatives };
     }
     return {
       avazKey: winner.key, referenceBin: winner.referenceBin,
       shurTonicBin: winner.shurTonicBin, evidence: winner.evidence,
-      signals: winner.signals, alternatives: results.slice(0, 5),
+      signals: winner.signals, alternatives: branchAlternatives,
       experimental: true,
     };
   }

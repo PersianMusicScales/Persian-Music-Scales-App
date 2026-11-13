@@ -438,3 +438,15 @@ test('fusion never creates an Avaz from missing or nonfinite evidence',()=>{
     assert.equal(c[0].avazKey,undefined);
   }
 });
+
+test('classification alternatives expose one best entry per distinct Avaz branch',()=>{
+  const f=avazFixture([
+    [0,205,0],[700,500,0],[0,700,0],[0,340,500],
+  ],500,0.35);
+  const result=context.classifyShurAvaz(f.features,f.profile);
+  const keys=result.alternatives.map(item=>item.key);
+  assert.equal(new Set(keys).size,keys.length,
+    'same Avaz in multiple transpositions must not crowd out other modes');
+  assert.ok(keys.includes('bayatTork'));
+  assert.ok(keys.length<=4);
+});

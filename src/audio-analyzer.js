@@ -2255,6 +2255,11 @@
     }
 
     state.candidates = matchScales(result, mode);
+    // Experimental local mode identification is separate from pitch-collection matching.
+    // Pass the source File only within the current page; uploading remains user-initiated.
+    window.dispatchEvent(new CustomEvent("persian:analysis-complete", {
+      detail: { file: state.file, generation: state.loadGeneration }
+    }));
     state.automaticCandidate = state.candidates[0] || null;
     selectCandidate(state.automaticCandidate, "automatic");
     drawTimeline(result.events, result.rawEvents || []);
@@ -3900,6 +3905,7 @@
   }
 
   function resetAnalysisResult(clearBadge = true) {
+    window.dispatchEvent(new Event("persian:analysis-reset"));
     stopMelodyPlayback(false);
     state.analysis = null;
     state.candidates = [];

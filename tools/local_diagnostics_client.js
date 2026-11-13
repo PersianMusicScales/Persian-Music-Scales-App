@@ -129,6 +129,7 @@
     }
     const selectedLabel = modeSelect.value;
     running = true;
+    window.__localAvazBatchRunning = true;
     completed = 0;
     failed = 0;
     runButton.disabled = true;
@@ -161,6 +162,7 @@
         " failed.\nFind the JSON files in local-diagnostic-reports/ in this app folder.");
     } finally {
       running = false;
+      window.__localAvazBatchRunning = false;
       runButton.disabled = false;
       input.disabled = false;
       modeSelect.disabled = false;

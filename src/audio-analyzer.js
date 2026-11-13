@@ -9,6 +9,26 @@
 
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+  const DEBUG_MODAL_ANALYSIS = new URLSearchParams(window.location.search).get("avazDebug") === "1";
+  // Diagnostics must be present immediately when the *current* analyzer
+  // loads, even before the first analysis. This lets a tester distinguish
+  // unloaded code, an unfinished analysis, and a completed result.
+  // Nothing is transmitted or stored; all data remains in this tab.
+  function updateModalDiagnosticStatus(status, reason = null) {
+    if (!DEBUG_MODAL_ANALYSIS) return;
+    window.__persianModalDiagnostics = {
+      diagnosticVersion: 2,
+      status,
+      reason,
+      updatedAt: new Date().toISOString(),
+      ...(window.__persianModalDiagnostics?.diagnosticVersion === 2
+        ? Object.fromEntries(Object.entries(window.__persianModalDiagnostics)
+          .filter(([key]) => !["status", "reason", "updatedAt"].includes(key)))
+        : {}),
+    };
+  }
+  updateModalDiagnosticStatus("ready", "Analyzer loaded; analyze a track to generate evidence");
+
 
   const EXAMPLE_TRACK = Object.freeze({
     url: "assets/audio/jane-oshagh.mp3",
@@ -2145,6 +2165,7 @@
     terminateWorker();
     stopPlayback();
     resetAnalysisResult(true);
+    updateModalDiagnosticStatus("analyzing", "Analysis started; report will follow successful completion");
     const request = { autoStart, loadGeneration };
     state.analysisRequest = request;
     setStatus(t("analyzing"), 1);
@@ -2781,8 +2802,7 @@
     // Opt-in diagnostic snapshot: no raw audio, note-by-note melody, file
     // names, or microphone data are persisted or transmitted. The live page
     // must be opened with ?avazDebug=1. This changes no visible UI behavior.
-    if (typeof window !== "undefined" && window.location &&
-        new URLSearchParams(window.location.search).get("avazDebug") === "1") {
+    if (DEBUG_MODAL_ANALYSIS) {
       const slim = c => ({
         scaleName: c.scaleName, tonicBin: c.tonicBin,
         avazKey: c.avazKey || null,
@@ -2790,7 +2810,9 @@
         matchPercent: c.matchPercent,
       });
       window.__persianModalDiagnostics = {
-        diagnosticVersion: 1,
+        diagnosticVersion: 2,
+        status: "complete",
+        reason: "Successful modal analysis",
         noteEvents: (result.events || []).length,
         durationSeconds: Math.round((result.duration || 0) * 10) / 10,
         structuralPhrases: (features.structuralPhrases || []).length,

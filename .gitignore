@@ -10,3 +10,6 @@ Thumbs.db
 __pycache__/
 *.py[cod]
 *.log
+
+# Private temporary local Avaz diagnostics (PR #37)
+local-diagnostic-reports/

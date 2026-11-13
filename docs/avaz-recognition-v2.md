@@ -47,3 +47,25 @@ These are synthetic unit tests. Real-world classification accuracy on the provid
 5. Only merge after genuinely positive *held-out* audio evidence. This branch remains a draft.
 
 No UI redesign or changes to the recording worker, circle graphics, or playback are intended.
+
+## November 13: Existing recorded-audio control audit and opt-in diagnostics
+
+The user supplied nine further FLAC attachments. **Every one is an exact SHA-256 duplicate of a recording already supplied**, so these do not enlarge the independent evaluation set. The 18 unique labeled FLAC recordings now available to the user are: 12 Shur-family Āvāz files (8 Radif Darāmad + 4 flexible-interval demonstrations), four Homayoun / Esfahan files (2 each), and two controls (Shur and Segah Darāmad). All have provenance tags but tags alone are not independent expert verification of musical labels. No FLAC audio was uploaded into this repository.
+
+A separate exploratory first-30-seconds pitch histogram was computed locally with a YIN-based pitch estimate. It indicated substantial pitch-class ambiguity across different performers. This is **not** the application Worker model and cannot be interpreted as measured PR #36 classification accuracy. No classifier coefficients were fitted to it.
+
+### Opt-in local diagnostic report
+
+Open the experimental application locally at `http://localhost:8000/?avazDebug=1`. Analyze one file. In Chrome DevTools (F12 → Console), run:
+
+```javascript
+copy(JSON.stringify(window.__persianModalDiagnostics, null, 2))
+```
+
+The report includes original unmodified Dastgāh rankings, independent Āvāz outcomes and reasons, one best hypothesis **per distinct Āvāz branch**, tonal evidence components, any score-fusion adjustment, and the displayed candidate rankings. It contains no recording filename, raw waveform, original note sequences or personally identifying information, and is **not transmitted** by this feature. Share it with the recording's known label for failure analysis. Remove the query parameter to disable diagnostic snapshots.
+
+Previously the `alternatives.slice(0,5)` shortlist could be dominated by near-duplicate transpositions of the same branch, obscuring actual inter-branch competition and making diagnostic interpretation difficult. It now preserves the best supported (or, if none, highest) candidate for **each** of Abu Ata, Bayat-e Tork, Afshari and Dashti. The 37-test regression suite includes a branch-uniqueness safeguard.
+
+The Homayoun/Esfahan issue remains unresolved: no validated pairwise phrase model has been built, and their collections overlap after transposition. Avoid hard-coded guessed roles and further unvalidated score changes; first compare real independent recordings and Worker-extracted notes.
+
+**No audio-driven accuracy claims are made. PR remains draft/unmerged, and `main` is unchanged.**

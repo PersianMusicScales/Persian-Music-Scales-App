@@ -2730,6 +2730,12 @@
       }
     });
 
+    // Preserve the unmodified Dastgah ranking for local, opt-in diagnostics.
+    const unmodifiedDastgahRanking = candidates.slice()
+      .sort((a, b) => b.score - a.score).slice(0, 6)
+      .map(c => ({ scaleName: c.scaleName, tonicBin: c.tonicBin,
+        score: Number(c.score.toFixed(4)), coverage: Number(c.pitchCoverage.toFixed(4)) }));
+
     // Independent Avaz evidence is evaluated regardless of the legacy
     // Shur rank. A guarded fusion step can elevate a strongly supported
     // Avaz; ambiguous results never change the legacy winner.
@@ -2771,6 +2777,40 @@
       if (duplicate > 0) diverse.splice(duplicate, 1);
       diverse.splice(1, 0, avazCandidate);
       diverse.length = Math.min(diverse.length, 6);
+    }
+    // Opt-in diagnostic snapshot: no raw audio, note-by-note melody, file
+    // names, or microphone data are persisted or transmitted. The live page
+    // must be opened with ?avazDebug=1. This changes no visible UI behavior.
+    if (typeof window !== "undefined" && window.location &&
+        new URLSearchParams(window.location.search).get("avazDebug") === "1") {
+      const slim = c => ({
+        scaleName: c.scaleName, tonicBin: c.tonicBin,
+        avazKey: c.avazKey || null,
+        score: Number(c.score.toFixed(4)),
+        matchPercent: c.matchPercent,
+      });
+      window.__persianModalDiagnostics = {
+        diagnosticVersion: 1,
+        noteEvents: (result.events || []).length,
+        durationSeconds: Math.round((result.duration || 0) * 10) / 10,
+        structuralPhrases: (features.structuralPhrases || []).length,
+        unmodifiedDastgahRanking,
+        avazDecision: {
+          avazKey: avazDecision.avazKey || null,
+          evidence: avazDecision.evidence ?? null,
+          reason: avazDecision.reason || null,
+          referenceBin: avazDecision.referenceBin ?? null,
+          integration: state.avazDecision.integration,
+          alternatives: (avazDecision.alternatives || []).map(c => ({
+            key: c.key, referenceBin: c.referenceBin,
+            evidence: Math.round(c.evidence * 10000) / 10000,
+            pitchCompatibility: Math.round(c.pitchCompatibility * 10000) / 10000,
+            supported: c.supported,
+            signals: c.signals,
+          })),
+        },
+        displayedCandidates: diverse.map(slim),
+      };
     }
     return diverse;
   }

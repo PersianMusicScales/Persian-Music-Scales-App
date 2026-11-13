@@ -17,7 +17,7 @@ import sys
 import tempfile
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import unquote
+from urllib.parse import unquote, urlsplit
 
 import joblib
 import numpy as np
@@ -229,13 +229,60 @@ def serve(root: Path, output: Path, port: int):
     pre,v4,core,champion,state,rows,cache,hashes = stuff
     blocked={Path(r['source']).name.lower() for r in rows if r['split']=='test'}
     class Handler(BaseHTTPRequestHandler):
+        def permitted_origin(self):
+            """Only allow the locally served application to read these results."""
+            origin = self.headers.get('Origin', '')
+            if not origin:
+                return None  # Direct same-origin calls and local CLI clients.
+            parsed = urlsplit(origin)
+            if parsed.scheme == 'http' and parsed.hostname in ('localhost', '127.0.0.1'):
+                return origin
+            return False
+
+        def send_local_cors(self):
+            origin = self.permitted_origin()
+            if origin:
+                self.send_header('Access-Control-Allow-Origin', origin)
+                self.send_header('Vary', 'Origin')
+
+        def do_OPTIONS(self):
+            if self.path != '/analyze':
+                self.send_error(404)
+                return
+            if self.permitted_origin() is False:
+                self.send_error(403)
+                return
+            self.send_response(204)
+            self.send_local_cors()
+            self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+            self.send_header('Access-Control-Allow-Headers', 'X-Filename, Content-Type')
+            self.send_header('Access-Control-Max-Age', '600')
+            self.end_headers()
+
         def do_GET(self):
-            if self.path!='/': self.send_error(404);return
-            data=PAGE.encode('utf-8');self.send_response(200)
+            if self.permitted_origin() is False:
+                self.send_error(403)
+                return
+            if self.path == '/health':
+                self.reply(200, {'status': 'ready', 'version': VERSION,
+                                 'labels': list(MODES), 'local_only': True})
+                return
+            if self.path != '/':
+                self.send_error(404)
+                return
+            data = PAGE.encode('utf-8')
+            self.send_response(200)
+            self.send_local_cors()
             self.send_header('Content-Type','text/html; charset=utf-8')
-            self.send_header('Content-Length',str(len(data)));self.end_headers();self.wfile.write(data)
+            self.send_header('Content-Length',str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+
         def do_POST(self):
             if self.path!='/analyze':self.send_error(404);return
+            if self.permitted_origin() is False:
+                self.send_error(403)
+                return
             try:
                 size=int(self.headers.get('Content-Length','0'))
                 name=Path(unquote(self.headers.get('X-Filename',''))).name
@@ -258,6 +305,7 @@ def serve(root: Path, output: Path, port: int):
             except Exception as exc:self.reply(400,{'error':str(exc)[:500]})
         def reply(self,status,data):
             payload=json.dumps(data).encode('utf-8');self.send_response(status)
+            self.send_local_cors()
             self.send_header('Content-Type','application/json')
             self.send_header('Content-Length',str(len(payload)));self.end_headers();self.wfile.write(payload)
     print(f'Local-only app: http://127.0.0.1:{port}/  (Ctrl+C to stop)',flush=True)

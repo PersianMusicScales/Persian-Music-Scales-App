@@ -1,0 +1,33 @@
+name: Local Avaz diagnostic tool checks
+
+on:
+  pull_request:
+    paths:
+      - 'src/audio-analyzer.js'
+      - 'tools/local_diagnostics_*.js'
+      - 'tools/local_diagnostics_*.py'
+      - 'tools/test_local_diagnostics_server.py'
+      - '.github/workflows/local-avaz-diagnostics.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  local-diagnostics:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify analyzer and local panel JavaScript
+        run: |
+          node --check src/audio-analyzer.js
+          node --check tools/local_diagnostics_client.js
+      - name: Verify local Python launcher syntax
+        run: python -m py_compile tools/local_diagnostics_server.py
+      - name: Verify private local report storage
+        run: python -m unittest discover -s tools -p 'test_local_diagnostics_server.py' -v

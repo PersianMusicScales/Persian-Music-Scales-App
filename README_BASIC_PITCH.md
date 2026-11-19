@@ -53,3 +53,19 @@ Core source: https://github.com/spotify/basic-pitch-ts
 ## Validation status
 
 **Not evaluated on KDC, IRMA, or unseen performers.** The frozen 225-feature V4 classifier's 59.2% development accuracy is **not** the accuracy of this new method. No final KDC test was opened and no repository model training is performed. Keep this PR as a draft until you verify local functioning and we have independent accuracy measurements.
+
+## November 19 reliability patch (requires a fresh build)
+
+This patch does **not** add a new pretrained Dastgah model or improve measured classification accuracy. It corrects a failure in how the experimental UI presented weak transcription evidence:
+
+- Flags repeated note-to-note jumps close to integer harmonic multiples (2x–8x), without asserting these are proven octave errors.
+- Cross-checks the first 45 seconds of neural notes against the existing independent audio-worker pitch events; presents overlap, agreement and harmonic conflicts.
+- If tracking is suspect or two estimators disagree substantially, the UI reports **UNRELIABLE MELODY — NO MODAL IDENTIFICATION**. A raw heuristic ranking remains available for diagnostics and is explicitly labeled unsafe.
+- Displays a separate experimental rank based on the original worker if enough events are available. This rank is not independent validation and neither estimate is ground truth.
+- Does not insert hardcoded Homayoun or Segah preferences; keeps all 12 labels.
+
+**Rebuild after pulling this patch:** from the checked-out branch, run `npm run basic-pitch:build` before starting the web server, or rerun `run_basic_pitch_on_pc.cmd`. Local browser testing is still necessary.
+
+Two supplied exports were used to reproduce the failure, *not as held-out validation*: Segah export: 113 note events, 0 large jumps, baseline rank Segah #1; Homayoun export: 95 events, 29 large jumps, 22 near integer-ratio harmonics, baseline rank Esfahan #1 / Homayoun #11. The new reliability gate flags the Homayoun export rather than returning Esfahan as a reliable diagnosis. This is a **safety/correctness improvement**, not proof that the system can recognize Homayoun.
+
+The rule thresholds are fixed implementation heuristics and must be validated on independent recordings before relying on them. The KDC protected 16 recordings remain untouched.

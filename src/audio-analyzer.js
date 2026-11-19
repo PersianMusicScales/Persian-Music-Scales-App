@@ -2257,7 +2257,7 @@
     state.candidates = matchScales(result, mode);
     // The optional Basic Pitch panel listens without altering the established scale matcher.
     window.dispatchEvent(new CustomEvent("persian:audio-analysis-ready", {
-      detail: {file: state.file, generation: state.loadGeneration}
+      detail: {file: state.file, generation: state.loadGeneration, events: result.events || []}
     }));
     state.automaticCandidate = state.candidates[0] || null;
     selectCandidate(state.automaticCandidate, "automatic");

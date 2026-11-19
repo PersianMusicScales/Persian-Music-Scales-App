@@ -10,3 +10,9 @@ Thumbs.db
 __pycache__/
 *.py[cod]
 *.log
+
+# Locally-built optional Basic Pitch browser inference assets
+src/basic-pitch-experiment/neural-microtone.bundle.js
+src/basic-pitch-experiment/neural-microtone.bundle.js.LEGAL.txt
+assets/models/basic-pitch/
+assets/third-party/spotify-basic-pitch-LICENSE.txt

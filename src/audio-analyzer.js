@@ -2255,6 +2255,10 @@
     }
 
     state.candidates = matchScales(result, mode);
+    // The optional Basic Pitch panel listens without altering the established scale matcher.
+    window.dispatchEvent(new CustomEvent("persian:audio-analysis-ready", {
+      detail: {file: state.file, generation: state.loadGeneration}
+    }));
     state.automaticCandidate = state.candidates[0] || null;
     selectCandidate(state.automaticCandidate, "automatic");
     drawTimeline(result.events, result.rawEvents || []);
@@ -3900,6 +3904,7 @@
   }
 
   function resetAnalysisResult(clearBadge = true) {
+    window.dispatchEvent(new Event("persian:audio-analysis-reset"));
     stopMelodyPlayback(false);
     state.analysis = null;
     state.candidates = [];

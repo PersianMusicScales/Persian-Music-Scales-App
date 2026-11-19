@@ -22,9 +22,9 @@
   const results=document.createElement('div');results.setAttribute('aria-live','polite');
   root.append(title,intro,button,status,results);
   host.insertAdjacentElement('afterend',root);
-  let selectedFile=null, generation=-1, task=0, inProgress=false, latest=null;
+  let selectedFile=null, generation=-1, task=0, inProgress=false, latest=null, workerEvents=[];
   function clear(){
-    task++;selectedFile=null;generation=-1;latest=null;results.replaceChildren();
+    task++;selectedFile=null;generation=-1;latest=null;workerEvents=[];results.replaceChildren();
     // Basic Pitch is not abortable once neural inference starts; a stale
     // result is ignored instead of being displayed for a different recording.
     status.textContent='Analyze a recording with the normal analyzer first.';
@@ -36,6 +36,7 @@
     const f=event.detail?.file;
     selectedFile=(typeof File!=='undefined' && f instanceof File)? f:null;
     generation=event.detail?.generation ?? -1;
+    workerEvents=Array.isArray(event.detail?.events) ? event.detail.events : [];
     button.disabled=!selectedFile||inProgress;
     status.textContent=selectedFile?'Ready. Click to run the neural model on the first 45 seconds (locally).':'No recording available.';
   });
@@ -60,7 +61,20 @@
     if(!analysis.melodyCount){results.append(para('No stable notes were extracted; no mode is suggested.'));return;}
     results.append(para(`${analysis.noteCount} detected notes; ${analysis.melodyCount} predominant-melody notes; ${analysis.seconds.toFixed(1)} seconds analyzed.`));
     results.append(para(`Median absolute deviation from the nearest 12-TET note: ${Number(analysis.medianAbsCentsDeviation).toFixed(1)} cents (neural estimate, NOT measured pitch accuracy).`));
-    const h=document.createElement('h4');h.textContent='All 12 candidate modes · heuristic fit';results.append(h);
+    const reliability=analysis.reliability;
+    const warning=para(analysis.decision==='uncertain'
+      ? `UNRELIABLE MELODY — NO MODAL IDENTIFICATION: ${analysis.decisionReason}`
+      : `Exploratory ranking only; no validated Dastgah/Avaz identification. ${analysis.decisionReason}`);
+    warning.style.cssText='font-weight:700;border-left:3px solid #bc8527;padding:8px 12px;background:rgba(190,135,30,.08);';
+    results.append(warning);
+    if(reliability)results.append(para(`Neural tracking diagnostic: ${reliability.harmonicLeaps} integer-ratio large jumps / ${Math.max(0,reliability.noteCount-1)} note transitions; ${(100*reliability.topFourCoverage).toFixed(0)}% pitch-profile energy in four bins. These are warning indicators, not verified errors.`));
+    if(analysis.comparison?.available){
+      const cmp=analysis.comparison;
+      results.append(para(`Cross-check against independent original analyzer: ${cmp.compared} overlapping notes; ${cmp.compared ? (cmp.agreementFraction*100).toFixed(0)+'%' : 'N/A'} within 100 cents; ${cmp.harmonicConflicts} integer-harmonic disagreements. Neither extractor is ground truth.`));
+    }
+    if(analysis.workerRanked?.length)results.append(para(`Original analyzer's pitch-only comparison: ${analysis.workerRanked.slice(0,3).map(m=>m.name).join(', ')} (also heuristic, not calibrated).`));
+    const h=document.createElement('h4');h.textContent=analysis.decision==='uncertain'
+      ? 'Unsafe neural ranking (for diagnosis ONLY)' : 'All 12 candidate modes · unvalidated heuristic fit';results.append(h);
     const list=document.createElement('ol');
     for(const entry of analysis.ranked){
       const li=document.createElement('li');
@@ -82,9 +96,10 @@
       status.textContent='Loading neural transcription engine…';
       const engine=await loadEngine();
       if(thisTask!==task || selectedFile!==file || generation!==sameGeneration)return;
+      const referenceEvents=workerEvents;
       const analysis=await engine.runNeuralMicrotones(file,message=>{
         if(thisTask===task)status.textContent=String(message);
-      });
+      }, 45, referenceEvents);
       if(thisTask!==task || selectedFile!==file || generation!==sameGeneration)return;
       latest=analysis;
       status.textContent='Neural microtonal analysis complete (experimental; not validated).';

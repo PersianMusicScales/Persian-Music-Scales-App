@@ -16,11 +16,24 @@
   const button=document.createElement('button');
   button.type='button';button.disabled=true;button.textContent='Try neural microtonal detection';
   button.style.cssText='padding:10px 13px;border-radius:8px;cursor:pointer;margin:5px 0;';
+  const excerptRow=document.createElement('label');
+  excerptRow.style.cssText='display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0;';
+  excerptRow.append(document.createTextNode('Start analysis at (seconds): '));
+  const excerptStart=document.createElement('input');
+  excerptStart.type='number';
+  excerptStart.min='0';
+  excerptStart.step='1';
+  excerptStart.value='0';
+  excerptStart.style.cssText='width:95px;padding:6px;';
+  excerptRow.append(excerptStart);
+  const excerptHint=document.createElement('small');
+  excerptHint.textContent='The next 45 seconds are analyzed. For long recordings, try 0, 60, 120…';
+  excerptHint.style.cssText='display:block;margin:0 0 8px;';
   const status=document.createElement('p');
   status.setAttribute('aria-live','polite');status.setAttribute('role','status');
   status.textContent='Analyze a recording with the normal analyzer first.';
   const results=document.createElement('div');results.setAttribute('aria-live','polite');
-  root.append(title,intro,button,status,results);
+  root.append(title,intro,excerptRow,excerptHint,button,status,results);
   host.insertAdjacentElement('afterend',root);
   let selectedFile=null, generation=-1, task=0, inProgress=false, latest=null, workerEvents=[];
   function clear(){
@@ -38,7 +51,8 @@
     generation=event.detail?.generation ?? -1;
     workerEvents=Array.isArray(event.detail?.events) ? event.detail.events : [];
     button.disabled=!selectedFile||inProgress;
-    status.textContent=selectedFile?'Ready. Click to run the neural model on the first 45 seconds (locally).':'No recording available.';
+    excerptStart.value='0';
+    status.textContent=selectedFile?'Ready. Choose the excerpt start time, then click to analyze 45 seconds locally.':'No recording available.';
   });
   async function loadEngine(){
     if(window.PersianBasicPitchExperiment) return window.PersianBasicPitchExperiment;
@@ -49,17 +63,17 @@
   function para(text){const p=document.createElement('p');p.textContent=text;return p;}
   function exportCsv(analysis){
     const header='start_seconds,end_seconds,pitch_hz,relative_cents_from_12tet,duration_seconds';
-    const lines=analysis.melody.map(n=>[n.start,n.end,n.hz,n.centsOffsetFromPiano,n.duration].map(x=>Number(x).toFixed(4)).join(','));
+    const lines=analysis.melody.map(n=>[n.start+analysis.startSeconds,n.end+analysis.startSeconds,n.hz,n.centsOffsetFromPiano,n.duration].map(x=>Number(x).toFixed(4)).join(','));
     const csv=[header,...lines].join('\n')+'\n';
     const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
     const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');a.href=url;a.download='neural-microtonal-melody.csv';a.click();
+    const a=document.createElement('a');a.href=url;a.download=`neural-microtonal-melody-from-${Math.round(analysis.startSeconds)}s.csv`;a.click();
     setTimeout(()=>URL.revokeObjectURL(url),1000);
   }
   function render(analysis){
     results.replaceChildren();
     if(!analysis.melodyCount){results.append(para('No stable notes were extracted; no mode is suggested.'));return;}
-    results.append(para(`${analysis.noteCount} detected notes; ${analysis.melodyCount} predominant-melody notes; ${analysis.seconds.toFixed(1)} seconds analyzed.`));
+    results.append(para(`${analysis.noteCount} detected notes; ${analysis.melodyCount} predominant-melody notes; ${analysis.seconds.toFixed(1)} seconds analyzed (from ${analysis.startSeconds.toFixed(1)} to ${(analysis.startSeconds+analysis.seconds).toFixed(1)} s of recording).`));
     results.append(para(`Median absolute deviation from the nearest 12-TET note: ${Number(analysis.medianAbsCentsDeviation).toFixed(1)} cents (neural estimate, NOT measured pitch accuracy).`));
     const reliability=analysis.reliability;
     const warning=para(analysis.decision==='uncertain'
@@ -91,6 +105,7 @@
     if(inProgress || !selectedFile)return;
     inProgress=true;button.disabled=true;
     const file=selectedFile, sameGeneration=generation, thisTask=++task;
+    const startSeconds=Math.max(0,Number(excerptStart.value)||0);
     results.replaceChildren();
     try{
       status.textContent='Loading neural transcription engine…';
@@ -99,7 +114,7 @@
       const referenceEvents=workerEvents;
       const analysis=await engine.runNeuralMicrotones(file,message=>{
         if(thisTask===task)status.textContent=String(message);
-      }, 45, referenceEvents);
+      }, 45, referenceEvents, startSeconds);
       if(thisTask!==task || selectedFile!==file || generation!==sameGeneration)return;
       latest=analysis;
       status.textContent='Neural microtonal analysis complete (experimental; not validated).';

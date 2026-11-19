@@ -45,3 +45,48 @@ test('overlapping pitches do not inflate melody event count',()=>{
  ]);
  assert.equal(predominantNotes(a).length,2);
 });
+
+// Robustness tests for neural note extraction. These are synthetic signals;
+// passing them is NOT evidence of real-world Persian modal accuracy.
+test('continuous phrase does not receive a harmonic-switching warning', async()=>{
+ const {melodyReliability}=await import('../src/basic-pitch-experiment/core.mjs');
+ const base=[220,247,266,278,294,266,247,220];
+ const notes=Array.from({length:40},(_,i)=>{
+  const hz=base[i%base.length],midi=69+12*Math.log2(hz/440);
+  return {start:i*.3,end:i*.3+.25,duration:.25,hz,midi,bin24:mod(Math.round(midi*2),24),weight:.7};
+ });
+ const result=melodyReliability(notes);
+ assert.equal(result.harmonicLeaps,0);
+ assert.equal(result.status,'review');
+});
+test('repeated large integer-ratio jumps flag a possible harmonic-tracking failure', async()=>{
+ const {melodyReliability}=await import('../src/basic-pitch-experiment/core.mjs');
+ const notes=Array.from({length:42},(_,i)=>{
+  const hz=i%2 ? 800 : 133.33,midi=69+12*Math.log2(hz/440);
+  return {start:i*.3,end:i*.3+.25,duration:.25,hz,midi,bin24:mod(Math.round(midi*2),24),weight:.8};
+ });
+ const result=melodyReliability(notes);
+ assert.ok(result.harmonicLeaps>25);
+ assert.equal(result.status,'unreliable');
+});
+test('independent worker agreement is measured by time-overlapping pitch, not assumed', async()=>{
+ const {compareWithWorker,workerMelody}=await import('../src/basic-pitch-experiment/core.mjs');
+ const notes=Array.from({length:20},(_,i)=>({start:i*.25,end:i*.25+.2,duration:.2,hz:220+(i%4)*12,weight:.5}));
+ const ev=notes.map(n=>({startTime:n.start,endTime:n.end,frequency:n.hz,confidence:.85}));
+ const matched=compareWithWorker(notes,ev);
+ assert.equal(matched.compared,20);
+ assert.equal(matched.agreement,20);
+ assert.equal(matched.agreementFraction,1);
+ assert.equal(workerMelody(ev,2).every(n=>n.end<=2),true);
+ const erroneous=notes.map(n=>({...n,hz:n.hz*4}));
+ const mismatch=compareWithWorker(erroneous,ev);
+ assert.equal(mismatch.harmonicConflicts,20);
+ assert.equal(mismatch.agreementFraction,0);
+});
+test('short transcription abstains instead of reporting an identification',()=>{
+ const short=Array.from({length:6},(_,i)=>({pitchMidi:60+i%3,startTimeSeconds:i*.3,durationSeconds:.23,amplitude:.8}));
+ const result=analyzeTranscription(short,[]);
+ assert.equal(result.decision,'uncertain');
+ assert.equal(result.reliability.status,'insufficient');
+ assert.equal(result.ranked.length,12); // raw results remain visible for diagnostics
+});

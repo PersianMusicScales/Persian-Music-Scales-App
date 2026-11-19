@@ -150,15 +150,117 @@ export function rankModes(profiles){
   }).sort((a,b)=>b.fit-a.fit);
 }
 
-export function analyzeTranscription(noteEvents, contours){
+// The Spotify model can jump between a fundamental and its integer harmonics.
+// A large change in pitch does NOT, by itself, establish a transcription error;
+// the purpose here is to identify unreliable evidence, not to overwrite pitches.
+export function melodyReliability(melody) {
+  const intervals = Math.max(0, melody.length - 1);
+  let leaps = 0, harmonicLeaps = 0;
+  for (let i = 1; i < melody.length; i++) {
+    const a = melody[i - 1].hz, b = melody[i].hz;
+    if (!(a > 0 && b > 0)) continue;
+    const ratio = Math.max(a, b) / Math.min(a, b);
+    if (ratio < 2) continue;
+    leaps++;
+    const harmonic = Math.round(ratio);
+    if (harmonic >= 2 && harmonic <= 8 &&
+        Math.abs(1200 * Math.log2(ratio / harmonic)) <= 50) harmonicLeaps++;
+  }
+  const hist = makeProfiles(melody).hist;
+  const topFourCoverage = [...hist].sort((a, b) => b - a).slice(0, 4).reduce((a, b) => a + b, 0);
+  const harmonicJumpFraction = harmonicLeaps / Math.max(1, intervals);
+  const unstable = (harmonicLeaps >= 8 && harmonicJumpFraction >= 0.14) ||
+    (harmonicLeaps >= 5 && topFourCoverage >= 0.9);
+  const insufficient = melody.length < 15;
+  return {status: insufficient ? 'insufficient' : unstable ? 'unreliable' : 'review',
+    noteCount: melody.length, largeLeaps: leaps, harmonicLeaps,
+    harmonicJumpFraction, topFourCoverage,
+    // This is only a rule-based warning; it does not confirm actual harmonics.
+    caution: unstable ? 'Frequent integer-ratio large jumps: possible harmonic switching. The modal winner should not be trusted.' :
+      insufficient ? 'Too few extracted notes for a meaningful modal hypothesis.' :
+      'No strong harmonic-switching warning; musical identity remains unvalidated.'};
+}
+
+// Independently compare Spotify predictions with the existing JS-worker pitch
+// events from the SAME audio. Neither estimate is treated as ground truth.
+// Only time-overlapping notes with sufficiently confident worker events count.
+export function compareWithWorker(melody, workerEvents = []) {
+  if (!Array.isArray(workerEvents) || !workerEvents.length)
+    return {available:false, compared:0, agreement:0, harmonicConflicts:0,
+      agreementFraction:null, warnings:['JS worker comparison not available']};
+  const reference = workerEvents.filter(e => Number.isFinite(e.frequency) && e.frequency > 0 &&
+    Number.isFinite(e.startTime) && Number.isFinite(e.endTime) && e.endTime > e.startTime &&
+    Number(e.confidence) >= 0.35).sort((a, b) => a.startTime - b.startTime);
+  let compared = 0, agreement = 0, harmonicConflicts = 0, disagreements = 0;
+  let testedDuration = 0, agreementDuration = 0;
+  for (const note of melody) {
+    let best = null, bestOverlap = 0;
+    for (const event of reference) {
+      if (event.startTime >= note.end) break;
+      if (event.endTime <= note.start) continue;
+      const overlap = Math.max(0, Math.min(note.end, event.endTime) - Math.max(note.start, event.startTime));
+      const support = overlap * Math.max(.01, Math.min(1, event.confidence));
+      if (support > bestOverlap) {bestOverlap = support; best = event;}
+    }
+    if (!best || bestOverlap < Math.min(note.duration, best.endTime - best.startTime) * 0.25) continue;
+    compared++;testedDuration += note.duration;
+    const delta = Math.abs(1200 * Math.log2(note.hz / best.frequency));
+    if (delta <= 100) {agreement++;agreementDuration += note.duration;continue;}
+    disagreements++;
+    const ratio = Math.max(note.hz, best.frequency) / Math.min(note.hz, best.frequency);
+    const integer = Math.round(ratio);
+    if (integer >= 2 && integer <= 8 && Math.abs(1200 * Math.log2(ratio / integer)) <= 50)
+      harmonicConflicts++;
+  }
+  const comparedFraction = compared / Math.max(1, melody.length);
+  return {available:true, compared, comparedFraction, agreement, disagreements,
+    harmonicConflicts, agreementFraction: compared ? agreement / compared : null,
+    agreementDurationFraction: testedDuration > 0 ? agreementDuration / testedDuration : null,
+    warnings: compared < 12 || comparedFraction < .25 ?
+      ['Too few overlapping estimates for a reliable cross-check'] :
+      agreement / compared < .55 ? ['Spotify and JS-worker pitches frequently disagree'] : []};
+}
+
+export function workerMelody(workerEvents = [], maxSeconds = Infinity) {
+  if (!Array.isArray(workerEvents)) return [];
+  return workerEvents.map(e => {
+    const start=Number(e.startTime), end=Number(e.endTime), hz=Number(e.frequency);
+    const confidence=Number(e.confidence);
+    if (!(Number.isFinite(start) && Number.isFinite(end) && Number.isFinite(hz) &&
+          start>=0 && end>start && hz>0 && Number.isFinite(confidence) && confidence>=.35)) return null;
+    if (start >= maxSeconds) return null;
+    const midi=69+12*Math.log2(hz/440), duration=Math.min(end,maxSeconds)-start;
+    if (!(duration>0)) return null;
+    return {start,end:Math.min(end,maxSeconds),duration,hz,midi,
+      bin24:mod(Math.round(midi*2),24),weight:Math.sqrt(duration)*clamp(confidence,.08,1),
+      centsOffsetFromPiano:(midi-Math.round(midi))*100};
+  }).filter(Boolean).sort((a,b)=>a.start-b.start);
+}
+
+export function analyzeTranscription(noteEvents, contours, workerEvents = [], maxSeconds = Infinity) {
   const poly=normalizeNotes(noteEvents,contours);
   const melody=predominantNotes(poly);
   const profiles=makeProfiles(melody);
   const ranked=rankModes(profiles);
   const durations=melody.map(n=>n.duration);
+  const reliability=melodyReliability(melody);
+  const reference=workerMelody(workerEvents,maxSeconds);
+  const comparison=compareWithWorker(melody,workerEvents);
+  const workerRanked=reference.length >= 15 ? rankModes(makeProfiles(reference)) : [];
+  // Never invent a new top label from the same two user-provided examples.
+  // Instead, abstain when the underlying melody evidence is demonstrably shaky.
+  const crossCheckWeak = comparison.compared >= 12 && comparison.comparedFraction >= .25 &&
+    comparison.agreementFraction < .55;
+  const abstain = reliability.status !== 'review' || crossCheckWeak;
   return {
     noteCount:poly.length, melodyCount:melody.length,
-    melody, ranked, profiles,
+    melody, ranked, profiles, reliability, comparison,
+    workerRanked, workerMelodyCount: reference.length,
+    decision: abstain ? 'uncertain' : 'exploratory',
+    decisionReason: crossCheckWeak ? 'Independent pitch extractors disagree frequently.' :
+      reliability.status === 'unreliable' ? reliability.caution :
+      reliability.status === 'insufficient' ? reliability.caution :
+      'Tentative ranking only. Not calibrated and not verified for Persian modal identity.',
     medianDuration:median(durations),
     // MIDI-only cents offsets reflect model interpolation, NOT measured accuracy.
     medianAbsCentsDeviation:median(melody.map(n=>Math.abs(n.centsOffsetFromPiano))),

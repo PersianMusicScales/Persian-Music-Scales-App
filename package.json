@@ -2,9 +2,15 @@
   "name": "persian-music-scales-tests",
   "private": true,
   "scripts": {
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "basic-pitch:build": "node tools/build-basic-pitch.mjs",
+    "test:basic-pitch": "node --test tests/basic-pitch-core.test.mjs"
   },
   "devDependencies": {
-    "@playwright/test": "1.58.2"
+    "@playwright/test": "1.58.2",
+    "esbuild": "^0.25.0"
+  },
+  "dependencies": {
+    "@spotify/basic-pitch": "1.0.1"
   }
 }

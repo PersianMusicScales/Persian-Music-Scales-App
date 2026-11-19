@@ -28,7 +28,7 @@ async function decodeAndResample(file, maxSeconds) {
   return {samples: resampled.getChannelData(0).slice(), seconds};
 }
 
-export async function runNeuralMicrotones(file, onProgress=()=>{}, maxSeconds=45) {
+export async function runNeuralMicrotones(file, onProgress=()=>{}, maxSeconds=45, workerEvents=[]) {
   if (!(file instanceof File)) throw new TypeError('Select an audio File first.');
   if (file.size > 100 * 1024 * 1024) throw new Error('Use an audio file smaller than 100 MB.');
   const {samples,seconds} = await decodeAndResample(file, maxSeconds);
@@ -53,7 +53,7 @@ export async function runNeuralMicrotones(file, onProgress=()=>{}, maxSeconds=45
   const notes = outputToNotesPoly(frames, onsets, .45, .30, 8);
   const withBends = addPitchBendsToNoteEvents(contours, notes);
   const timeNotes = noteFramesToTime(withBends);
-  const analysis=analyzeTranscription(timeNotes, contours);
+  const analysis=analyzeTranscription(timeNotes, contours, workerEvents, seconds);
   return {...analysis, seconds, rawNoteCount:timeNotes.length, engine:'@spotify/basic-pitch@1.0.1',
     isCalibrated:false, labelModel:'heuristic-12-mode-reference-v1'};
 }

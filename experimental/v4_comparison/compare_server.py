@@ -10,6 +10,7 @@ import tempfile
 import threading
 from urllib.parse import unquote
 import webbrowser
+import zipfile
 
 from passages import compare
 from radif_release import EXTENSIONS, MAX_UPLOAD
@@ -53,7 +54,7 @@ class ComparisonHandler(BaseHTTPRequestHandler):
             if not 0 < size <= MAX_UPLOAD:
                 raise ValueError("Choose an audio file up to 80 MiB.")
             name = PureWindowsPath(unquote(self.headers.get("X-Filename", ""))).name
-            if name.casefold() in self.server.reference.blocked_names:
+            if Path(name).stem.casefold() in self.server.reference.blocked_stems:
                 raise ValueError("This filename belongs to the reserved KDC final test.")
             suffix = Path(name).suffix.lower()
             if suffix not in EXTENSIONS:
@@ -87,12 +88,20 @@ def main():
     parser.add_argument("--root", type=Path, default=Path.home() / "Desktop" / "Scale detection")
     parser.add_argument("--from-cache", action="store_true", help="Build the V4 reference in memory if no release exists")
     parser.add_argument("--release-script", type=Path, help="Original trusted source used for an existing frozen release")
+    parser.add_argument("--archive-cache", type=Path, help="Local folder for a reference rebuilt from the KDC ZIP")
+    parser.add_argument("--kdc-zip", type=Path, help="Original KDC v1.0 ZIP to prepare in --archive-cache")
     parser.add_argument("--port", type=int, default=0, help="Local port (default: choose an available port)")
     parser.add_argument("--open", action="store_true", help="Open the listening page in your browser")
     args = parser.parse_args()
     if not shutil.which("ffmpeg"):
         raise RuntimeError("FFmpeg was not found on PATH.")
-    reference = load_reference(args.root.resolve(), args.from_cache, args.release_script)
+    if args.kdc_zip and not args.archive_cache:
+        parser.error("--kdc-zip requires --archive-cache.")
+    if args.archive_cache:
+        from kdc_archive import load_from_zip
+        reference = load_from_zip(args.archive_cache, args.kdc_zip)
+    else:
+        reference = load_reference(args.root.resolve(), args.from_cache, args.release_script)
     with ThreadingHTTPServer(("127.0.0.1", args.port), ComparisonHandler) as server:
         server.reference = reference
         server.busy = threading.Lock()
@@ -109,5 +118,5 @@ if __name__ == "__main__":
         main()
     except KeyboardInterrupt:
         pass
-    except (OSError, RuntimeError, ValueError) as error:
+    except (OSError, RuntimeError, ValueError, zipfile.BadZipFile) as error:
         sys.exit(str(error))

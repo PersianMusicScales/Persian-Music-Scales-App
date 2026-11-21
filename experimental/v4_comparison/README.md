@@ -4,11 +4,13 @@ This local experiment tests whether scoring several excerpts separately helps id
 
 ## Start on Windows
 
-1. Download and extract the ZIP of this PR branch. Double-click **START_V4_COMPARISON.cmd** in the top folder.
-2. The launcher looks for your existing **Scale detection** research folder on the Desktop. You can enter its location if it lives elsewhere. It uses the existing **radif_discovery_lab** virtual environment and FFmpeg on PATH.
-3. If you have a frozen **radif_release_v1** model, the launcher uses its original integrity checks. If you have only the existing development caches, choose **Y** when prompted. This reconstructs the reference in memory for this session. Keep the terminal open while listening.
-4. In the browser page that opens, choose a new recording. Enter an optional case ID and the known mode before clicking **Compare recording**. Use **Play** next to a passage to hear what contributed to its result.
-5. **Save comparison JSON** downloads the two rankings, passage times and scores, skipped-passage reasons, method version, reference fingerprint and your optional case ID and label. The audio file stays on your PC. Close the terminal to stop the comparison server.
+1. Download and extract the ZIP of this PR branch. Keep your original **KDC-v1.0.zip** compressed.
+2. Double-click **START_V4_COMPARISON.cmd** in the extracted PR folder. On a PC where the old study folder was deleted, it uses system Python 3.10 or newer to create a private environment under **%LOCALAPPDATA%\PersianMusicScales\V4Comparison**. The first launch requires internet access for missing Python packages. Setup supplies FFmpeg in this environment if needed.
+3. In the file picker, select **KDC-v1.0.zip**. You can also drag this ZIP onto the launcher. The terminal shows progress through the 49 development recordings. If interrupted, reopen the launcher and choose the same ZIP to resume. After a successful rebuild, double-clicking the launcher reuses the verified local features.
+4. In the browser page that opens, choose one of your own recordings. Enter an optional case ID and its known mode before clicking **Compare recording**. Use **Play** next to a passage to hear what contributed to its result.
+5. **Save comparison JSON** downloads both rankings and the passage scores and timestamps. The audio stays on your PC. Keep the terminal open while listening. Close it to stop the server.
+
+KDC is the only archive needed for V4. IRMA belongs to the separate symbolic-melody experiments.
 
 For a first listening session, a solo darāmad with a known label makes it easier to judge an error. A longer performance lets you hear whether different passages favor different modes. Use independent performances for listening. Keep the original 16 Masoud Shaari final-test files reserved. The upload form checks their original filenames. Renamed copies must also be kept out.
 
@@ -32,6 +34,14 @@ The numbers are the classifier's raw class scores, averaged over eligible passag
 - Give each eligible, non-overlapping passage one equal weight. The opening-minute baseline is scored separately. Tied leaders do not cast a single-mode vote.
 
 ## Local reference and troubleshooting
+
+The ZIP route uses the canonical KDC v1.0 metadata to identify each development recording by its MusicBrainz ID, performer and mode, in the original manifest order. The loader checks the roster fingerprint before opening any recording. It reads only the 49 permitted FLAC members, with one temporary audio file at a time. The 16 Masoud Shaari recordings are excluded. Both V4 feature stages use the recovered NumPy YIN implementation. The original 147 features use 16-bit PCM, and the additional 78 use floating-point PCM with the original cache precision during training.
+
+The launcher checks every development recording's performer-held-out prediction against a fingerprint of the saved V4 results, as well as the historical accuracy and macro-F1. Only after these checks does it save the verified matrix locally and open the comparison page. A mismatch prints the local software versions and reproduction score in the terminal. No recordings, feature vectors or trained weights are distributed in this PR. [KUG Dastgāhi Corpus, Babak Nikzat and Rafael Caro Repetto](https://phaidra.kug.ac.at/o:127195)
+
+### Existing research installation
+
+The launcher still recognizes a Desktop **Scale detection** installation with its original Python environment. For a study folder elsewhere, drag that folder onto the launcher. A frozen **radif_release_v1** model uses its original integrity checks. If only the original development caches exist, choose **Y** at the prompt to fit the historical reference in memory for that session.
 
 The bundled **radif_release.py** is the exact [frozen reference source from PR #38](https://github.com/PersianMusicScales/Persian-Music-Scales-App/blob/3d5ad9af21d50fab5d3aee7502e2fd2627249e83/experimental/local_12_mode_prototype/radif_release.py). The comparison uses its inference code. It has no final-test action in its interface.
 

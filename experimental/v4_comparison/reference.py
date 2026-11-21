@@ -24,7 +24,7 @@ FEATURE_SET = "full_147_plus_contour"
 class Reference:
     model: Pipeline
     extract: Callable[[Path], np.ndarray]
-    blocked_names: frozenset[str]
+    blocked_stems: frozenset[str]
     identity: dict[str, str]
 
 
@@ -101,6 +101,6 @@ def load_reference(root: Path, from_cache=False, script=None):
         raise FileNotFoundError("No local frozen release. Use the Windows launcher or pass --from-cache.")
     if set(model.classes_) != set(radif_release.MODES):
         raise ValueError("The reference must include all twelve V4 mode labels.")
-    blocked = frozenset(Path(row["source"]).name.casefold() for row in rows if row["split"] == "test")
+    blocked = frozenset(Path(row["source"]).stem.casefold() for row in rows if row["split"] == "test")
     identity.update(version=release.VERSION, sklearn=sklearn.__version__)
     return Reference(model, partial(release.features_for_audio, core=core, v4=v4), blocked, identity)

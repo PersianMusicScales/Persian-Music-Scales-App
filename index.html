@@ -71,7 +71,7 @@
 
   <!-- Link to External CSS -->
   <link rel="stylesheet" href="csss/indexstyle.css?v=20261111-avaz-color" />
-  <link rel="stylesheet" href="csss/audio-analyzer.css?v=20261111-results-chip-position" />
+  <link rel="stylesheet" href="csss/audio-analyzer.css?v=20261121-v4" />
   <link rel="stylesheet" href="csss/bottom-nav.css?v=20261111-unified" />
 
   <!-- Tap Overlay CSS -->
@@ -619,9 +619,20 @@
 
       <section class="analyzer-card" aria-labelledby="resultHeading">
         <div class="analyzer-card-heading">
-          <h3 id="resultHeading" data-analyzer-text="resultTitle">4. Best scale match</h3>
+          <h3 id="resultHeading" data-analyzer-text="resultTitle">4. Recognition results</h3>
         </div>
 
+        <div id="v4Panel" class="v4-panel" hidden>
+          <h4 id="v4Heading">Mode recognition · V4</h4>
+          <div role="status" aria-live="polite" aria-atomic="true">
+            <strong id="v4Result"></strong>
+            <p id="v4Explanation"></p>
+          </div>
+          <details id="v4Details" hidden>
+            <summary id="v4DetailsLabel">Opening and passage results</summary>
+            <dl id="v4Passages"></dl>
+          </details>
+        </div>
         <p id="analysisResultPlaceholder" class="analysis-result-placeholder" data-analyzer-text="resultEmpty">
           The strongest scale candidates will appear here after analysis.
         </p>
@@ -631,6 +642,7 @@
             <strong id="ambiguityTitle"></strong>
             <p id="ambiguityText"></p>
           </div>
+          <h4 class="v4-circle-heading" data-analyzer-text="circleScale">Scale and tonic on the circle</h4>
           <div class="best-match-main">
             <div>
               <h4 id="bestMatchName" class="best-match-name"></h4>
@@ -662,7 +674,8 @@
                   <option value="homayoun">Homayoun</option>
                   <option value="esfahan">Esfahan</option>
                   <option value="chahargah">Chahargah</option>
-                  <option value="mahur">Mahur / Rast Panjgah</option>
+                  <option value="mahur">Mahur</option>
+                  <option value="rastPanjgah">Rast-Panjgah</option>
                   <option value="minor">Minor</option>
                 </select>
               </div>
@@ -809,7 +822,8 @@
   <script src="src/key-signature.js"></script>
   <script src="src/modal-roles.js"></script>
   <script src="src/index.js?v=20261111-avaz-color"></script>
-  <script src="src/audio-analyzer.js?v=20261111-transactional-cleanup"></script>
+  <script src="src/v4-panel.js"></script>
+  <script src="src/audio-analyzer.js?v=20261121-v4"></script>
 </body>
 </html>
 

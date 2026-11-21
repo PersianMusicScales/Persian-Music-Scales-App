@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Compare V4 mode recognition</title>
+  <style>
+    :root { color-scheme: light dark; --paper: #faf9f5; --ink: #20322e; --line: #aab9af; --accent: #175c52;
+      font: 100%/1.55 Inter, "Segoe UI", sans-serif; color: var(--ink); background: var(--paper); }
+    @media (prefers-color-scheme: dark) { :root { --paper: #13241f; --ink: #e6eee7; --line: #60796e; --accent: #a3dfc5; } }
+    body { max-width: 54rem; margin: 0 auto; padding: 2rem clamp(1rem, 4vw, 3rem) 4rem; }
+    h1, h2 { font-family: Georgia, serif; line-height: 1.2; } h1 { font-size: clamp(2rem, 5vw, 3.1rem); }
+    main > section { border-top: 1px solid var(--line); margin-top: 2rem; padding-top: .5rem; }
+    label { display: grid; gap: .25rem; } input, button, select { font: inherit; max-width: 100%; box-sizing: border-box; }
+    button, select, input[type=text] { padding: .42rem .75rem; border: 1px solid var(--line); border-radius: .3rem; }
+    button { cursor: pointer; } button:disabled { cursor: wait; opacity: .6; }
+    #go { color: var(--paper); background: var(--accent); border-color: var(--accent); }
+    .fields { display: flex; flex-wrap: wrap; gap: 1rem; margin: 1rem 0; }
+    audio { width: 100%; margin: .75rem 0; } #progress { min-height: 1.5em; }
+    table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+    th, td { padding: .4rem .3rem; border-bottom: 1px solid var(--line); text-align: left; }
+    .passage { margin: .6rem 0; } .passage button { margin-right: .65rem; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body><main>
+  <h1>Compare V4 mode recognition</h1>
+  <p>Compare the opening minute with passages from across the same recording. Use your own labeled examples. The 16 reserved KDC recordings belong to the final evaluation.</p>
+  <label>Recording <input type="file" id="file" accept=".flac,.wav,.mp3,.m4a,.aac,.ogg,.aiff,.aif,.opus"></label>
+  <audio id="audio" controls preload="metadata" aria-label="Listen to the original recording" hidden></audio>
+  <div class="fields">
+    <label>Case ID (optional) <input type="text" id="caseId" placeholder="e.g. Solo 01" maxlength="100"></label>
+    <label>Known mode (optional) <select id="expected"><option value="">Unknown or uncertain</option></select></label>
+  </div>
+  <button type="button" id="go" disabled>Compare recording</button>
+  <p id="progress" role="status" aria-live="polite"></p>
+  <section id="results" hidden>
+    <h2>Listening comparison</h2>
+    <p id="opening"></p><p id="decision"></p>
+    <p id="minor"></p>
+    <h3>Sampled passages</h3><div id="clips"></div>
+    <h3>Ranked modes</h3>
+    <p>Each value is a model score from 0 to 1. The candidate averages the eligible passage scores. The probability of a correct identification has yet to be measured.</p>
+    <table><thead><tr><th scope="col">Rank</th><th scope="col">Frozen V4</th><th scope="col">Passage candidate</th></tr></thead><tbody id="ranking"></tbody></table>
+    <p><button type="button" id="save">Save comparison JSON</button></p>
+  </section>
+</main>
+<script src="/v4-evidence.js"></script>
+<script>
+"use strict";
+const names = { shur: "Shur", abu_ata: "Abu Ata", bayat_tork: "Bayat-e Tork", afshari: "Afshari",
+  dashti: "Dashti", mahur: "Mahur", homayoun: "Homayoun", esfahan: "Bayat-e Esfahan", segah: "Segah",
+  chahargah: "Chahargah", nava: "Nava", rast_panjgah: "Rast-Panjgah", minor: "Natural Minor" };
+const el = id => document.getElementById(id);
+const field = el("file"), player = el("audio"), run = el("go"), expected = el("expected");
+let sourceUrl = null, stopAt = null, report = null;
+for (const [value, title] of Object.entries(names)) expected.add(new Option(title, value));
+const clock = seconds => {
+  const tenths = Math.round(seconds * 10);
+  return Math.floor(tenths / 600) + ":" + String(Math.floor(tenths % 600 / 10)).padStart(2, "0") + "." + tenths % 10;
+};
+function topNames(rows) {
+  return rows.filter(row => rows[0].score - row.score <= 1e-12).map(row => names[row.label]).join(" / ");
+}
+field.onchange = () => {
+  player.pause();
+  if (sourceUrl) URL.revokeObjectURL(sourceUrl);
+  sourceUrl = field.files.length ? URL.createObjectURL(field.files[0]) : null;
+  if (sourceUrl) player.src = sourceUrl;
+  else { player.removeAttribute("src"); player.load(); }
+  player.hidden = !sourceUrl;
+  run.disabled = !sourceUrl;
+  report = null; stopAt = null;
+  expected.disabled = el("caseId").disabled = false;
+  expected.value = ""; el("caseId").value = "";
+  el("results").hidden = true; el("progress").textContent = "";
+};
+player.ontimeupdate = () => {
+  if (stopAt !== null && player.currentTime >= stopAt) { player.pause(); stopAt = null; }
+};
+function interpretation(candidate) {
+  switch (candidate.status) {
+    case "agreement": return candidate.support + " of " + candidate.usable + " eligible passages favor " + names[candidate.label] + ".";
+    case "single": return "One eligible passage favors " + topNames(candidate.ranking) + ". Cross-passage agreement is unavailable.";
+    case "mixed": return candidate.family ? "Passage leaders differ within the " + candidate.family + " family. The exact mode is uncertain."
+      : "The pooled ranking has no single leader supported by a majority of eligible passages. Listen to the differing passages below.";
+    default: return "Too little varied pitched material for a passage result.";
+  }
+}
+function render(data) {
+  const base = data.baseline, candidate = data.candidate;
+  el("opening").textContent = "Frozen V4 (" + clock(base.start) + "–" + clock(base.end) + ") · " +
+    (base.ranking.length ? topNames(base.ranking) : (base.excluded || "No result"));
+  el("decision").textContent = "Passage candidate · " + interpretation(candidate);
+  const minor = data.minor;
+  const notes = ["C", "C sori", "C♯", "D koron", "D", "D sori", "E♭", "E koron", "E", "F koron", "F", "F sori", "F♯", "G koron", "G", "G sori", "A♭", "A koron", "A", "A sori", "B♭", "B koron", "B", "C koron"];
+  el("minor").textContent = minor?.status === "supported"
+    ? "Natural Minor · " + notes[minor.tonic] + " · pitch and tonic supported in " + minor.support + "/" + minor.usable + " eligible passages."
+    : minor ? "Possible Natural Minor pitch collection. The tonic or passage agreement is uncertain."
+    : "Natural Minor · insufficient pitch or tonic evidence.";
+  el("clips").replaceChildren();
+  for (const p of data.passages) {
+    const row = document.createElement("div"), play = document.createElement("button");
+    row.className = "passage"; play.type = "button"; play.textContent = "Play " + clock(p.start) + "–" + clock(p.end);
+    play.onclick = async () => {
+      try { stopAt = p.end; player.currentTime = p.start; await player.play(); }
+      catch { stopAt = null; el("progress").textContent = "This browser could not play the selected audio format."; }
+    };
+    row.append(play, document.createTextNode(p.excluded ? "Skipped · " + p.excluded : topNames(p.ranking)));
+    el("clips").append(row);
+  }
+  if (!data.passages.length) el("clips").textContent = "No sounding passage was found.";
+  const cellText = row => row ? names[row.label] + " · " + row.score.toFixed(3) : "—";
+  el("ranking").replaceChildren();
+  for (let i = 0; i < Math.max(base.ranking.length, candidate.ranking.length); i++) {
+    const row = el("ranking").insertRow();
+    for (const value of [i + 1, cellText(base.ranking[i]), cellText(candidate.ranking[i])]) row.insertCell().textContent = value;
+  }
+  el("results").hidden = false;
+}
+run.onclick = async () => {
+  const file = field.files[0];
+  if (!file) return;
+  report = null; el("results").hidden = true;
+  run.disabled = field.disabled = expected.disabled = el("caseId").disabled = true;
+  el("progress").textContent = "Comparing the opening and sampled passages on this computer…";
+  try {
+    const response = await fetch("/compare", { method: "POST", headers: { "X-Filename": encodeURIComponent(file.name) }, body: file });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Comparison failed.");
+    for (const p of [data.baseline, ...data.passages]) {
+      p.minor = PersianV4Evidence.minorMatch(p.minor_profile);
+      delete p.minor_profile;
+    }
+    data.minor = PersianV4Evidence.combineMinor(data.passages);
+    report = { ...data, case_id: el("caseId").value.trim() || null, expected_mode: expected.value || null };
+    render(data);
+    el("progress").textContent = "Comparison complete.";
+  } catch (e) { el("progress").textContent = e.message; }
+  finally {
+    run.disabled = field.disabled = false;
+    expected.disabled = el("caseId").disabled = Boolean(report);
+  }
+};
+el("save").onclick = () => {
+  if (!report) return;
+  const url = URL.createObjectURL(new Blob([JSON.stringify(report, null, 2)], { type: "application/json" }));
+  const link = document.createElement("a");
+  link.href = url; link.download = "v4-comparison-" + new Date().toISOString().replace(/[:.]/g, "-") + ".json";
+  link.click(); setTimeout(() => URL.revokeObjectURL(url), 1500);
+};
+</script></body></html>

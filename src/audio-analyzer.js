@@ -142,7 +142,8 @@
       rawMaterial: "Detected material",
       structural: "Selected melody",
       ornament: "Ornament / short note",
-      resultTitle: "4. Best scale match",
+      resultTitle: "4. Recognition results",
+      circleScale: "Scale and tonic on the circle",
       resultEmpty: "The strongest scale candidates will appear here after analysis.",
       tonic: "tonic",
       alternatives: "Other candidates",
@@ -312,7 +313,8 @@
       rawMaterial: "Matériau détecté",
       structural: "Mélodie sélectionnée",
       ornament: "Ornement / note brève",
-      resultTitle: "4. Meilleure correspondance",
+      resultTitle: "4. Résultats de la reconnaissance",
+      circleScale: "Gamme et tonique sur le cercle",
       resultEmpty: "Les meilleures gammes apparaîtront ici après l’analyse.",
       tonic: "tonique",
       alternatives: "Autres possibilités",
@@ -482,7 +484,8 @@
       rawMaterial: "مواد صوتی تشخیص‌داده‌شده",
       structural: "ملودی انتخاب‌شده",
       ornament: "تزیین / نت کوتاه",
-      resultTitle: "۴. بهترین تطبیق گام",
+      resultTitle: "۴. نتیجهٔ تشخیص",
+      circleScale: "گام و تونیک روی دایره",
       resultEmpty: "پس از تحلیل، بهترین گزینه‌های گام در اینجا نمایش داده می‌شوند.",
       tonic: "نت پایه",
       alternatives: "گزینه‌های دیگر",
@@ -1867,6 +1870,7 @@
 
   function setLanguage(language) {
     state.currentLanguage = I18N[language] ? language : "en";
+    PersianV4Panel.setLanguage(state.currentLanguage);
     const dictionary = I18N[state.currentLanguage];
 
     $$('[data-analyzer-text]').forEach((element) => {
@@ -2147,6 +2151,7 @@
     resetAnalysisResult(true);
     const request = { autoStart, loadGeneration };
     state.analysisRequest = request;
+    PersianV4Panel.run(state.audioBuffer, state.file.name, pitchClassName, applyV4Result);
     setStatus(t("analyzing"), 1);
     elements.analyze.disabled = true;
 
@@ -2256,7 +2261,7 @@
 
     state.candidates = matchScales(result, mode);
     state.automaticCandidate = state.candidates[0] || null;
-    selectCandidate(state.automaticCandidate, "automatic");
+    if (!applyV4Result(PersianV4Panel.result)) selectCandidate(state.automaticCandidate, "automatic");
     drawTimeline(result.events, result.rawEvents || []);
     setStatus(
       `${t("complete")} ${t("events", {
@@ -2540,12 +2545,12 @@
     renderAnalysisExplanation(selected, candidates);
     syncManualControls(selected);
 
-    elements.badgeText.textContent = `${state.selectionSource === "automatic" ? t("badge") : t("selectedLabel")}: ${scaleDisplayName(selected.scaleName)} · ${tonicName} (${selected.matchPercent}%)`;
+    elements.badgeText.textContent = state.selectionSource === "automatic" && PersianV4Panel.title ? PersianV4Panel.title : `${state.selectionSource === "automatic" ? t("badge") : t("selectedLabel")}: ${scaleDisplayName(selected.scaleName)} · ${tonicName} (${selected.matchPercent}%)`;
     if (elements.badgeStop) elements.badgeStop.textContent = t("stopAndHide");
     updateBadgeAccessibility();
     updateBadgeVisibility();
     if (elements.quickFinderHelp) {
-      elements.quickFinderHelp.textContent = `${state.selectionSource === "automatic" ? t("badge") : t("selectedLabel")}: ${scaleDisplayName(selected.scaleName)} · ${tonicName}`;
+      elements.quickFinderHelp.textContent = state.selectionSource === "automatic" && PersianV4Panel.title ? PersianV4Panel.title : `${state.selectionSource === "automatic" ? t("badge") : t("selectedLabel")}: ${scaleDisplayName(selected.scaleName)} · ${tonicName}`;
     }
     elements.quickFinderButton?.classList.add("has-result");
   }
@@ -2712,6 +2717,29 @@
 
   function sameCandidate(left, right) {
     return Boolean(left && right && left.scaleName === right.scaleName && left.tonicBin === right.tonicBin);
+  }
+
+  function applyV4Result(report) {
+    if (!report || !state.allCandidates.length || state.selectionSource !== "automatic") return false;
+    const { candidate, minor } = report;
+    const top = candidate.ranking[0];
+    let selected;
+    if (minor?.status === "supported") {
+      selected = state.allCandidates.find(item => item.scaleName === "minor" && item.tonicBin === minor.tonic);
+    } else if (["agreement", "single"].includes(candidate.status) && top &&
+               (!candidate.ranking[1] || top.score - candidate.ranking[1].score > 1e-12)) {
+      // The circle has no independent scale shapes for the four Shur-family avazes.
+      const circleName = ({ shur: "Shur", rast_panjgah: "rastPanjgah" })[top.label] || top.label;
+      selected = state.allCandidates.find(item => item.scaleName === circleName);
+    }
+    if (selected) {
+      state.candidates = [selected, ...state.candidates.filter(item => !sameCandidate(item, selected))].slice(0, 6);
+      state.automaticCandidate = selected;
+      selectCandidate(selected, "automatic");
+      return true;
+    }
+    if (state.selectedCandidate) renderResults(state.candidates, state.selectedCandidate);
+    return false;
   }
 
   function selectCandidate(candidate, source = "user") {
@@ -3900,6 +3928,7 @@
   }
 
   function resetAnalysisResult(clearBadge = true) {
+    PersianV4Panel.reset();
     stopMelodyPlayback(false);
     state.analysis = null;
     state.candidates = [];

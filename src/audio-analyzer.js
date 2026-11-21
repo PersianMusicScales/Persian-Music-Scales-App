@@ -2151,7 +2151,7 @@
     resetAnalysisResult(true);
     const request = { autoStart, loadGeneration };
     state.analysisRequest = request;
-    PersianV4Panel.run(state.audioBuffer, state.file.name, pitchClassName, applyV4Result);
+    PersianV4Panel.run(state.audioBuffer, state.file.name, pitchClassName, applySupportedMinor);
     setStatus(t("analyzing"), 1);
     elements.analyze.disabled = true;
 
@@ -2261,7 +2261,7 @@
 
     state.candidates = matchScales(result, mode);
     state.automaticCandidate = state.candidates[0] || null;
-    if (!applyV4Result(PersianV4Panel.result)) selectCandidate(state.automaticCandidate, "automatic");
+    if (!applySupportedMinor(PersianV4Panel.result)) selectCandidate(state.automaticCandidate, "automatic");
     drawTimeline(result.events, result.rawEvents || []);
     setStatus(
       `${t("complete")} ${t("events", {
@@ -2545,12 +2545,12 @@
     renderAnalysisExplanation(selected, candidates);
     syncManualControls(selected);
 
-    elements.badgeText.textContent = state.selectionSource === "automatic" && PersianV4Panel.title ? PersianV4Panel.title : `${state.selectionSource === "automatic" ? t("badge") : t("selectedLabel")}: ${scaleDisplayName(selected.scaleName)} · ${tonicName} (${selected.matchPercent}%)`;
+    elements.badgeText.textContent = `${state.selectionSource === "automatic" ? t("badge") : t("selectedLabel")}: ${scaleDisplayName(selected.scaleName)} · ${tonicName} (${selected.matchPercent}%)`;
     if (elements.badgeStop) elements.badgeStop.textContent = t("stopAndHide");
     updateBadgeAccessibility();
     updateBadgeVisibility();
     if (elements.quickFinderHelp) {
-      elements.quickFinderHelp.textContent = state.selectionSource === "automatic" && PersianV4Panel.title ? PersianV4Panel.title : `${state.selectionSource === "automatic" ? t("badge") : t("selectedLabel")}: ${scaleDisplayName(selected.scaleName)} · ${tonicName}`;
+      elements.quickFinderHelp.textContent = `${state.selectionSource === "automatic" ? t("badge") : t("selectedLabel")}: ${scaleDisplayName(selected.scaleName)} · ${tonicName}`;
     }
     elements.quickFinderButton?.classList.add("has-result");
   }
@@ -2719,18 +2719,12 @@
     return Boolean(left && right && left.scaleName === right.scaleName && left.tonicBin === right.tonicBin);
   }
 
-  function applyV4Result(report) {
+  function applySupportedMinor(report) {
     if (!report || !state.allCandidates.length || state.selectionSource !== "automatic") return false;
-    const { candidate, minor } = report;
-    const top = candidate.ranking[0];
+    const { minor } = report;
     let selected;
     if (minor?.status === "supported") {
       selected = state.allCandidates.find(item => item.scaleName === "minor" && item.tonicBin === minor.tonic);
-    } else if (["agreement", "single"].includes(candidate.status) && top &&
-               (!candidate.ranking[1] || top.score - candidate.ranking[1].score > 1e-12)) {
-      // The circle has no independent scale shapes for the four Shur-family avazes.
-      const circleName = ({ shur: "Shur", rast_panjgah: "rastPanjgah" })[top.label] || top.label;
-      selected = state.allCandidates.find(item => item.scaleName === circleName);
     }
     if (selected) {
       state.candidates = [selected, ...state.candidates.filter(item => !sameCandidate(item, selected))].slice(0, 6);
@@ -2738,7 +2732,6 @@
       selectCandidate(selected, "automatic");
       return true;
     }
-    if (state.selectedCandidate) renderResults(state.candidates, state.selectedCandidate);
     return false;
   }
 

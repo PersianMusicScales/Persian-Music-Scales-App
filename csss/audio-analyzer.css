@@ -2076,7 +2076,9 @@ body.analyzer-lock-scroll {
 
 /* Reserve the desktop scroll gutter even while the analyzer drawer locks
    body scrolling; prevents a horizontal reflow of the circles. */
-html { scrollbar-gutter: stable; }
+@media (min-width: 769px) {
+  html { scrollbar-gutter: stable; }
+}
 
 /* Stationary combined microphone and track analyzer.
  * The row has a constant height. Its options replace the trigger in an

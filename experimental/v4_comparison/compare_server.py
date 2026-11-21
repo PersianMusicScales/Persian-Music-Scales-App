@@ -39,6 +39,9 @@ class ComparisonHandler(BaseHTTPRequestHandler):
             return self.send_error(403)
         if self.path == "/":
             self.respond(200, "text/html; charset=utf-8", self.server.page)
+        elif self.path == "/v4-evidence.js":
+            script = Path(__file__).resolve().parents[2] / "src" / "v4-evidence.js"
+            self.respond(200, "text/javascript; charset=utf-8", script.read_bytes())
         else:
             self.send_error(404)
 

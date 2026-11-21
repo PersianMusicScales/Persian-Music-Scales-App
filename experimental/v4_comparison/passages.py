@@ -4,8 +4,10 @@ import subprocess
 
 import numpy as np
 
+from v4_features import pitch_track
 
-VERSION = "v4-passages-1"
+
+VERSION = "v4-passages-2"
 ENVELOPE_RATE = 8000
 FRAMES_PER_SECOND = 10
 MIN_ACTIVE_SECONDS_PER_SECTION = 12
@@ -118,6 +120,23 @@ def leaders(ranking):
     return [r["label"] for r in ranking if ranking[0]["score"] - r["score"] <= 1e-12]
 
 
+def minor_profile(path):
+    """Centered quarter-tone bins for Natural Minor, independent of the V4 features."""
+    f0, rms = pitch_track(path, "s16le")
+    valid = (np.isfinite(f0) & (f0 > 70) & (f0 < 1100)
+             & (rms > max(.002, float(np.quantile(rms, .70)) * .20)))
+    if valid.sum() < 40:
+        return None
+    pitches = np.floor(18 + 24 * np.log2(f0[valid] / 440.) + .5).astype(int) % 24
+
+    def profile(values):
+        return (np.bincount(values, minlength=24) / len(values)).tolist()
+
+    # Limit the opening and cadence to at most 0.64 s of voiced material.
+    edge = min(40, max(1, len(pitches) // 5))
+    return {"pitches": profile(pitches), "opening": profile(pitches[:edge]), "ending": profile(pitches[-edge:])}
+
+
 def observed(path, start, end, reference):
     result = {"start": start, "end": end, "ranking": [], "excluded": None}
     try:
@@ -139,6 +158,11 @@ def observed(path, start, end, reference):
         result["excluded"] = "Less than two seconds of estimated voiced pitch."
     elif band_mass >= 0.90:
         result["excluded"] = "At least 90% of pitched frames occupy one narrow pitch-class band."
+    if result["excluded"] is None:
+        try:
+            result["minor_profile"] = minor_profile(path)
+        except (ValueError, subprocess.TimeoutExpired):
+            result["minor_profile"] = None
     return result
 
 

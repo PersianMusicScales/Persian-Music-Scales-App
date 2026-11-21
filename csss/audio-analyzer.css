@@ -2678,3 +2678,20 @@ html { scrollbar-gutter: stable; }
 @media (prefers-reduced-motion: reduce) {
   .mic-inline-swipe:not(.dragging) .mic-swipe-handle { animation: none; }
 }
+
+.v4-panel {
+  margin-block: .6rem 1rem;
+  padding: .8rem 1rem;
+  border-inline-start: 3px solid var(--analyzer-accent, #286c76);
+  background: var(--analyzer-soft, rgba(98, 151, 156, .1));
+  border-radius: .35rem;
+}
+.v4-panel[hidden], .v4-panel details[hidden] { display: none; }
+.v4-panel h4, .v4-circle-heading { margin: 0 0 .35rem; font-size: .92rem; }
+#v4Result { font-size: 1.2rem; }
+.v4-panel p { margin: .25rem 0; }
+.v4-panel p:empty { display: none; }
+.v4-panel details { margin-block-start: .55rem; }
+.v4-panel summary { cursor: pointer; }
+.v4-panel dl { margin: .55rem 0 0; display: grid; grid-template-columns: auto 1fr; gap: .25rem .8rem; }
+.v4-panel dt, .v4-panel dd { margin: 0; overflow-wrap: anywhere; }

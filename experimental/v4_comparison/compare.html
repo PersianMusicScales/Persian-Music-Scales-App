@@ -37,6 +37,7 @@
   <section id="results" hidden>
     <h2>Listening comparison</h2>
     <p id="opening"></p><p id="decision"></p>
+    <p id="minor"></p>
     <h3>Sampled passages</h3><div id="clips"></div>
     <h3>Ranked modes</h3>
     <p>Each value is a model score from 0 to 1. The candidate averages the eligible passage scores. The probability of a correct identification has yet to be measured.</p>
@@ -44,11 +45,12 @@
     <p><button type="button" id="save">Save comparison JSON</button></p>
   </section>
 </main>
+<script src="/v4-evidence.js"></script>
 <script>
 "use strict";
 const names = { shur: "Shur", abu_ata: "Abu Ata", bayat_tork: "Bayat-e Tork", afshari: "Afshari",
   dashti: "Dashti", mahur: "Mahur", homayoun: "Homayoun", esfahan: "Bayat-e Esfahan", segah: "Segah",
-  chahargah: "Chahargah", nava: "Nava", rast_panjgah: "Rast-Panjgah" };
+  chahargah: "Chahargah", nava: "Nava", rast_panjgah: "Rast-Panjgah", minor: "Natural Minor" };
 const el = id => document.getElementById(id);
 const field = el("file"), player = el("audio"), run = el("go"), expected = el("expected");
 let sourceUrl = null, stopAt = null, report = null;
@@ -90,6 +92,12 @@ function render(data) {
   el("opening").textContent = "Frozen V4 (" + clock(base.start) + "–" + clock(base.end) + ") · " +
     (base.ranking.length ? topNames(base.ranking) : (base.excluded || "No result"));
   el("decision").textContent = "Passage candidate · " + interpretation(candidate);
+  const minor = data.minor;
+  const notes = ["C", "C sori", "C♯", "D koron", "D", "D sori", "E♭", "E koron", "E", "F koron", "F", "F sori", "F♯", "G koron", "G", "G sori", "A♭", "A koron", "A", "A sori", "B♭", "B koron", "B", "C koron"];
+  el("minor").textContent = minor?.status === "supported"
+    ? "Natural Minor · " + notes[minor.tonic] + " · pitch and tonic supported in " + minor.support + "/" + minor.usable + " eligible passages."
+    : minor ? "Possible Natural Minor pitch collection. The tonic or passage agreement is uncertain."
+    : "Natural Minor · insufficient pitch or tonic evidence.";
   el("clips").replaceChildren();
   for (const p of data.passages) {
     const row = document.createElement("div"), play = document.createElement("button");
@@ -120,6 +128,11 @@ run.onclick = async () => {
     const response = await fetch("/compare", { method: "POST", headers: { "X-Filename": encodeURIComponent(file.name) }, body: file });
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Comparison failed.");
+    for (const p of [data.baseline, ...data.passages]) {
+      p.minor = PersianV4Evidence.minorMatch(p.minor_profile);
+      delete p.minor_profile;
+    }
+    data.minor = PersianV4Evidence.combineMinor(data.passages);
     report = { ...data, case_id: el("caseId").value.trim() || null, expected_mode: expected.value || null };
     render(data);
     el("progress").textContent = "Comparison complete.";

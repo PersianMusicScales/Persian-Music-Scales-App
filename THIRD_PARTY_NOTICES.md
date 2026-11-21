@@ -40,3 +40,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 The Koron/Sori vector outlines and Noto Music glyph outlines have their own attribution and license terms, documented in [the staff notation methodology](docs/dynamic-persian-notation.md). These terms are separate from the proprietary application license.
 
 The browser tuner also uses external SweetAlert2 and aubiojs JavaScript libraries. Those libraries remain the intellectual property of their respective maintainers and are governed by their upstream licenses.
+
+## KUG Dastgāhi Corpus
+
+The V4 mode recognizer was fitted on 49 development darāmad performances from the KUG Dastgāhi Corpus v1.0, created by Babak Nikzat and Rafael Caro Repetto at the University of Music and Performing Arts Graz. These performances feature Farahnaz Sahebghalam, Mohammad Khodadadi and Reza Zalpour. The site distributes numeric decision rules and class weights. The source recordings are available from the authors under CC BY-NC-ND 4.0. [Corpus](https://phaidra.kug.ac.at/o:127195) · [Source license](https://creativecommons.org/licenses/by-nc-nd/4.0/)

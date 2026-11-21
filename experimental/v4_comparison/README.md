@@ -1,6 +1,6 @@
-# Listen to frozen V4 and the passage candidate
+# V4 passage recognition
 
-This local experiment tests whether scoring several excerpts separately helps identify a dastgāh or āvāz. Both columns use the same fitted V4 classifier, the same 225 features and the same 12 labels. Frozen V4 uses the first 60 seconds. The candidate samples up to three disjoint passages across the recording. Accuracy for the candidate is unmeasured.
+The public audio analyzer and the Windows listening tool compare the opening with passages to identify a dastgāh or āvāz. Both columns use the same fitted V4 classifier, the same 225 features and the same 12 labels. Frozen V4 uses the first 60 seconds. The candidate samples up to three disjoint passages across the recording. Accuracy for the candidate is unmeasured.
 
 ## Start on Windows
 
@@ -37,7 +37,7 @@ The numbers are the classifier's raw class scores, averaged over eligible passag
 
 The ZIP route uses the canonical KDC v1.0 metadata to identify each development recording by its MusicBrainz ID, performer and mode, in the original manifest order. The loader checks the roster fingerprint before opening any recording. It reads only the 49 permitted FLAC members, with one temporary audio file at a time. The 16 Masoud Shaari recordings are excluded. Both V4 feature stages use the recovered NumPy YIN implementation. The original 147 features use 16-bit PCM, and the additional 78 use floating-point PCM with the original cache precision during training.
 
-The launcher checks every development recording's performer-held-out prediction against a fingerprint of the saved V4 results, as well as the historical accuracy and macro-F1. Only after these checks does it save the verified matrix locally and open the comparison page. A mismatch prints the local software versions and reproduction score in the terminal. No recordings, feature vectors or trained weights are distributed in this PR. [KUG Dastgāhi Corpus, Babak Nikzat and Rafael Caro Repetto](https://phaidra.kug.ac.at/o:127195)
+The launcher checks every development recording's performer-held-out prediction against a fingerprint of the saved V4 results, as well as the historical accuracy and macro-F1. Only after these checks does it save the verified matrix locally and open the comparison page. A mismatch prints the local software versions and reproduction score in the terminal. The public analyzer ships the fitted forest’s split rules and class weights. The recording and feature caches stay local. [KUG Dastgāhi Corpus, Babak Nikzat and Rafael Caro Repetto](https://phaidra.kug.ac.at/o:127195)
 
 ### Existing research installation
 
@@ -55,4 +55,14 @@ $original = 'C:\path\to\the\original\radif_release.py'
 & "$study\radif_discovery_lab\.venv\Scripts\python.exe" .\experimental\v4_comparison\compare_server.py --root $study --release-script $original --open
 ```
 
-The terminal prints the local URL if the browser does not open automatically. The pilot evaluates inference on your working PC with your research dependencies. The public GitHub Pages analyzer uses its existing browser matcher.
+The terminal prints the local URL if the browser does not open automatically. The Windows page retains the full ranking table and JSON export.
+
+## Public analyzer
+
+The Audio Analyzer runs V4 for file uploads, microphone recordings and the built-in example. Open **Recognition results** for the passage verdict and expand the details for the opening and individual time intervals. Melodies that share a scale can lead to different modal suggestions. A single usable passage is labeled tentative. The circle shows the app’s estimate of the tonic for modes it can draw.
+
+Natural Minor has a separate pitch test in the Windows page and the public analyzer. Pitches are rounded to the nearest quarter-tone, and each candidate tonic is checked for the natural-minor interval pattern. The check requires multiple observed scale degrees, including the second, minor third and minor sixth, and compares tonic emphasis against the relative major using the opening, ending and full pitch profile. Consistent pitch and tonic evidence can place Natural Minor first. Partial or conflicting evidence is reported as uncertain. KDC supplies twelve Persian mode labels and provides no evaluation of Natural Minor.
+
+The browser uses Web Audio for decoding and resampling, computes the frozen 225 features and evaluates the exported 200 trees. Web Audio and FFmpeg can differ at resampling, channel mixing and codec boundaries. On the three development performers, the original performer-held-out V4 predictions matched 29 of 49 labels (macro-F1 0.589). This is the opening-minute development result. Passage voting and Natural Minor have no independent accuracy estimate.
+
+To regenerate the static model from a verified local cache, run `python experimental/v4_comparison/export_browser_model.py PATH_TO_VERIFIED_CACHE data/v4-forest.json` from the project root. The exporter checks the original feature recipe and all 49 saved development predictions before writing the forest.

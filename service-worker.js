@@ -1,7 +1,7 @@
 /* Persian Music Scales PWA service worker — iOS playback + on-demand example audio v5.5 */
 "use strict";
 
-const CACHE_VERSION = "v39-audit-remediation";
+const CACHE_VERSION = "v40-passage-recognition";
 const CACHE_NAME = `persian-music-scales-${CACHE_VERSION}`;
 
 /* These files are required for the main application and analyzer shell. */
@@ -22,6 +22,10 @@ const CORE_FILES = [
   "./assets/icons/icon-192x192.png",
   "./src/audio-analyzer.js",
   "./src/audio-analyzer.worker.js",
+  "./src/v4-panel.js",
+  "./src/v4-evidence.js",
+  "./src/v4-recognition.worker.js",
+  "./data/v4-forest.json",
   "./htmls/offline.html",
 ];
 

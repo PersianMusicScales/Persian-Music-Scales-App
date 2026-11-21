@@ -319,7 +319,9 @@ Ranked candidate interpretations
 Circle mapping, playback, and visualization
 ```
 
-The analysis runs in a Web Worker to reduce blocking of the main interface.
+The audio analyzer also compares the opening minute with up to three passages from across the recording. **Mode recognition · V4** shows the leading dastgāh or āvāz and how many eligible passages support it. Expand **Opening and passage results** to see the times and differing estimates. The circle uses the app’s pitch and tonic evidence for its scale diagram.
+
+**Natural Minor** uses the intervals 0, 2, 3, 5, 7, 8 and 10 semitones from a candidate tonic. The analyzer checks whether the melody supports that tonic, including its ending, before naming the scale. The 12-mode KDC forest and this pitch comparison run locally in browser workers. [V4 method and development evaluation](experimental/v4_comparison/README.md)
 
 ---
 

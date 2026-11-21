@@ -1079,8 +1079,8 @@ body.analyzer-lock-scroll {
   }
 
   .radial-spectrum-canvas {
-    width: calc(100% + 74px);
-    height: calc(100% + 74px);
+    width: min(100vw, calc(100% + 74px));
+    height: min(100vw, calc(100% + 74px));
   }
 }
 

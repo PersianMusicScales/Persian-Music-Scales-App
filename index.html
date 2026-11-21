@@ -622,17 +622,6 @@
           <h3 id="resultHeading" data-analyzer-text="resultTitle">4. Recognition results</h3>
         </div>
 
-        <div id="v4Panel" class="v4-panel" hidden>
-          <h4 id="v4Heading">Mode recognition · V4</h4>
-          <div role="status" aria-live="polite" aria-atomic="true">
-            <strong id="v4Result"></strong>
-            <p id="v4Explanation"></p>
-          </div>
-          <details id="v4Details" hidden>
-            <summary id="v4DetailsLabel">Opening and passage results</summary>
-            <dl id="v4Passages"></dl>
-          </details>
-        </div>
         <p id="analysisResultPlaceholder" class="analysis-result-placeholder" data-analyzer-text="resultEmpty">
           The strongest scale candidates will appear here after analysis.
         </p>
@@ -690,6 +679,17 @@
           <details class="analysis-explanation">
             <summary data-analyzer-text="whyResult">Why this result?</summary>
             <p id="analysisExplanationText"></p>
+          </details>
+        </div>
+        <div id="v4Panel" class="v4-panel" hidden>
+          <h4 id="v4Heading">Mode recognition · V4</h4>
+          <div role="status" aria-live="polite" aria-atomic="true">
+            <strong id="v4Result"></strong>
+            <p id="v4Explanation"></p>
+          </div>
+          <details id="v4Details" hidden>
+            <summary id="v4DetailsLabel">Opening and passage results</summary>
+            <dl id="v4Passages"></dl>
           </details>
         </div>
       </section>
@@ -823,7 +823,7 @@
   <script src="src/modal-roles.js"></script>
   <script src="src/index.js?v=20261111-avaz-color"></script>
   <script src="src/v4-panel.js"></script>
-  <script src="src/audio-analyzer.js?v=20261121-v4"></script>
+  <script src="src/audio-analyzer.js?v=20261121-best-match"></script>
 </body>
 </html>
 

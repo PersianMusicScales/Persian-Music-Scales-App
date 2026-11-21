@@ -150,5 +150,5 @@ globalThis.PersianV4Panel = (() => {
     worker.postMessage({ type: "start", filename });
   }
   return { run, reset, setLanguage(lang) { language = words[lang] ? lang : "en"; render(); },
-    get result() { return report; }, get title() { return report ? el("v4Result").textContent : ""; } };
+    get result() { return report; } };
 })();

@@ -35,6 +35,7 @@ test("upload recognizes Natural Minor, respects its tonic, and releases it when 
   await expect(page.locator("#v4Result")).toHaveText("Natural Minor · D", { timeout: 30000 });
   await expect(page.locator("#scaleSelector")).toHaveValue("minor");
   await expect(page.locator("#manualTonic")).toHaveValue("4");
+  await expect(page.locator("#analysisMiniBadgeText")).toContainText("Minor · D");
   await expect(page.locator("#v4Explanation")).toContainText("1 of 1");
   await page.locator("#languageSelector").selectOption("fa", { force: true });
   await expect(page.locator("#v4Result")).toHaveText("مینور طبیعی · ر");
@@ -45,4 +46,28 @@ test("upload recognizes Natural Minor, respects its tonic, and releases it when 
   await expect(page.locator("#v4Explanation")).toHaveText("One eligible passage. The mode is tentative.", { timeout: 30000 });
   await expect(page.locator("#v4Passages")).toContainText("Insufficient evidence for Natural Minor.");
   await expect(page.locator("#v4Result")).not.toContainText("Natural Minor");
+  await expect(page.locator("#scaleSelector")).toHaveValue("mahur");
+  await expect(page.locator("#analysisMiniBadgeText")).toContainText("Mahur · F");
+});
+
+test("the center announces the best scale when passage votes disagree", async ({ browser }) => {
+  const context = await browser.newContext({ serviceWorkers: "block" });
+  try {
+    const page = await context.newPage();
+    await page.route("**/src/v4-recognition.worker.js", route => route.fulfill({
+      contentType: "text/javascript",
+      body: `self.onmessage = () => self.postMessage({type: "complete", result: {
+        candidate: {status: "mixed", ranking: [], usable: 2}, minor: null,
+        baseline: {start: 0, end: 7, ranking: []}, passages: []
+      }});`
+    }));
+    await page.goto("/index.html?lang=en", { waitUntil: "domcontentloaded" });
+    await page.locator("#trackFileInput").setInputFiles({ name: "major.wav", mimeType: "audio/wav",
+      buffer: scaleWav(65, [0, 2, 4, 5, 7, 9, 11, 12]) });
+    await expect(page.locator("#v4Result")).toContainText("Passages suggest different modes");
+    await expect(page.locator("#analysisMiniBadgeText")).toContainText("Mahur · F");
+    await expect(page.locator("#bestMatchName")).toHaveText("Mahur · F");
+  } finally {
+    await context.close();
+  }
 });

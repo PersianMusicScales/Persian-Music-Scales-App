@@ -59,18 +59,24 @@
   "screenshots": [
     {
       "src": "assets/screenshots/screenshot-1.png",
-      "sizes": "640x480",
-      "type": "image/png"
+      "sizes": "585x1050",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Shur scale explorer"
     },
     {
       "src": "assets/screenshots/screenshot-2.png",
       "sizes": "800x600",
-      "type": "image/png"
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Chromatic tuner"
     },
     {
       "src": "assets/screenshots/screenshot-3.png",
       "sizes": "1024x768",
-      "type": "image/png"
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Track Scale Analyzer"
     }
   ],
   "lang": "en-US",

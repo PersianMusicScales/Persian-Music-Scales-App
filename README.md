@@ -605,3 +605,10 @@ It is not presented as a historically verified standard key signature for
 all 24 theoretical quarter-tone transpositions. Uncommon rotations can require
 combined accidentals, explicitly marked as theoretical. See
 [Musical notation methodology, source limitations and SVG license credits](docs/dynamic-persian-notation.md).
+
+## Related projects
+
+- [Dr. Pouya Hosseini — official website](https://drpouyahosseini.github.io/)
+- [Persian Music Scales — educational hub](https://persianmusicscales.github.io/)
+- [Urmawī Advar Atlas](https://persianmusicscales.github.io/urmawi-advar-atlas/)
+- [World Music Scales Atlas](https://worldmusicscalesatlas.github.io/)

@@ -1,0 +1,20 @@
+# Persian Music Scales App
+
+> Interactive educational software by Dr. Pouya Hosseini for exploring Persian modal pitch structures, microtonal intervals, transposition and melody analysis. Numerical diagrams and recognition candidates are not complete descriptions of melodic practice.
+
+- [Interactive application](https://persianmusicscales.github.io/Persian-Music-Scales-App/)
+- [Reference library](https://persianmusicscales.github.io/Persian-Music-Scales-App/reference/)
+- [Machine-readable pitch dataset](https://persianmusicscales.github.io/Persian-Music-Scales-App/data/persian-scales.json)
+- [Visualization methodology](https://persianmusicscales.github.io/Persian-Music-Scales-App/reference/methodology.html)
+- [Audio analysis methodology](https://persianmusicscales.github.io/Persian-Music-Scales-App/reference/audio-analysis.html)
+- [Glossary](https://persianmusicscales.github.io/Persian-Music-Scales-App/reference/glossary.html)
+- [Sitemap](https://persianmusicscales.github.io/Persian-Music-Scales-App/sitemap.xml)
+- [Rights and third-party notices](https://github.com/PersianMusicScales/Persian-Music-Scales-App/blob/main/LICENSE)
+
+## Related projects
+
+- [Dr. Pouya Hosseini — official website](https://drpouyahosseini.github.io/)
+- [Persian Music Scales — educational hub](https://persianmusicscales.github.io/)
+- [Persian Music Scales App](https://persianmusicscales.github.io/Persian-Music-Scales-App/)
+- [Urmawī Advar Atlas](https://persianmusicscales.github.io/urmawi-advar-atlas/)
+- [World Music Scales Atlas](https://worldmusicscalesatlas.github.io/)

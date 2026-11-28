@@ -608,7 +608,7 @@ combined accidentals, explicitly marked as theoretical. See
 
 ## Related projects
 
-- [Dr. Pouya Hosseini — official website](https://drpouyahosseini.github.io/)
+- [Pouya Hosseini — official website](https://drpouyahosseini.github.io/)
 - [Persian Music Scales — educational hub](https://persianmusicscales.github.io/)
 - [Urmawī Advar Atlas](https://persianmusicscales.github.io/urmawi-advar-atlas/)
 - [World Music Scales Atlas](https://worldmusicscalesatlas.github.io/)

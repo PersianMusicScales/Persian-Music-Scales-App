@@ -1,6 +1,6 @@
 # Persian Music Scales App
 
-> Interactive educational software by Dr. Pouya Hosseini for exploring Persian modal pitch structures, microtonal intervals, transposition and melody analysis. Numerical diagrams and recognition candidates are not complete descriptions of melodic practice.
+> Interactive educational software by Pouya Hosseini for exploring Persian modal pitch structures, microtonal intervals, transposition and melody analysis. Numerical diagrams and recognition candidates are not complete descriptions of melodic practice.
 
 - [Interactive application](https://persianmusicscales.github.io/Persian-Music-Scales-App/)
 - [Reference library](https://persianmusicscales.github.io/Persian-Music-Scales-App/reference/)
@@ -13,7 +13,7 @@
 
 ## Related projects
 
-- [Dr. Pouya Hosseini — official website](https://drpouyahosseini.github.io/)
+- [Pouya Hosseini — official website](https://drpouyahosseini.github.io/)
 - [Persian Music Scales — educational hub](https://persianmusicscales.github.io/)
 - [Persian Music Scales App](https://persianmusicscales.github.io/Persian-Music-Scales-App/)
 - [Urmawī Advar Atlas](https://persianmusicscales.github.io/urmawi-advar-atlas/)
